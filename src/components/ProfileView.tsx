@@ -1,0 +1,457 @@
+import { useState, useEffect } from 'react';
+import { User, Review, JobHistoryItem } from '../types';
+import { getReviews, getJobHistory, saveSingleUser } from '../lib/db';
+import { Star, ShieldAlert, Award, Phone, Mail, MapPin, Calendar, CheckCircle, Clock } from 'lucide-react';
+import ProfileEditModal from './ProfileEditModal';
+
+interface ProfileViewProps {
+  user: User; // User being viewed
+  isOwnProfile: boolean; // Flag to enable edit options
+  onBack?: () => void; // If inspector mode support back action
+  onUpdateCurrentUser?: (updated: User) => void; // Callback to notify app state has changed
+}
+
+export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurrentUser }: ProfileViewProps) {
+  const [showEdit, setShowEdit] = useState<boolean>(false);
+  const [profileUser, setProfileUser] = useState<User>(user);
+  
+  // Asynchronous state for reviews and history
+  const [displayReviews, setDisplayReviews] = useState<Review[]>([]);
+  const [historyItems, setHistoryItems] = useState<JobHistoryItem[]>([]);
+
+  useEffect(() => {
+    setProfileUser(user);
+  }, [user]);
+
+  useEffect(() => {
+    const loadProfileData = async () => {
+      const allReviews = await getReviews();
+      const allHistory = await getJobHistory();
+
+      const reviews = allReviews.filter(r => {
+        if (profileUser.type === 'operator') {
+          return r.reviewerType === 'employer' && (r.jobId.includes('unreliable') ? profileUser.id === 'user_op_unreliable' : profileUser.id !== 'user_op_unreliable');
+        } else {
+          return r.reviewerType === 'operator';
+        }
+      });
+
+      const isDemoUnreliable = profileUser.id === 'user_op_unreliable';
+      const dispReviews = isDemoUnreliable 
+        ? allReviews.filter(r => r.id.includes('unreliable'))
+        : reviews.filter(r => !r.id.includes('unreliable'));
+
+      const histItems = allHistory.filter(h => {
+        if (isDemoUnreliable) {
+          return h.id.includes('unreliable');
+        }
+        return h.role === profileUser.type && !h.id.includes('unreliable');
+      });
+
+      setDisplayReviews(dispReviews);
+      setHistoryItems(histItems);
+    };
+    loadProfileData();
+  }, [profileUser.id]);
+
+  const handleProfileSaved = (updated: User) => {
+    setProfileUser(updated);
+    setShowEdit(false);
+    if (onUpdateCurrentUser) {
+      onUpdateCurrentUser(updated);
+    }
+  };
+
+  const toggleFieldVisibility = async (fieldName: 'emailVisible' | 'phoneVisible' | 'historyVisible' | 'reviewsVisible') => {
+    const currentVal = profileUser[fieldName] !== false;
+    const updated: User = {
+      ...profileUser,
+      [fieldName]: !currentVal
+    };
+    
+    // Save database state
+    try {
+      await saveSingleUser(updated);
+      setProfileUser(updated);
+      if (onUpdateCurrentUser) {
+        onUpdateCurrentUser(updated);
+      }
+    } catch (err) {
+      console.error('Error toggling visibility:', err);
+      alert('Тохиргоо хадгалахад алдаа гарлаа. Дахин оролдоно уу.');
+    }
+  };
+
+  return (
+    <div id="profile-view-wrapper" className="max-w-4xl mx-auto p-4 md:p-6 text-white font-sans space-y-8 relative overflow-hidden">
+      {/* Ambient background glow blobs */}
+      <div className="glow-blob bg-emerald-500 w-[300px] h-[300px] -top-20 -left-20 opacity-5"></div>
+      <div className="glow-blob bg-cyan-500 w-[400px] h-[400px] bottom-0 -right-20 opacity-5" style={{ animationDelay: '-6s' }}></div>
+
+      {/* Back to jobs / breadcrumb */}
+      <div className="flex items-center justify-between relative z-10">
+        <h2 className="text-xl font-bold tracking-tight text-white flex items-center space-x-2">
+          <Award className="w-6 h-6 text-amber-400 text-neon-cyan animate-pulse-soft" />
+          <span>{isOwnProfile ? 'Миний Хувийн Профайл' : `${profileUser.fullName}-ийн Профайл`}</span>
+        </h2>
+        {onBack && (
+          <button
+            id="back-to-board-btn"
+            onClick={onBack}
+            className="text-xs bg-slate-900/60 hover:bg-slate-800 text-emerald-450 border border-slate-800/80 px-4 py-2 rounded-xl transition-all cursor-pointer shadow-md"
+          >
+            Жагсаалт руу буцах
+          </button>
+        )}
+      </div>
+
+      {/* Security incompleteness alert banner */}
+      {isOwnProfile && !(profileUser.securityQuestion1 && profileUser.securityAnswer1 && profileUser.securityQuestion2 && profileUser.securityAnswer2) && (
+        <div className="glass-panel p-4 rounded-xl border border-amber-500/40 bg-amber-500/5 text-xs space-y-2 relative overflow-hidden neon-border-amber z-10 animate-fade-in text-left">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-amber-400 flex items-center space-x-2">
+              <ShieldAlert className="w-4.5 h-4.5 text-amber-400 shrink-0 animate-pulse" />
+              <span>🔒 БҮРТГЭЛИЙН АЮУЛГҮЙ БАЙДАЛ ДУТУУ БАЙНА!</span>
+            </span>
+            <button
+              onClick={() => setShowEdit(true)}
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-3.5 py-1 rounded-lg font-bold text-[10.5px] transition-colors cursor-pointer font-sans"
+            >
+              Асуулт тохируулах (Хамгаалах)
+            </button>
+          </div>
+          <p className="text-[11px] text-gray-300 leading-relaxed font-sans">
+            Та аюулгүй байдлын 2 нууц асуултыг тохируулаагүй байна. Нууц асуултыг тохируулснаар нууц үгээ мартсан үедээ утасны дугаараар найдвартай сэргээх боломж бүрдэж, бусад хүмүүс таны хаягийг хулгайлахаас 100% сэргийлнэ.
+          </p>
+        </div>
+      )}
+
+      {/* Main Intro Card */}
+      <div className="glass-panel p-6 rounded-2xl grid grid-cols-1 md:grid-cols-4 gap-6 relative overflow-hidden shadow-2xl neon-border-cyan z-10">
+        
+        {/* Profile photo and badges */}
+        <div className="md:col-span-1 flex flex-col items-center space-y-4">
+          <div className="relative">
+            <img
+              src={profileUser.profileImage}
+              alt={profileUser.fullName}
+              className="w-28 h-28 rounded-full border-4 border-slate-800/80 object-cover shadow-2xl drop-shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+              referrerPolicy="no-referrer"
+              onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }}
+            />
+            <div className={`absolute bottom-0 right-1 px-3 py-0.5 rounded-full text-[8px] font-bold font-mono text-white tracking-wider ${
+              profileUser.rating >= 4.5 ? 'bg-emerald-600' : profileUser.rating >= 3.5 ? 'bg-amber-600' : 'bg-rose-600'
+            }`}>
+              {profileUser.type === 'operator' ? 'ЖОЛООЧ' : 'ЗАХИАЛАГЧ'}
+            </div>
+          </div>
+
+          <div className="text-center">
+            <h3 className="text-base font-bold text-white leading-tight">
+              {profileUser.fullName}
+              {profileUser.companyName && (
+                <span className="block text-xs font-semibold text-emerald-400 mt-1">{profileUser.companyName}</span>
+              )}
+            </h3>
+            <p className="text-[10px] text-slate-500 mt-1 font-mono">ID: {profileUser.id}</p>
+          </div>
+
+          {/* Rating overview */}
+          <div className="bg-slate-950/40 border border-slate-850 p-3.5 rounded-2xl w-full text-center">
+            <p className="text-[11px] text-slate-500 font-medium">Дундаж үнэлгээ</p>
+            <div className="flex items-center justify-center space-x-1 mt-1">
+              <Star className="w-5 h-5 text-amber-400 fill-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.4)]" />
+              <span className="text-2xl font-black font-mono text-white">{(profileUser.rating ?? 5).toFixed(1)}</span>
+            </div>
+            <p className="text-[10px] text-slate-500 mt-1.5 font-semibold">{displayReviews.length} удаагийн ажил дуусгасан</p>
+          </div>
+        </div>
+
+        {/* Detailed details */}
+        <div className="md:col-span-3 space-y-4 flex flex-col justify-between">
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              <span className="bg-[#080d1a] px-3.5 py-1.5 rounded-xl text-xs text-slate-350 border border-slate-850 flex items-center space-x-1.5 shadow-sm">
+                <Calendar className="w-4 h-4 text-slate-500" />
+                <span>Гишүүн болсон: {profileUser.createdAt}</span>
+              </span>
+              {profileUser.type === 'operator' && (
+                <span className="bg-emerald-950/20 px-3.5 py-1.5 rounded-xl text-xs text-emerald-300 border border-emerald-900/30 font-mono shadow-sm">
+                  Туршлага: {profileUser.experienceYears || 0} жил техник барьсан
+                </span>
+              )}
+            </div>
+
+            {/* Toggles bar for granular privacy - visible if isOwnProfile */}
+            {isOwnProfile && (
+              <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-850/80 flex flex-wrap gap-4 items-center justify-between text-xs w-full">
+                <div className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                  Нууцлалын Тохиргоо (Хүмүүст харагдуулах):
+                </div>
+                <div className="flex flex-wrap gap-4">
+                  {/* Email Visibility TOGGLE */}
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[11px] text-slate-300 font-medium">Имэйл:</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleFieldVisibility('emailVisible')}
+                      className={`relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none ${
+                        profileUser.emailVisible !== false ? 'bg-emerald-600' : 'bg-rose-600'
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white transition duration-200 mt-0.5 ml-0.5 ${
+                          profileUser.emailVisible !== false ? 'translate-x-3.5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Phone Visibility TOGGLE */}
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[11px] text-slate-300 font-medium">Утас:</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleFieldVisibility('phoneVisible')}
+                      className={`relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none ${
+                        profileUser.phoneVisible !== false ? 'bg-emerald-600' : 'bg-rose-600'
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white transition duration-200 mt-0.5 ml-0.5 ${
+                          profileUser.phoneVisible !== false ? 'translate-x-3.5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* History Visibility TOGGLE */}
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[11px] text-slate-300 font-medium">Ажлын түүх:</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleFieldVisibility('historyVisible')}
+                      className={`relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none ${
+                        profileUser.historyVisible !== false ? 'bg-emerald-600' : 'bg-rose-600'
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white transition duration-200 mt-0.5 ml-0.5 ${
+                          profileUser.historyVisible !== false ? 'translate-x-3.5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Reviews Visibility TOGGLE */}
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[11px] text-slate-300 font-medium">Сэтгэгдэл:</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleFieldVisibility('reviewsVisible')}
+                      className={`relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none ${
+                        profileUser.reviewsVisible !== false ? 'bg-emerald-600' : 'bg-rose-600'
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white transition duration-200 mt-0.5 ml-0.5 ${
+                          profileUser.reviewsVisible !== false ? 'translate-x-3.5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="text-xs space-y-2.5 border-t border-slate-850 pt-4">
+              {(profileUser.emailVisible !== false || isOwnProfile) ? (
+                <div className="flex items-center space-x-2 text-slate-300">
+                  <Mail className="w-4 h-4 text-emerald-450 shrink-0" />
+                  <span className="font-semibold text-slate-500">Имэйл хаяг:</span>
+                  <span className="select-all font-sans text-white">{profileUser.email ? profileUser.email : 'бөглөөгүй'}</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 text-slate-500">
+                  <Mail className="w-4 h-4 text-slate-700 shrink-0" />
+                  <span className="font-semibold text-slate-500">Имэйл хаяг:</span>
+                  <span className="italic text-[10px] text-slate-600 font-sans">(Нууцалсан)</span>
+                </div>
+              )}
+
+              {(profileUser.phoneVisible !== false || isOwnProfile) ? (
+                <div className="flex items-center space-x-2 text-slate-300">
+                  <Phone className="w-4 h-4 text-emerald-450 shrink-0" />
+                  <span className="font-semibold text-slate-500">Утас:</span>
+                  <span className="select-all font-mono font-bold text-emerald-400 text-neon-emerald">{profileUser.phone}</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 text-slate-500">
+                  <Phone className="w-4 h-4 text-slate-700 shrink-0" />
+                  <span className="font-semibold text-slate-500">Утас:</span>
+                  <span className="italic text-[10px] text-slate-600 font-sans">(Нууцалсан)</span>
+                </div>
+              )}
+
+              <div className="flex items-center space-x-2 text-slate-300">
+                <MapPin className="w-4 h-4 text-emerald-450 shrink-0" />
+                <span className="font-semibold text-slate-500">Хаяг:</span>
+                <span className="text-white">{profileUser.address}</span>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-850 pt-4">
+              <h4 className="text-xs font-bold text-slate-450 mb-1.5">Танилцуулга ба Нэмэлт мэдээлэл:</h4>
+              <p className="text-xs leading-relaxed text-slate-300 bg-[#080d1a]/50 p-4 rounded-xl border border-slate-850 whitespace-pre-line">
+                {profileUser.bio}
+              </p>
+            </div>
+
+            {profileUser.type === 'operator' && profileUser.machineTypes && profileUser.machineTypes.length > 0 && (
+              <div className="pt-2">
+                <h4 className="text-xs font-bold text-slate-450 mb-2">Мэргэшсэн механизмын төрлүүд:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {profileUser.machineTypes.map((m, idx) => (
+                    <span key={idx} className="bg-[#080d1a] px-3.5 py-1.5 rounded-xl text-xs text-cyan-400 font-mono border border-slate-850 shadow-sm">
+                      🚜 {m}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Edit profiles button */}
+          {isOwnProfile && (
+            <div className="flex justify-end pt-4 md:pt-2">
+              <button
+                id="open-edit-profile-modal"
+                onClick={() => setShowEdit(true)}
+                className="bg-emerald-600 hover:bg-emerald-550 text-white font-bold text-xs py-2 px-5 rounded-xl transition-all cursor-pointer shadow-lg shadow-emerald-950/20 glow-btn-emerald"
+              >
+                Хувийн Мэдээлэл Засах
+              </button>
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {/* Grid: Job history & Ratings list */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+        
+        {/* Verification lists of Jobs */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-850 pb-2.5 flex items-center space-x-2">
+            <CheckCircle className="w-4.5 h-4.5 text-emerald-450 drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
+            <span>Баталгаажсан Ажлын Түүх ({profileUser.historyVisible !== false || isOwnProfile ? historyItems.length : 0})</span>
+          </h3>
+
+          {(profileUser.historyVisible !== false || isOwnProfile) ? (
+            historyItems.length === 0 ? (
+              <div className="glass-panel p-6 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-500 font-sans">
+                Ажлын бүртгэлийн түүх байхгүй байна.
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+                {historyItems.map((item) => (
+                  <div key={item.id} className="glass-card p-4 rounded-xl border border-slate-800/60 hover:border-slate-700/60 space-y-2 relative overflow-hidden group">
+                    <div className="glow-blob bg-cyan-500 w-[50px] h-[50px] -top-5 -right-5 opacity-5 group-hover:scale-150 transition-all duration-700"></div>
+                    <div className="flex justify-between items-start">
+                      <h4 className="text-xs font-bold text-white block max-w-[70%] truncate group-hover:text-cyan-400 transition-colors">{item.title}</h4>
+                      <span className={`px-2 py-0.5 rounded text-[8px] font-bold font-mono tracking-wide uppercase ${
+                        item.status === 'completed' ? 'bg-emerald-950/20 text-emerald-400 border border-emerald-900/30' : 'bg-amber-950/20 text-amber-400 border border-amber-900/30'
+                      }`}>
+                        {item.status === 'completed' ? 'Гүйцэтгэсэн' : 'Идэвхтэй'}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between text-[11px] text-slate-500 font-mono">
+                      <span>Хамтарсан тал:</span>
+                      <span className="text-slate-305 font-sans font-medium">{item.partnerName}</span>
+                    </div>
+
+                    <div className="flex justify-between text-[11px] text-slate-500 font-mono">
+                      <span>Хугацаа:</span>
+                      <span className="text-slate-400">{item.dateRange}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          ) : (
+            <div className="glass-panel p-6 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-500 italic font-sans">
+              Хэрэглэгч ажлын түүхийн мэдээллээ нууцалсан байна.
+            </div>
+          )}
+        </div>
+
+        {/* Uncensored reviews written for this user */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-850 pb-2.5 flex items-center space-x-2">
+            <Star className="w-4.5 h-4.5 text-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.2)]" />
+            <span>Хамтран ажиллагсдын сэтгэгдэл ({profileUser.reviewsVisible !== false || isOwnProfile ? displayReviews.length : 0})</span>
+          </h3>
+
+          {(profileUser.reviewsVisible !== false || isOwnProfile) ? (
+            displayReviews.length === 0 ? (
+              <div className="glass-panel p-6 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-500 font-sans">
+                Хэрэглэгчид одоогоор үнэлгээ бичигдээгүй байна.
+              </div>
+            ) : (
+              <div className="space-y-3.5 max-h-96 overflow-y-auto pr-1">
+                {displayReviews.map((rev) => (
+                  <div key={rev.id} className="glass-card p-4 rounded-xl border border-slate-800/60 hover:border-slate-700/60 space-y-3 relative overflow-hidden group">
+                    <div className="glow-blob bg-emerald-500 w-[50px] h-[50px] -top-5 -right-5 opacity-5 group-hover:scale-150 transition-all duration-700"></div>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-xs font-bold block text-emerald-400 group-hover:text-emerald-350 transition-colors">
+                          {(() => {
+                            const parts = rev.reviewerName.trim().split(/\s+/);
+                            return parts[parts.length - 1] || rev.reviewerName;
+                          })()}
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono block mt-0.5">Төсөл: {rev.jobTitle}</span>
+                      </div>
+                      {/* Stars indicator */}
+                      <div className="flex items-center space-x-0.5 bg-[#080d1a] px-2 py-1 rounded-lg border border-slate-850 shadow-sm shrink-0">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star key={s} className={`w-2.5 h-2.5 ${s <= rev.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-700'}`} />
+                        ))}
+                        <span className="text-[10px] text-white font-bold ml-1 font-mono">{rev.rating}.0</span>
+                      </div>
+                    </div>
+
+                    <p className="text-xs leading-relaxed text-slate-300 italic font-sans bg-[#080d1a]/30 p-2.5 rounded-lg border border-slate-850/60">
+                      "{rev.comment}"
+                    </p>
+
+                    <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono border-t border-slate-850 pt-2 flex-wrap gap-1">
+                      <span>Үүрэг: {rev.reviewerType === 'employer' ? 'Ажил Олгогчийн үнэлгээ' : 'Жолоочийн үнэлгээ'}</span>
+                      <span className="text-slate-450">{rev.createdAt}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          ) : (
+            <div className="glass-panel p-6 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-500 italic font-sans">
+              Хэрэглэгч үнэлгээ, сэтгэгдлийн хэсгийг нууцалсан байна.
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {/* Edit Modal Popup */}
+      {showEdit && (
+        <ProfileEditModal
+          user={profileUser}
+          onClose={() => setShowEdit(false)}
+          onSave={handleProfileSaved}
+        />
+      )}
+
+    </div>
+  );
+}

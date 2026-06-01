@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection rules
+    match /users/{userId} {
+      allow read: if true;
+      // Allow profile creation for registration and seeding
+      allow create: if true;
+      // Allow update and delete only if the logged-in user owns the profile
+      allow update, delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Jobs collection rules
+    match /jobs/{jobId} {
+      allow read: if true;
+      // Allow job management for authenticated users
+      allow write: if request.auth != null;
+    }
+    
+    // Reviews collection rules
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Job History collection rules
+    match /jobHistory/{historyId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Notifications collection rules
+    match /notifications/{notifId} {
+      // Users can read notifications if authenticated (queries are filtered by userId in code)
+      allow read: if request.auth != null;
+      // Authenticated users can write notifications (e.g. system notifications or applicant alerts)
+      allow write: if request.auth != null;
+    }
+  }
+}

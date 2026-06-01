@@ -1,0 +1,6 @@
+{
+  "name": "Барилга, Механизмын Ажлын Нэгдсэн Систем",
+  "description": "Барилга, замын газар шорооны ажил, хүнд машин механизм түрээс ба жолооч нарын үнэлгээ, түүх бүхий нэгдсэн зарын систем.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

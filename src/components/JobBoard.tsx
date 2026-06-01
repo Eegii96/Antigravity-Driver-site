@@ -1,0 +1,1167 @@
+import { useState, useEffect, useRef } from 'react';
+import { User, Job, Review, AppNotification } from '../types';
+import {
+  getJobs,
+  saveJobs,
+  applyForJob,
+  hireOperator,
+  completeJob,
+  getUsers,
+  getNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  addNotification,
+  deleteNotification,
+  deleteAllNotifications,
+  addJob
+} from '../lib/db';
+import {
+  Search,
+  Filter,
+  Briefcase,
+  MapPin,
+  Calendar,
+  DollarSign,
+  PlusCircle,
+  TrendingUp,
+  Award,
+  Star,
+  ShieldCheck,
+  ChevronDown,
+  LogOut,
+  User as UserIcon,
+  Settings as SettingsIcon,
+  CheckCircle,
+  Users,
+  Clock,
+  AlertTriangle,
+  Bell,
+  Sparkles,
+  X,
+  Trash2
+} from 'lucide-react';
+import JobPostModal from './JobPostModal';
+import ReviewModal from './ReviewModal';
+
+interface JobBoardProps {
+  currentUser: User;
+  onLogout: () => void;
+  onNavigateToProfile: () => void;
+  onNavigateToSettings: () => void;
+  onViewUserProfile: (user: User) => void;
+}
+
+const getFirstName = (userOrName?: any): string => {
+  if (!userOrName) return '';
+  if (typeof userOrName === 'string') {
+    const parts = userOrName.trim().split(/\s+/);
+    return parts[parts.length - 1] || userOrName;
+  }
+  if (userOrName.type === 'employer' && userOrName.companyName && userOrName.companyName.trim()) {
+    return userOrName.companyName.trim();
+  }
+  if (userOrName.firstName && userOrName.firstName.trim()) {
+    return userOrName.firstName.trim();
+  }
+  if (userOrName.fullName) {
+    const parts = userOrName.fullName.trim().split(/\s+/);
+    return parts[parts.length - 1] || userOrName.fullName;
+  }
+  return '';
+};
+
+const MACHINERY_CATEGORIES = ['Бүгд', 'Экскаватор', 'Дамп', 'Ковш', 'Бульдозер', 'Кран', 'Грейдер'];
+const LOCATION_OPTIONS = ['Бүгд', 'Улаанбаатар', 'Өмнөговь', 'Дархан', 'Сэлэнгэ', 'Дорноговь'];
+
+export default function JobBoard({
+  currentUser,
+  onLogout,
+  onNavigateToProfile,
+  onNavigateToSettings,
+  onViewUserProfile
+}: JobBoardProps) {
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('Бүгд');
+  const [selectedLocation, setSelectedLocation] = useState<string>('Бүгд');
+  const [selectedType, setSelectedType] = useState<string>('Бүгд');
+  
+  // Modals & States
+  const [showPostModal, setShowPostModal] = useState<boolean>(false);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  
+  // Custom Review triggers
+  const [activeReviewJob, setActiveReviewJob] = useState<Job | null>(null);
+
+  // Dropdown hover state emulator
+  const [showProfileMenu, setShowProfileMenu] = useState<boolean>(false);
+
+  // Notifications States
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [showNotificationsMenu, setShowNotificationsMenu] = useState<boolean>(false);
+  const [toasts, setToasts] = useState<AppNotification[]>([]);
+
+  const [successMessage, setSuccessMessage] = useState<string>('');
+
+  const notificationsRef = useRef<AppNotification[]>([]);
+  const notificationsMenuRef = useRef<HTMLDivElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  const addErrorToast = (message: string) => {
+    const newErrNotif: AppNotification = {
+      id: 'err_' + Date.now(),
+      userId: currentUser.id,
+      title: 'Алдаа',
+      message,
+      type: 'alert',
+      isRead: false,
+      createdAt: new Date().toLocaleTimeString().slice(0, 5)
+    };
+    setToasts(prev => [newErrNotif, ...prev]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== newErrNotif.id));
+    }, 4500);
+  };
+
+  const refreshJobs = async () => {
+    const allJobs = await getJobs();
+    setJobs(allJobs);
+    if (selectedJob) {
+      const updated = allJobs.find(j => j.id === selectedJob.id);
+      setSelectedJob(updated || null);
+    }
+  };
+
+  const refreshUsers = async () => {
+    const allUsers = await getUsers();
+    setUsers(allUsers);
+  };
+
+  // Function to load notifications and sync unread count
+  const refreshNotifications = async () => {
+    const freshNotifs = await getNotifications(currentUser.id);
+    
+    // Check if there are any new unread notifications that aren't already in the local state,
+    // to trigger the toast alert!
+    if (notificationsRef.current.length > 0) {
+      const freshUnreads = freshNotifs.filter(n => !n.isRead);
+      const prevUnreadIds = notificationsRef.current.filter(n => !n.isRead).map(n => n.id);
+      
+      freshUnreads.forEach(newNotif => {
+        if (!prevUnreadIds.includes(newNotif.id)) {
+          // Add toast alert!
+          setToasts(prev => [newNotif, ...prev]);
+          // Remove toast after 4.5 seconds
+          setTimeout(() => {
+            setToasts(prev => prev.filter(t => t.id !== newNotif.id));
+          }, 4500);
+        }
+      });
+    }
+    
+    setNotifications(freshNotifs);
+  };
+
+  useEffect(() => {
+    const load = async () => {
+      await Promise.all([refreshJobs(), refreshUsers(), refreshNotifications()]);
+    };
+    load();
+  }, []);
+
+  // Keep notificationsRef updated
+  useEffect(() => {
+    notificationsRef.current = notifications;
+  }, [notifications]);
+
+  // Click outside to close notifications menu
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notificationsMenuRef.current && !notificationsMenuRef.current.contains(event.target as Node)) {
+        setShowNotificationsMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Polling for real-time feel (4 seconds)
+  useEffect(() => {
+    const timer = setInterval(async () => {
+      try {
+        // Sync in background
+        const freshNotifs = await getNotifications(currentUser.id);
+        const freshUnreads = freshNotifs.filter(n => !n.isRead);
+        const prevUnreadIds = notificationsRef.current.filter(n => !n.isRead).map(n => n.id);
+        
+        let hasNew = false;
+        freshUnreads.forEach(newNotif => {
+          if (!prevUnreadIds.includes(newNotif.id)) {
+            hasNew = true;
+            setToasts(prev => [newNotif, ...prev]);
+            setTimeout(() => {
+              setToasts(prev => prev.filter(t => t.id !== newNotif.id));
+            }, 4500);
+          }
+        });
+        
+        if (hasNew || freshNotifs.length !== notificationsRef.current.length) {
+          setNotifications(freshNotifs);
+        }
+
+        // Sync jobs & users in background
+        const allJobs = await getJobs();
+        setJobs(allJobs);
+        const allUsers = await getUsers();
+        setUsers(allUsers);
+      } catch (err) {
+        console.error('Error in polling loop:', err);
+      }
+    }, 4000);
+
+    return () => clearInterval(timer);
+  }, [currentUser.id]);
+
+  const toggleNotificationsMenu = () => {
+    setShowNotificationsMenu(prev => {
+      const next = !prev;
+      if (next) setShowProfileMenu(false);
+      return next;
+    });
+  };
+
+  const toggleProfileMenu = () => {
+    setShowProfileMenu(prev => {
+      const next = !prev;
+      if (next) setShowNotificationsMenu(false);
+      return next;
+    });
+  };
+
+  // Actions
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      await markNotificationAsRead(id);
+      await refreshNotifications();
+    } catch (err) {
+      console.error(err);
+      addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllNotificationsAsRead(currentUser.id);
+      await refreshNotifications();
+    } catch (err) {
+      console.error(err);
+      addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
+    }
+  };
+
+  const handleDeleteNotification = async (id: string) => {
+    try {
+      await deleteNotification(id);
+      await refreshNotifications();
+    } catch (err) {
+      console.error(err);
+      addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
+    }
+  };
+
+  const handleDeleteAllNotifications = async () => {
+    try {
+      await deleteAllNotifications(currentUser.id);
+      await refreshNotifications();
+    } catch (err) {
+      console.error(err);
+      addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
+    }
+  };
+
+  // Simulated cyber simulation to SHOW OFF the interactive toasts!
+  const handleTriggerAISimulation = async () => {
+    if (currentUser.type === 'employer') {
+      const allJobs = await getJobs();
+      const employerJobs = allJobs.filter(j => j.employerId === currentUser.id && j.status === 'open');
+      if (employerJobs.length === 0) {
+        // Auto create a job and apply to make it seamless if they don't have jobs
+        const simulatedJob = await addJob({
+          title: 'ЯАРАЛТАЙ: Баянзүрх дүүрэгт ковш жолоодох оператор авна',
+          description: 'Ковшоор шороо тэгшилгээ, ачилт хийнэ. Хоол, байр барилгын талбай дээр бэлэн. Архи уудаггүй, хариуцлагатай байх.',
+          employerId: currentUser.id,
+          employerName: currentUser.fullName,
+          employerRating: currentUser.rating,
+          type: 'operator_hiring',
+          machineryType: 'Ковш HL770',
+          salary: 180000,
+          salaryUnit: 'Өдрөөр',
+          duration: '7 хоног',
+          location: 'Улаанбаатар хот',
+          requirements: ['Үнэмлэхтэй байх', 'Архи уудаггүй байх']
+        });
+        
+        await applyForJob(simulatedJob.id, 'user_op_1');
+        await refreshJobs();
+        await refreshNotifications();
+        return;
+      }
+      
+      const randomJob = employerJobs[Math.floor(Math.random() * employerJobs.length)];
+      const operators = users.filter(u => u.type === 'operator');
+      const randomOp = operators[Math.floor(Math.random() * operators.length)] || { id: 'user_op_1' };
+      
+      await applyForJob(randomJob.id, randomOp.id);
+      await refreshJobs();
+      await refreshNotifications();
+    } else {
+      const rand = Math.random();
+      if (rand > 0.5) {
+        const machine = currentUser.machineTypes?.[0] || 'CAT 320 Экскаватор';
+        await addNotification(
+          currentUser.id,
+          'Тохирох шинэ зар нийтлэгдлээ 🚜',
+          `Таны мэргэшсэн "${machine}" техникт тохирох шинэ ажлын санал бүртгэгдлээ.`,
+          'info'
+        );
+      } else {
+        await addNotification(
+          currentUser.id,
+          'Шинэ үнэлгээ ирлээ ⭐',
+          `Ажил олгогч Залуус Констракшн танд 5.0⭐ үнэлгээ болон онцлох эерэг сэтгэгдэл үлдээлээ.`,
+          'success'
+        );
+      }
+      await refreshNotifications();
+    }
+  };
+
+  const handleApply = async (jobId: string) => {
+    try {
+      const success = await applyForJob(jobId, currentUser.id);
+      if (success) {
+        setSuccessMessage('🔒 Таны ажилд орох хүсэлт, ажлын түүх ба үнэлгээний хамт захиалагчид амжилттай илгээгдлээ.');
+        setTimeout(() => setSuccessMessage(''), 4500);
+        await refreshJobs();
+      }
+    } catch (err) {
+      console.error(err);
+      addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
+    }
+  };
+
+  const handleHire = async (jobId: string, operatorId: string) => {
+    try {
+      const success = await hireOperator(jobId, operatorId);
+      if (success) {
+        setSuccessMessage('🤝 Жолоочийг ажилд амжилттай томиллоо. Хамтын ажиллагааны гэрээ батлагдсан тул хариуцлагатай ажиллана уу.');
+        setTimeout(() => setSuccessMessage(''), 4500);
+        await refreshJobs();
+      }
+    } catch (err) {
+      console.error(err);
+      addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
+    }
+  };
+
+  const handleCompleteAndReviewTrigger = async (job: Job) => {
+    try {
+      const success = await completeJob(job.id);
+      if (success) {
+        await refreshJobs();
+        const allJobs = await getJobs();
+        const updated = allJobs.find(j => j.id === job.id);
+        if (updated) setSelectedJob(updated);
+        
+        // Trigger review popup for the other user!
+        setActiveReviewJob(updated || job);
+      }
+    } catch (err) {
+      console.error(err);
+      addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
+    }
+  };
+
+  // Filter & Search Logic
+  const filteredJobs = jobs.filter(job => {
+    const matchesKeyword = 
+      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.machineryType.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesCategory = 
+      selectedCategory === 'Бүгд' || 
+      job.machineryType.toLowerCase().includes(selectedCategory.toLowerCase()) ||
+      job.title.toLowerCase().includes(selectedCategory.toLowerCase());
+
+    const matchesLocation = 
+      selectedLocation === 'Бүгд' || 
+      job.location.toLowerCase().includes(selectedLocation.toLowerCase());
+
+    const matchesType =
+      selectedType === 'Бүгд' ||
+      (selectedType === 'Жолооч хайж буй' && job.type === 'operator_hiring') ||
+      (selectedType === 'Түрээс / Механизм' && job.type === 'machinery_rental') ||
+      (selectedType === 'Захиалгат ажил' && job.type === 'earthwork');
+
+    return matchesKeyword && matchesCategory && matchesLocation && matchesType;
+  });
+
+  const unreadNotifs = notifications.filter(n => !n.isRead);
+
+  return (
+    <div id="job-board-root" className="min-h-screen bg-slate-950 text-white font-sans flex flex-col relative overflow-x-hidden">
+      
+      {/* Dynamic Upper Banner alerting users about historical accountability */}
+      <div className="bg-amber-500 text-slate-950 px-4 py-2.5 text-center text-xs font-semibold flex items-center justify-center space-x-2 border-b border-amber-600">
+        <AlertTriangle className="w-4 h-4 text-slate-950 shrink-0" />
+        <span>⚠️ АНХААРУУЛГА: Ноцтой зөрчил гаргасан (Архидан согтуурсан, шалтгаангүй ажил хаясан, техникт санаатай хохирол учруулсан, эсвэл цалин хөлс олгоогүй) хэрэглэгчдийн мэдээлэл Хар дансанд (Blacklist) бүртгэгдэж, дахин ажиллах эрх бүрэн хаагдахыг анхаарна уу.</span>
+      </div>
+
+      {/* Nav bar */}
+      <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-lg bg-[#080d1a] border border-emerald-500/20 flex items-center justify-center relative overflow-hidden shrink-0 shadow-md">
+            <svg className="w-6 h-6 text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.3)]" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              {/* Caterpillar Track base */}
+              <rect x="6" y="46" width="36" height="8" rx="4" fill="currentColor" fillOpacity="0.1" />
+              <line x1="12" y1="50" x2="36" y2="50" strokeWidth="2" strokeDasharray="4 3" />
+              <circle cx="11" cy="50" r="2" fill="currentColor" />
+              <circle cx="24" cy="50" r="2" fill="currentColor" />
+              <circle cx="37" cy="50" r="2" fill="currentColor" />
+              
+              {/* Rotating Cabin base structure */}
+              <path d="M10 40h28v6H10z" fill="currentColor" fillOpacity="0.2" />
+              <path d="M14 26h18v14H14z" fill="currentColor" fillOpacity="0.1" />
+              <path d="M16 26h10l4 8H14l2-8z" />
+              
+              {/* Boom (Main arm) - extending up and right */}
+              <path d="M28 34 L44 14" strokeWidth="4.5" className="text-cyan-400" />
+              
+              {/* Dipper / Stick (Outer arm) - pivoting down from boom tip */}
+              <path d="M44 14 L52 30" strokeWidth="3.5" className="text-amber-400" />
+              
+              {/* Bucket / Scoop - pivoting at the end of the stick */}
+              <path d="M52 30 L46 36 L39 33 Z" fill="currentColor" fillOpacity="0.3" strokeWidth="2.5" className="text-amber-500" />
+              
+              {/* Joint Pins */}
+              <circle cx="28" cy="34" r="2" className="fill-white stroke-none" />
+              <circle cx="44" cy="14" r="2" className="fill-white stroke-none" />
+              <circle cx="52" cy="30" r="2" className="fill-white stroke-none" />
+              
+              {/* Hydraulic lines */}
+              <path d="M26 30 Q36 22 41 16" stroke="currentColor" strokeWidth="1" opacity="0.6" />
+            </svg>
+          </div>
+          <div>
+            <span className="font-bold tracking-tight text-white block text-sm font-sans md:text-base">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>
+          </div>
+        </div>
+
+        {/* Profile and Notifications triggers */}
+        <div className="flex items-center space-x-3.5">
+          
+          {/* Simulation Demo Button */}
+          <button
+            type="button"
+            onClick={handleTriggerAISimulation}
+            title="Интерактив Тоаст болон Мэдэгдэл турших AI Симуляци ажиллуулах"
+            className="hidden sm:flex items-center space-x-1 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700/80 rounded-lg text-[10px] font-bold font-mono transition-all cursor-pointer shadow-inner animate-pulse"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>AI СИМУЛЯЦИ ⚡</span>
+          </button>
+
+          {currentUser.type === 'employer' && (
+            <button
+              id="header-post-job-btn"
+              onClick={() => setShowPostModal(true)}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-3.5 py-2 rounded-lg flex items-center space-x-1.5 transition-all cursor-pointer shadow-md shadow-emerald-950/20"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span className="hidden md:inline">Зар нэмэх</span>
+            </button>
+          )}
+
+          {/* Notifications Bell Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={toggleNotificationsMenu}
+              className="relative p-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full transition-colors cursor-pointer text-slate-300 hover:text-white"
+            >
+              <Bell className="w-4 h-4" />
+              {unreadNotifs.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-rose-500 text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-slate-900 animate-bounce">
+                  {unreadNotifs.length}
+                </span>
+              )}
+            </button>
+
+            {showNotificationsMenu && (
+              <div
+                id="notifications-dropdown-menu"
+                ref={notificationsMenuRef}
+                className="absolute right-0 mt-2.5 w-80 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 py-1.5 animate-fade-in"
+              >
+                <div className="px-4 py-2 border-b border-slate-800 flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-300 font-mono">Системийн мэдэгдлүүд</span>
+                  {unreadNotifs.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleMarkAllAsRead}
+                      className="text-[10px] text-emerald-400 hover:underline font-semibold cursor-pointer"
+                    >
+                      Бүгдийг уншсанаар тэмдэглэх
+                    </button>
+                  )}
+                </div>
+
+                <div className="max-h-64 overflow-y-auto divide-y divide-slate-850">
+                  {notifications.length === 0 ? (
+                    <p className="p-6 text-center text-xs text-slate-500 italic">Мэдэгдэл одоогоор байхгүй байна.</p>
+                  ) : (
+                    notifications.map((notif) => (
+                      <div
+                        key={notif.id}
+                        className={`p-3 text-left transition-colors relative flex items-start space-x-2.5 ${
+                          notif.isRead ? 'bg-transparent/20' : 'bg-slate-850/50 border-l-2 border-emerald-500'
+                        }`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start gap-1">
+                            <h5 className="text-xs font-bold text-white leading-snug">{notif.title}</h5>
+                            <span className="text-[8px] text-slate-500 font-mono shrink-0">{notif.createdAt}</span>
+                          </div>
+                          <p className="text-[10.5px] text-slate-300 leading-normal mt-0.5">{notif.message}</p>
+                          
+                          <div className="flex items-center space-x-3.5 mt-2">
+                            {!notif.isRead && (
+                              <button
+                                type="button"
+                                onClick={() => handleMarkAsRead(notif.id)}
+                                className="text-[9px] text-emerald-400 hover:underline font-medium cursor-pointer"
+                              >
+                                Уншсан гэж тэмдэглэх
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteNotification(notif.id)}
+                              className="text-[9px] text-rose-400 hover:underline font-medium cursor-pointer flex items-center space-x-1"
+                            >
+                              <Trash2 className="w-2.5 h-2.5" />
+                              <span>Устгах</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {notifications.length > 0 && (
+                  <div className="px-4 py-2 border-t border-slate-800 text-center">
+                    <button
+                      type="button"
+                      onClick={handleDeleteAllNotifications}
+                      className="text-[10px] text-rose-400 hover:underline font-bold font-mono flex items-center justify-center space-x-1 mx-auto cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>МЭДЭГДЛҮҮДИЙГ БҮГДИЙГ УСТГАХ</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* User Profile hover container */}
+          <div
+            id="profile-hover-trigger"
+            className="relative"
+            onMouseEnter={() => { setShowProfileMenu(true); setShowNotificationsMenu(false); }}
+            onMouseLeave={() => setShowProfileMenu(false)}
+          >
+            <button
+              id="profile-dropdown-btn"
+              onClick={toggleProfileMenu}
+              className="flex items-center space-x-2 bg-slate-800 p-1.5 pl-3 rounded-full hover:bg-slate-700 transition-colors border border-slate-700 text-left cursor-pointer"
+            >
+              <div className="hidden md:block">
+                <p className="text-xs font-semibold text-white leading-none">{getFirstName(currentUser)}</p>
+                <span className="text-[9px] text-emerald-400 font-mono">
+                  {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} • {currentUser.rating}⭐
+                </span>
+              </div>
+              <img
+                src={currentUser.profileImage}
+                alt="user avatar"
+                className="w-8 h-8 rounded-full object-cover border-2 border-emerald-500"
+                referrerPolicy="no-referrer"
+                onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }}
+              />
+              <ChevronDown className="w-3.5 h-3.5 text-gray-405" />
+            </button>
+
+            {/* Hover Floating Menus WITH tight border logic */}
+            {showProfileMenu && (
+              <div
+                id="profile-hover-menu"
+                ref={profileMenuRef}
+                className="absolute right-0 top-full pt-1.5 w-48 z-50 animate-fade-in"
+                onMouseEnter={() => setShowProfileMenu(true)}
+                onMouseLeave={() => setShowProfileMenu(false)}
+              >
+                <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-2">
+                  <div className="px-3.5 py-2 border-b border-slate-800 text-[11px] text-gray-500 font-semibold font-mono">
+                    Сонголтууд
+                  </div>
+                  
+                  <button
+                    id="menu-goto-profile"
+                    onClick={() => { onNavigateToProfile(); setShowProfileMenu(false); }}
+                    className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
+                  >
+                    <UserIcon className="w-4 h-4 text-emerald-400" />
+                    <span>Миний профайл</span>
+                  </button>
+                  
+                  <button
+                    id="menu-goto-settings"
+                    onClick={() => { onNavigateToSettings(); setShowProfileMenu(false); }}
+                    className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
+                  >
+                    <SettingsIcon className="w-4 h-4 text-emerald-400" />
+                    <span>Тохиргооны хэсэг</span>
+                  </button>
+
+                  <div className="border-t border-slate-800 my-1"></div>
+
+                  <button
+                    id="menu-logout"
+                    onClick={() => { onLogout(); setShowProfileMenu(false); }}
+                    className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-rose-400 hover:text-rose-400 flex items-center space-x-2.5 transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Системээс гарах</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Left 2 Columns: Filters & Job Listings */}
+        <div className="lg:col-span-2 space-y-6">
+
+          {/* Success Message Banner */}
+          {successMessage && (
+            <div className="bg-emerald-500/10 border border-emerald-500 text-emerald-300 p-3.5 rounded-xl text-xs flex items-center space-x-2.5 animate-bounce">
+              <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
+              <span>{successMessage}</span>
+            </div>
+          )}
+
+          {/* Dashboard Quick Stats */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
+              <span className="text-[10px] text-gray-500 uppercase block font-mono">Гэрээт Зарууд</span>
+              <span className="text-xl font-black text-white">{jobs.length} идэвхтэй</span>
+            </div>
+            <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
+              <span className="text-[10px] text-gray-500 uppercase block font-mono">Бүртгэлтэй Жолооч</span>
+              <span className="text-xl font-black text-emerald-400">{users.length > 0 ? users.filter(u => u.type === 'operator').length : '...'} оператор</span>
+            </div>
+            <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
+              <span className="text-[10px] text-gray-500 uppercase block font-mono">Аюулгүй ажиллагаа</span>
+              <span className="text-xl font-black text-amber-400">99.4% сайн</span>
+            </div>
+          </div>
+
+          {/* Search bar & filter buttons */}
+          <div className="bg-slate-900/30 p-4 border border-slate-800/80 rounded-xl space-y-3">
+            
+            {/* Search inputs */}
+            <div className="relative">
+              <Search className="absolute left-3.5 top-2.5 h-4.5 w-4.5 text-gray-500" />
+              <input
+                id="board-search-input"
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Экскаватор, Шакман жолооч, Дамп, Өмнөговь гэж хайх..."
+                className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-700 rounded text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+              />
+            </div>
+
+            {/* Dropdown Filters row */}
+            <div className="flex flex-wrap gap-2 pt-1">
+              {/* Type Category */}
+              <div className="flex items-center space-x-1">
+                <span className="text-[10px] text-gray-500 font-mono uppercase mr-1">Төрөл:</span>
+                <select
+                  id="filter-type"
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  className="bg-slate-950 border border-slate-700 text-gray-300 text-xs px-2.5 py-1 rounded focus:outline-none"
+                >
+                  <option value="Бүгд">Бүх Маягт</option>
+                  <option value="Жолооч хайж буй">Жолооч Хайж Буй</option>
+                  <option value="Түрээс / Механизм">Түрээс / Механизм</option>
+                  <option value="Захиалгат ажил">Захиалгат Ажил</option>
+                </select>
+              </div>
+
+              {/* Aimag location */}
+              <div className="flex items-center space-x-1">
+                <span className="text-[10px] text-gray-500 font-mono uppercase mr-1">Байршил:</span>
+                <select
+                  id="filter-location"
+                  value={selectedLocation}
+                  onChange={(e) => setSelectedLocation(e.target.value)}
+                  className="bg-slate-950 border border-slate-700 text-gray-300 text-xs px-2.5 py-1 rounded focus:outline-none"
+                >
+                  <option value="Бүгд">Бүх Байршил</option>
+                  {LOCATION_OPTIONS.filter(l => l !== 'Бүгд').map((l, id) => (
+                    <option key={id} value={l}>{l}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Quick Machinery Category Tocs */}
+            <div className="flex flex-wrap gap-1.5 pt-1 border-t border-slate-800/60">
+              {MACHINERY_CATEGORIES.map((cat, idx) => (
+                <button
+                  id={`cat-filter-btn-${idx}`}
+                  key={idx}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-2.5 py-1 rounded text-[11px] font-mono transition-all cursor-pointer ${
+                    selectedCategory === cat
+                      ? 'bg-emerald-600 text-white font-semibold'
+                      : 'bg-slate-950 text-gray-400 hover:text-white border border-slate-800'
+                  }`}
+                >
+                  {cat === 'Бүгд' ? '🚜 Бүх техник' : cat}
+                </button>
+              ))}
+            </div>
+
+          </div>
+
+          {/* Job listings container */}
+          <div className="space-y-4">
+            <h3 className="text-xs font-bold text-gray-400 tracking-wider uppercase text-left">
+              Шороо замын нээлттэй зарууд ({filteredJobs.length})
+            </h3>
+
+            {filteredJobs.length === 0 ? (
+              <div className="bg-slate-900/20 border border-slate-800 p-12 text-center rounded-xl">
+                <p className="text-sm text-gray-400">Хайлтанд нийцэх ажил олдсонгүй.</p>
+                <button
+                  id="reset-filters-btn"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedCategory('Бүгд');
+                    setSelectedLocation('Бүгд');
+                    setSelectedType('Бүгд');
+                  }}
+                  className="mt-3 text-xs text-emerald-500 hover:underline cursor-pointer"
+                >
+                  Бүх шүүлтүүрийг арилгах
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredJobs.map((job) => (
+                  <div
+                    id={`job-card-${job.id}`}
+                    key={job.id}
+                    onClick={() => setSelectedJob(job)}
+                    className={`bg-slate-900/60 hover:bg-slate-900 transition-all border p-4 rounded-xl cursor-pointer flex flex-col justify-between space-y-4 text-left group ${
+                      selectedJob?.id === job.id ? 'border-emerald-500 ring-1 ring-emerald-500/20' : 'border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-start gap-1">
+                        <span className="font-mono text-[10px] text-emerald-400 bg-emerald-900/10 px-2 py-0.5 rounded border border-emerald-900/25">
+                          🚜 {job.machineryType}
+                        </span>
+                        <span className="text-[10px] text-gray-500 shrink-0 flex items-center space-x-1">
+                          <MapPin className="w-3 h-3" />
+                          <span>{job.location.split(',')[0]}</span>
+                        </span>
+                      </div>
+
+                      <h4 className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors leading-snug">
+                        {job.title}
+                      </h4>
+
+                      <p className="text-[11px] text-gray-400 line-clamp-3 leading-relaxed">
+                        {job.description}
+                      </p>
+                    </div>
+
+                    <div className="border-t border-slate-800/80 pt-3 flex items-center justify-between text-xs text-gray-400">
+                      <div className="flex items-center space-x-1">
+                        <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="font-mono font-bold text-white">{job.salary.toLocaleString()} ₮</span>
+                        <span className="text-[10px] text-gray-500"> / {job.salaryUnit}</span>
+                      </div>
+                      <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-950/20 px-2 py-0.5 rounded">
+                        {job.status === 'open' ? 'Нээлттэй' : job.status === 'in_progress' ? 'Гэрээ байгуулсан' : 'Дууссан'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+        </div>
+
+        {/* Right Column: Active detail drawer & Inspection panel */}
+        <div id="job-detail-panel" className="lg:col-span-1">
+          {selectedJob ? (
+            <div className="bg-slate-900 border border-slate-700 p-6 rounded-2xl space-y-5 sticky top-28 text-left shadow-2xl">
+              
+              {/* Header */}
+              <div className="border-b border-slate-800 pb-4">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="font-mono text-[10px] text-emerald-400 bg-emerald-900/10 px-2.5 py-1 rounded">
+                    🚜 {selectedJob.machineryType}
+                  </span>
+                  <button
+                    id="close-detail-panel"
+                    onClick={() => setSelectedJob(null)}
+                    className="text-gray-400 hover:text-white transition-colors cursor-pointer text-xs"
+                  >
+                    Хаах [x]
+                  </button>
+                </div>
+                <h3 className="text-sm font-bold text-white leading-snug">{selectedJob.title}</h3>
+                
+                {/* Employer preview */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const employerUser = users.find(u => u.id === selectedJob.employerId);
+                    if (employerUser) {
+                      onViewUserProfile(employerUser);
+                    }
+                  }}
+                  className="w-full mt-3 flex items-center justify-between bg-slate-850/40 p-2 rounded-lg border border-slate-800/50 hover:bg-slate-800 transition-colors text-left focus:outline-none"
+                >
+                  <div className="flex items-center space-x-2">
+                    <UserIcon className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs text-gray-300 font-medium hover:underline">
+                      {(() => {
+                        const emp = users.find(u => u.id === selectedJob.employerId);
+                        return emp ? getFirstName(emp) : getFirstName(selectedJob.employerName);
+                      })()}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-1 font-mono text-xs text-amber-400">
+                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                    <span>{selectedJob.employerRating} Захиалагч</span>
+                  </div>
+                </button>
+              </div>
+
+              {/* Salary & details list */}
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                  <span className="text-[10px] text-gray-500 block font-mono">Төлбөрийн хэмжээ:</span>
+                  <span className="font-bold text-emerald-400 block font-mono mt-0.5">{selectedJob.salary.toLocaleString()} ₮</span>
+                  <span className="text-[10px] text-gray-500"> / {selectedJob.salaryUnit}</span>
+                </div>
+                <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                  <span className="text-[10px] text-gray-500 block font-mono">Ажлын хугацаа:</span>
+                  <span className="font-bold text-white block mt-0.5">{selectedJob.duration}</span>
+                  <span className="text-[10px] text-emerald-500 flex items-center font-mono">✓ Хариуцлагын гэрээтэй</span>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-gray-400 block">Ажлын дэлгэрэнгүй тодорхойлолт:</span>
+                <p className="text-xs text-gray-300 leading-relaxed bg-slate-950/40 p-3 rounded-lg border border-slate-800 whitespace-pre-wrap">
+                  {selectedJob.description}
+                </p>
+              </div>
+
+              {/* Requirements list */}
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-gray-400 block">Операторт тавигдах шаардлага:</span>
+                <ul className="space-y-1.5 text-xs text-gray-300">
+                  {selectedJob.requirements.map((req, idx) => (
+                    <li key={idx} className="flex items-start">
+                      <span className="text-emerald-500 mr-2 font-black">•</span>
+                      <span>{req}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Location info */}
+              <div className="flex items-center space-x-2 text-xs text-gray-300 bg-slate-950/30 p-2.5 rounded border border-slate-800">
+                <MapPin className="w-4 h-4 text-emerald-500 hover:scale-110 transition-transform" />
+                <span>Байршил:</span>
+                <span className="font-semibold text-white">{selectedJob.location}</span>
+              </div>
+
+              {/* Workflow Actions */}
+              <div className="border-t border-slate-800 pt-4 space-y-3">
+                {selectedJob.status === 'open' && (
+                  <>
+                    {currentUser.type === 'operator' ? (
+                      selectedJob.applicants.includes(currentUser.id) ? (
+                        <div className="bg-slate-950 p-3 rounded-lg border border-slate-850 text-center text-xs text-emerald-400 font-semibold flex items-center justify-center space-x-1">
+                          <CheckCircle className="w-4 h-4 text-emerald-500" />
+                          <span>Та энэ заранд орох хүсэлт илгээсэн байна.</span>
+                        </div>
+                      ) : (
+                        <button
+                          id="apply-job-btn"
+                          onClick={() => handleApply(selectedJob.id)}
+                          className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 px-4 rounded-xl font-bold text-xs transition-colors cursor-pointer flex items-center justify-center space-x-2"
+                        >
+                          <Briefcase className="w-4 h-4" />
+                          <span>Ажилд орох хүсэлт илгээх (Түүх ба үнэлгээ хавсаргах)</span>
+                        </button>
+                      )
+                    ) : (
+                      /* Employer views their own posted job and applicants */
+                      currentUser.id === selectedJob.employerId ? (
+                        <div className="space-y-3">
+                          <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block flex items-center space-x-1.5 border-b border-slate-850 pb-2">
+                            <Users className="w-4 h-4 text-emerald-400" />
+                            <span>Хүсэлт ирүүлсэн жолооч нар ({selectedJob.applicants.length})</span>
+                          </span>
+
+                          {selectedJob.applicants.length === 0 ? (
+                            <p className="text-xs text-gray-500 italic pb-1">Энэ заранд одоогоор жолооч хүсэлт ирүүлээгүй байна.</p>
+                          ) : (
+                            <div className="space-y-2">
+                              {selectedJob.applicants.map((opId) => {
+                                const op = users.find(u => u.id === opId);
+                                if (!op) return null;
+                                return (
+                                  <div
+                                    id={`applicant-card-${op.id}`}
+                                    key={op.id}
+                                    className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 hover:border-slate-700 transition-colors flex items-center justify-between"
+                                  >
+                                    <button
+                                      id={`view-op-profile-${op.id}`}
+                                      type="button"
+                                      onClick={() => onViewUserProfile(op)}
+                                      className="flex items-center space-x-2 text-left hover:underline cursor-pointer focus:outline-none"
+                                    >
+                                      <img src={op.profileImage} alt={op.fullName} className="w-7 h-7 rounded-full object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }} />
+                                      <div>
+                                        <div className="text-xs font-bold text-emerald-400 flex items-center space-x-1">
+                                          <span>{getFirstName(op)}</span>
+                                          {op.rating >= 4.5 && <span className="text-[9px] bg-emerald-600 text-white font-mono px-1 rounded">Шилдэг</span>}
+                                        </div>
+                                        <div className="text-[10px] text-gray-400 flex items-center space-x-1">
+                                          <Star className="w-3 h-3 fill-amber-400 text-amber-500" />
+                                          <span>{op.rating.toFixed(1)} ({op.ratingCount} ажил)</span>
+                                        </div>
+                                      </div>
+                                    </button>
+
+                                    <button
+                                      id={`hire-op-btn-${op.id}`}
+                                      type="button"
+                                      onClick={() => handleHire(selectedJob.id, op.id)}
+                                      className="bg-emerald-600 hover:bg-emerald-500 py-1 px-2.5 rounded text-[10px] font-semibold text-white cursor-pointer"
+                                    >
+                                      Сонгож хөлслөх
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-500">Энэ зарыг өөр ажил олгогч нийтэлсэн тул жолооч ажилчин харах боломжтой.</p>
+                      )
+                    )}
+                  </>
+                )}
+
+                {/* Job In Progress UI representing accountability state */}
+                {selectedJob.status === 'in_progress' && (
+                  <div className="bg-emerald-950/20 p-4 border border-emerald-900/40 rounded-xl space-y-3 text-left">
+                    <div className="flex items-center space-x-2 text-emerald-400 text-xs font-bold">
+                      <Clock className="w-4 h-4 animate-spin text-emerald-500" />
+                      <span>АЖЛЫН ГЭРЭЭ ДУНД ТҮВШИНД ИДЭВХТЭЙ БАЙНА</span>
+                    </div>
+
+                    <p className="text-[11px] text-gray-300">
+                      Томилогдсон баталгаат оператор: <strong className="text-white">
+                        {(() => {
+                          const op = users.find(u => u.id === selectedJob.hiredOperatorId);
+                          return op ? getFirstName(op) : getFirstName(selectedJob.hiredOperatorName);
+                        })()}
+                      </strong>. Талууд аюулгүй байдлыг ханган ажиллана уу.
+                    </p>
+
+                    {/* Completion trigger reserved for the publisher */}
+                    {currentUser.id === selectedJob.employerId && (
+                      <button
+                        id="employer-complete-job-btn"
+                        onClick={() => handleCompleteAndReviewTrigger(selectedJob)}
+                        className="w-full bg-amber-600 hover:bg-amber-500 text-slate-950 py-1.5 px-3 rounded text-xs font-bold transition-all cursor-pointer"
+                      >
+                        ✓ АЖИЛ БҮРЭН ДУУССАНЫГ БАТАЛГААЖУУЛЖ ҮНЭЛЭХ
+                      </button>
+                    )}
+
+                    {currentUser.id !== selectedJob.employerId && (
+                      <p className="text-[10px] text-slate-500">
+                        Ажил олгогч энэхүү ажлыг бүтэн гүйцэтгэснийг тэмдэглэсний дараа та үнэлгээгээ бичих боломжтой болно.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Completed Job and Review triggers */}
+                {selectedJob.status === 'completed' && (
+                  <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl space-y-3">
+                    <div className="flex items-center space-x-1.5 text-xs text-emerald-400 font-bold">
+                      <CheckCircle className="w-4 h-4" />
+                      <span>ЭНЭХҮҮ АЖИЛ АМЖИЛТТАЙ ГҮЙЦЭТГЭГДЭЖ ДУУССАН</span>
+                    </div>
+
+                    {/* Review option for Operator */}
+                    {currentUser.type === 'operator' && selectedJob.hiredOperatorId === currentUser.id && !selectedJob.isReviewedByOperator && (
+                      <button
+                        id="op-review-employer-btn"
+                        onClick={() => setActiveReviewJob(selectedJob)}
+                        className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 py-1.5 px-3 rounded-lg text-xs font-bold cursor-pointer transition-colors"
+                      >
+                        Захиалагчийг Үнэлэх (Цалингийн мурилт эсвэл харилцаа)
+                      </button>
+                    )}
+
+                    {/* Review option for Employer */}
+                    {currentUser.type === 'employer' && selectedJob.employerId === currentUser.id && !selectedJob.isReviewedByEmployer && (
+                      <button
+                        id="emp-review-operator-btn"
+                        onClick={() => setActiveReviewJob(selectedJob)}
+                        className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 py-1.5 px-3 rounded-lg text-xs font-bold cursor-pointer transition-colors"
+                      >
+                        Жолоочийг Үнэлэх (Согтууруулах ундаа, Ажилдаа эзэн болсон байдал)
+                      </button>
+                    )}
+
+                    {((currentUser.type === 'operator' && selectedJob.isReviewedByOperator) || 
+                      (currentUser.type === 'employer' && selectedJob.isReviewedByEmployer)) && (
+                      <div className="text-[11px] text-gray-500 text-center italic">
+                        Таны үнэлгээ системд хэдийн бүртгэгдсэн байна. Таны хариуцлагатай оролцоонд баярлалаа!
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-slate-800 p-8 text-center rounded-2xl text-gray-500 text-xs py-16 sticky top-28">
+              <Briefcase className="w-8 h-8 mx-auto mb-3 text-gray-600" />
+              <p>Зарын жагсаалтаас аль нэг ажил сонгож дарж орсноор дэлгэрэнгүй шаардлага, байршил, төлбөрийн нөхцөлүүдийг харж, ажилд орох хүсэлт илгээх боломжтой болно.</p>
+            </div>
+          )}
+        </div>
+
+      </main>
+
+      {/* Floating Toast Notification Containers */}
+      <div id="toast-alerts-container" className="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 pointer-events-none">
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            className="pointer-events-auto bg-slate-900/90 backdrop-blur-md border-l-4 border-emerald-500 text-white px-5 py-4 rounded-xl shadow-2xl border border-slate-800 flex items-start space-x-3 w-80 animate-slide-in relative"
+          >
+            <div className="flex-1 text-left">
+              <div className="flex justify-between items-start">
+                <span className="text-xs font-bold text-emerald-400 font-mono">Шинэ мэдэгдэл 🔔</span>
+                <span className="text-[9px] text-slate-500 font-mono">{t.createdAt}</span>
+              </div>
+              <h4 className="text-xs font-bold text-white mt-1 leading-snug">{t.title}</h4>
+              <p className="text-[10px] text-slate-350 leading-relaxed mt-0.5">{t.message}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <footer className="mt-12 bg-slate-900 border-t border-slate-800 px-6 py-8 text-left text-xs text-slate-400">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="space-y-1">
+            <span className="font-bold text-white block text-sm">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>
+            <p className="text-[11px] text-slate-500">Үнэлгээ болон хариуцлага дээр суурилсан Монголын уул уурхай, барилгын механизмын нэгдсэн бүртгэл.</p>
+          </div>
+          <div className="text-[10px] font-mono text-slate-500">
+            © 2026 Antigravity Driver Site • All rights reserved.
+          </div>
+        </div>
+      </footer>
+
+      {/* Modals trigger definitions */}
+      {showPostModal && (
+        <JobPostModal
+          employerId={currentUser.id}
+          employerName={currentUser.fullName}
+          employerRating={currentUser.rating}
+          onClose={() => setShowPostModal(false)}
+          onSuccess={async (newJob) => {
+            setShowPostModal(false);
+            await refreshJobs();
+            setSelectedJob(newJob);
+            setSuccessMessage('🎉 Ажлын зар амжилттай нийтлэгдэж, систем дэх нээлттэй жолооч нарын үзүүрт орлоо!');
+            setTimeout(() => setSuccessMessage(''), 4500);
+          }}
+        />
+      )}
+
+      {activeReviewJob && (
+        <ReviewModal
+          jobId={activeReviewJob.id}
+          jobTitle={activeReviewJob.title}
+          targetUserId={
+            currentUser.type === 'operator' 
+              ? activeReviewJob.employerId 
+              : activeReviewJob.hiredOperatorId || ''
+          }
+          targetUserName={
+            currentUser.type === 'operator' 
+              ? activeReviewJob.employerName 
+              : activeReviewJob.hiredOperatorName || 'Жолооч'
+          }
+          reviewerId={currentUser.id}
+          reviewerName={currentUser.fullName}
+          reviewerType={currentUser.type}
+          onClose={() => setActiveReviewJob(null)}
+          onSuccess={async (rev) => {
+            setActiveReviewJob(null);
+            await refreshJobs();
+            setSuccessMessage('🌟 Сэтгэгдэл, үнэлгээ амжилттай бүртгэгдэж тухайн хэрэглэгчийн албан ёсны ажлын түүхэнд шинэчлэгдэж заслаа. Хамтын оролцоонд баярлалаа.');
+            setTimeout(() => setSuccessMessage(''), 4500);
+          }}
+        />
+      )}
+
+    </div>
+  );
+}
