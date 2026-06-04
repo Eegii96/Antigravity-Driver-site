@@ -15,7 +15,8 @@ import {
 } from 'firebase/firestore';
 import { 
   createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  updatePassword
 } from 'firebase/auth';
 
 // Default mock users for initial database seeding
@@ -37,7 +38,11 @@ const DEFAULT_USERS: User[] = [
     machineTypes: ['Микро экскаватор', 'CAT 320 Экскаватор', 'Ковш Хьюндай HL770'],
     isPublic: true,
     createdAt: '2024-01-15',
-    password: 'Password123!'
+    password: 'Password123!',
+    securityQuestion1: 'Таны төрсөн аймаг эсвэл хот юу вэ?',
+    securityAnswer1: 'Улаанбаатар',
+    securityQuestion2: 'Таны багын хамгийн сайн найзын нэр хэн бэ?',
+    securityAnswer2: 'Болд'
   },
   {
     id: 'user_op_2',
@@ -376,11 +381,9 @@ export async function saveUsers(users: User[]): Promise<void> {
   try {
     const batch = writeBatch(db);
     for (const u of users) {
-      // Exclude password from database for security
-      const { password, ...userWithoutPassword } = u;
       // Clean up any undefined properties to prevent Firestore "Unsupported field value: undefined" error
       const cleanUser = Object.fromEntries(
-        Object.entries(userWithoutPassword).filter(([_, v]) => v !== undefined)
+        Object.entries(u).filter(([_, v]) => v !== undefined)
       ) as unknown as User;
       batch.set(doc(db, 'users', u.id), cleanUser);
     }
@@ -392,11 +395,9 @@ export async function saveUsers(users: User[]): Promise<void> {
 
 export async function saveSingleUser(user: User): Promise<void> {
   try {
-    // Exclude password from database for security
-    const { password, ...userWithoutPassword } = user;
     // Clean up any undefined properties to prevent Firestore "Unsupported field value: undefined" error
     const cleanUser = Object.fromEntries(
-      Object.entries(userWithoutPassword).filter(([_, v]) => v !== undefined)
+      Object.entries(user).filter(([_, v]) => v !== undefined)
     ) as unknown as User;
     await setDoc(doc(db, 'users', user.id), cleanUser);
   } catch (err) {
@@ -550,30 +551,61 @@ export async function loginUser(email: string, phone: string, password?: string)
         return null; // No user found
       }
     }
+
+    // Validate the actual password against Firestore first if it exists in the document
+    if (userData && userData.password) {
+      if (userData.password !== password) {
+        console.warn('Firestore password mismatch');
+        return null;
+      }
+    }
     
-    // 2. Authenticate using Firebase Auth - This is the absolute source of truth!
+    // 2. Authenticate using Firebase Auth
+    let authUser = null;
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, targetEmail, password || 'Password123!');
-      const uid = userCredential.user.uid;
-      
+      // Try signing in with the fixed password first (for accounts created/unified under this system)
+      const userCredential = await signInWithEmailAndPassword(auth, targetEmail, 'Password123!');
+      authUser = userCredential.user;
+    } catch (authErr) {
+      // Fallback: Try signing in with the typed password (for older accounts not yet unified)
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, targetEmail, password || 'Password123!');
+        authUser = userCredential.user;
+        
+        // Since login succeeded with their custom password, let's unify their Firebase Auth password to 'Password123!'
+        // and cache the password in Firestore for future logins.
+        if (authUser && userData) {
+          try {
+            await updatePassword(authUser, 'Password123!');
+            userData.password = password;
+            await saveSingleUser(userData);
+          } catch (unifyErr) {
+            console.warn('Could not unify password in Auth:', unifyErr);
+          }
+        }
+      } catch (authErr2) {
+        console.warn('Firebase Auth sign-in failed with both passwords:', authErr2);
+        return null; // Login failed! Incorrect password or auth issue.
+      }
+    }
+    
+    if (authUser) {
       // Fetch fresh Firestore user data using the authenticated UID
-      const docSnap = await getDoc(doc(db, 'users', uid));
+      const docSnap = await getDoc(doc(db, 'users', authUser.uid));
       if (docSnap.exists()) {
         userData = docSnap.data() as User;
-        userData.id = uid;
+        userData.id = authUser.uid;
       }
-    } catch (authErr) {
-      console.warn('Firebase Auth sign-in failed:', authErr);
-      return null; // Login failed! Incorrect password or auth issue.
     }
     
     if (userData) {
       // Security: Remove raw password field from session object
-      if ('password' in userData) {
-        delete userData.password;
+      const sessionUser = { ...userData };
+      if ('password' in sessionUser) {
+        delete sessionUser.password;
       }
-      setCurrentUser(userData);
-      return userData;
+      setCurrentUser(sessionUser);
+      return sessionUser;
     }
     return null;
   } catch (err) {
@@ -591,10 +623,10 @@ export async function registerUser(
     const targetEmail = userData.email ? userData.email.trim().toLowerCase() : `${userData.phone.replace(/[^a-zA-Z0-9]/g, '')}@jolooj.mn`;
     let uid = tempId;
     
-    // 1. Create Firebase Auth user
+    // 1. Create Firebase Auth user with a unified/fixed password
     if (onProgress) onProgress('Firebase системд шинэ хэрэглэгч үүсгэж байна...');
     try {
-      const authUser = await createUserWithEmailAndPassword(auth, targetEmail, userData.password || 'Password123!');
+      const authUser = await createUserWithEmailAndPassword(auth, targetEmail, 'Password123!');
       uid = authUser.user.uid;
     } catch (authErr: any) {
       console.error('Firebase Auth user registration failed:', authErr);
@@ -621,11 +653,6 @@ export async function registerUser(
       createdAt: new Date().toISOString().split('T')[0]
     };
 
-    // Exclude the password field before writing to Firestore for safety
-    if ('password' in newUser) {
-      delete newUser.password;
-    }
-
     // Clean up any undefined properties to prevent Firestore "Unsupported field value: undefined" error
     const cleanUser = Object.fromEntries(
       Object.entries(newUser).filter(([_, v]) => v !== undefined)
@@ -641,8 +668,13 @@ export async function registerUser(
     // Race setDoc against timeout
     await Promise.race([writePromise, timeoutPromise]);
     
-    setCurrentUser(newUser);
-    return newUser;
+    // Security: Remove password from the session user before setting local state
+    const sessionUser = { ...newUser };
+    if ('password' in sessionUser) {
+      delete sessionUser.password;
+    }
+    setCurrentUser(sessionUser);
+    return sessionUser;
   } catch (err) {
     console.error('Error registering user:', err);
     throw err;

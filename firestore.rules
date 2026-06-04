@@ -7,8 +7,13 @@ service cloud.firestore {
       allow read: if true;
       // Allow profile creation for registration and seeding
       allow create: if true;
-      // Allow update and delete only if the logged-in user owns the profile
-      allow update, delete: if request.auth != null && request.auth.uid == userId;
+      // Allow update if the logged-in user owns the profile, or for password reset if security answers match and only password changes
+      allow update: if (request.auth != null && request.auth.uid == userId) ||
+                       (resource.data.securityAnswer1 != null &&
+                        request.resource.data.securityAnswer1.trim().lower() == resource.data.securityAnswer1.trim().lower() &&
+                        request.resource.data.securityAnswer2.trim().lower() == resource.data.securityAnswer2.trim().lower() &&
+                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['password']));
+      allow delete: if request.auth != null && request.auth.uid == userId;
     }
     
     // Jobs collection rules

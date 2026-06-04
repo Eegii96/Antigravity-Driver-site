@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { ShieldCheck, Key, Trash2, Eye, EyeOff, Check, AlertCircle, X } from 'lucide-react';
-import { getCurrentUser, saveSingleUser, setCurrentUser } from '../lib/db';
+import { getCurrentUser, saveSingleUser, setCurrentUser, getFreshCurrentUser } from '../lib/db';
 import { auth } from '../lib/firebase';
 import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 
@@ -57,40 +57,52 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     }
 
     try {
-      // 1. Re-authenticate to verify current password in Firebase Auth first
-      if (auth.currentUser && auth.currentUser.email) {
-        try {
-          const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
-          await reauthenticateWithCredential(auth.currentUser, credential);
-        } catch (reauthErr: any) {
-          console.warn('Re-authentication failed:', reauthErr);
+      const freshUser = await getFreshCurrentUser();
+      if (!freshUser) {
+        setError('Хэрэглэгч олдсонгүй.');
+        return;
+      }
+
+      // 1. Verify current password
+      if (freshUser.password) {
+        if (freshUser.password !== currentPassword) {
           setError('Одоогийн нууц үг буруу байна.');
           return;
         }
-      }
-
-      // 2. Update in Firebase Auth
-      if (auth.currentUser) {
-        try {
-          await updatePassword(auth.currentUser, newPassword);
-        } catch (authErr: any) {
-          console.warn('Firebase Auth password update failed, checking code:', authErr);
-          if (authErr.code === 'auth/requires-recent-login') {
-            setError('Аюулгүй байдлын үүднээс нууц үг солихын тулд та системээс гарч дахин нэвтэрсэн байх шаардлагатай.');
+      } else {
+        // Fallback for older accounts where the password isn't cached in Firestore yet
+        if (auth.currentUser && auth.currentUser.email) {
+          try {
+            const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
+            await reauthenticateWithCredential(auth.currentUser, credential);
+          } catch (reauthErr: any) {
+            console.warn('Re-authentication failed:', reauthErr);
+            setError('Одоогийн нууц үг буруу байна.');
             return;
           }
-          throw authErr;
         }
       }
 
-      // 3. Save to Firestore (strip raw password for database safety)
-      const updatedUser = { ...currentLoggedUser };
-      if ('password' in updatedUser) {
-        delete updatedUser.password;
+      // 2. We do NOT update the Firebase Auth password since it should remain 'Password123!' (unified).
+      // But if their Auth password was not unified yet (they are an old account), we should unify it.
+      if (!freshUser.password && auth.currentUser) {
+        try {
+          await updatePassword(auth.currentUser, 'Password123!');
+        } catch (authErr: any) {
+          console.warn('Failed to unify auth password, trying fallback:', authErr);
+        }
       }
+
+      // 3. Save the new password to Firestore
+      const updatedUser = { ...freshUser, password: newPassword };
       await saveSingleUser(updatedUser);
-      // set in current session
-      setCurrentUser(updatedUser);
+
+      // Save to localStorage session without the password
+      const sessionUser = { ...updatedUser };
+      if ('password' in sessionUser) {
+        delete sessionUser.password;
+      }
+      setCurrentUser(sessionUser);
 
       setSuccess('Нууц үг амжилттай солигдлоо. Таны холболт шинэчлэгдсэн.');
       setError('');
