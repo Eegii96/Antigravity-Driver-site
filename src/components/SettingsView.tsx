@@ -2,7 +2,7 @@ import { useState, FormEvent } from 'react';
 import { ShieldCheck, Key, Trash2, Eye, EyeOff, Check, AlertCircle, X } from 'lucide-react';
 import { getCurrentUser, saveSingleUser, setCurrentUser } from '../lib/db';
 import { auth } from '../lib/firebase';
-import { updatePassword } from 'firebase/auth';
+import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 
 interface SettingsViewProps {
   onBack: () => void;
@@ -47,11 +47,6 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
       return;
     }
 
-    if (currentLoggedUser.password && currentLoggedUser.password !== currentPassword) {
-      setError('Одоогийн нууц үг буруу байна.');
-      return;
-    }
-
     if (newPassword !== confirmPassword) {
       setError('Шинэ нууц үгнүүд хоорондоо таарахгүй байна.');
       return;
@@ -62,7 +57,19 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     }
 
     try {
-      // Update in Firebase Auth first
+      // 1. Re-authenticate to verify current password in Firebase Auth first
+      if (auth.currentUser && auth.currentUser.email) {
+        try {
+          const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
+          await reauthenticateWithCredential(auth.currentUser, credential);
+        } catch (reauthErr: any) {
+          console.warn('Re-authentication failed:', reauthErr);
+          setError('Одоогийн нууц үг буруу байна.');
+          return;
+        }
+      }
+
+      // 2. Update in Firebase Auth
       if (auth.currentUser) {
         try {
           await updatePassword(auth.currentUser, newPassword);
@@ -76,8 +83,11 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         }
       }
 
-      // Save to Firestore
-      const updatedUser = { ...currentLoggedUser, password: newPassword };
+      // 3. Save to Firestore (strip raw password for database safety)
+      const updatedUser = { ...currentLoggedUser };
+      if ('password' in updatedUser) {
+        delete updatedUser.password;
+      }
       await saveSingleUser(updatedUser);
       // set in current session
       setCurrentUser(updatedUser);

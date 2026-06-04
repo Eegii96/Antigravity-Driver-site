@@ -328,7 +328,9 @@ export async function initializeDB(): Promise<void> {
         } catch (authErr) {
           // If already exists in Auth, ignore
         }
-        batch.set(doc(db, 'users', u.id), u);
+        // Exclude the password field before writing to Firestore
+        const { password, ...userWithoutPassword } = u;
+        batch.set(doc(db, 'users', u.id), userWithoutPassword);
       }
       
       // 2. Seed Jobs
@@ -374,10 +376,12 @@ export async function saveUsers(users: User[]): Promise<void> {
   try {
     const batch = writeBatch(db);
     for (const u of users) {
+      // Exclude password from database for security
+      const { password, ...userWithoutPassword } = u;
       // Clean up any undefined properties to prevent Firestore "Unsupported field value: undefined" error
       const cleanUser = Object.fromEntries(
-        Object.entries(u).filter(([_, v]) => v !== undefined)
-      ) as User;
+        Object.entries(userWithoutPassword).filter(([_, v]) => v !== undefined)
+      ) as unknown as User;
       batch.set(doc(db, 'users', u.id), cleanUser);
     }
     await batch.commit();
@@ -388,10 +392,12 @@ export async function saveUsers(users: User[]): Promise<void> {
 
 export async function saveSingleUser(user: User): Promise<void> {
   try {
+    // Exclude password from database for security
+    const { password, ...userWithoutPassword } = user;
     // Clean up any undefined properties to prevent Firestore "Unsupported field value: undefined" error
     const cleanUser = Object.fromEntries(
-      Object.entries(user).filter(([_, v]) => v !== undefined)
-    ) as User;
+      Object.entries(userWithoutPassword).filter(([_, v]) => v !== undefined)
+    ) as unknown as User;
     await setDoc(doc(db, 'users', user.id), cleanUser);
   } catch (err) {
     console.error('Error saving single user to Firestore:', err);
@@ -510,82 +516,62 @@ export async function loginUser(email: string, phone: string, password?: string)
     const cleanEmail = email ? email.trim().toLowerCase() : '';
     const cleanPhone = phone ? phone.trim() : '';
     
-    // 1. Determine auth email
-    let authEmail = '';
-    if (cleanEmail) {
-      authEmail = cleanEmail;
-    } else if (cleanPhone) {
-      authEmail = `${cleanPhone.replace(/[^a-zA-Z0-9]/g, '')}@jolooj.mn`;
-    } else {
-      return null;
-    }
-    
-    let uid = '';
+    let targetEmail = '';
     let userData: User | null = null;
     
-    // 2. Try Firebase Auth sign-in first
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, authEmail, password || 'Password123!');
-      uid = userCredential.user.uid;
+    // 1. Find the user in Firestore first to get the correct email/phone mapping
+    let snapshot;
+    if (cleanEmail) {
+      const q = query(collection(db, 'users'), where('email', '==', cleanEmail));
+      snapshot = await getDocs(q);
+    } else if (cleanPhone) {
+      let q = query(collection(db, 'users'), where('phone', '==', cleanPhone));
+      snapshot = await getDocs(q);
       
-      // Fetch Firestore doc by the actual authenticated UID
+      if (snapshot.empty && cleanPhone.startsWith('+976')) {
+        const localPhone = cleanPhone.replace('+976', '');
+        q = query(collection(db, 'users'), where('phone', '==', localPhone));
+        snapshot = await getDocs(q);
+      }
+    }
+    
+    if (snapshot && !snapshot.empty) {
+      const userDoc = snapshot.docs[0];
+      userData = userDoc.data() as User;
+      userData.id = userDoc.id;
+      
+      // Determine the Firebase Auth email registered for this user
+      targetEmail = userData.email || `${userData.phone.replace(/[^a-zA-Z0-9]/g, '')}@jolooj.mn`;
+    } else {
+      // If user not found in Firestore, try logging in with the entered email directly
+      if (cleanEmail) {
+        targetEmail = cleanEmail;
+      } else {
+        return null; // No user found
+      }
+    }
+    
+    // 2. Authenticate using Firebase Auth - This is the absolute source of truth!
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, targetEmail, password || 'Password123!');
+      const uid = userCredential.user.uid;
+      
+      // Fetch fresh Firestore user data using the authenticated UID
       const docSnap = await getDoc(doc(db, 'users', uid));
       if (docSnap.exists()) {
         userData = docSnap.data() as User;
         userData.id = uid;
       }
     } catch (authErr) {
-      console.warn('Background/Direct Auth sign-in failed, falling back to query:', authErr);
-    }
-    
-    // 3. Fallback to Firestore query by email/phone if document not found or auth failed
-    if (!userData) {
-      let snapshot;
-      if (cleanEmail) {
-        const q = query(collection(db, 'users'), where('email', '==', cleanEmail));
-        snapshot = await getDocs(q);
-      } else if (cleanPhone) {
-        let q = query(collection(db, 'users'), where('phone', '==', cleanPhone));
-        snapshot = await getDocs(q);
-        
-        if (snapshot.empty && cleanPhone.startsWith('+976')) {
-          const localPhone = cleanPhone.replace('+976', '');
-          q = query(collection(db, 'users'), where('phone', '==', localPhone));
-          snapshot = await getDocs(q);
-        }
-      }
-      
-      if (snapshot && !snapshot.empty) {
-        const userDoc = snapshot.docs[0];
-        userData = userDoc.data() as User;
-        
-        if (password && userData.password && userData.password !== password) {
-          return null;
-        }
-        
-        // Try creating Auth user or logging in to sync
-        try {
-          const syncEmail = userData.email || `${userData.phone.replace(/[^a-zA-Z0-9]/g, '')}@jolooj.mn`;
-          try {
-            const userCredential = await signInWithEmailAndPassword(auth, syncEmail, password || 'Password123!');
-            uid = userCredential.user.uid;
-          } catch (e) {
-            const userCredential = await createUserWithEmailAndPassword(auth, syncEmail, password || 'Password123!');
-            uid = userCredential.user.uid;
-          }
-          
-          if (uid) {
-            const migratedUser = { ...userData, id: uid };
-            await setDoc(doc(db, 'users', uid), migratedUser);
-            userData = migratedUser;
-          }
-        } catch (syncErr) {
-          console.error('Failed to sync/migrate user Auth:', syncErr);
-        }
-      }
+      console.warn('Firebase Auth sign-in failed:', authErr);
+      return null; // Login failed! Incorrect password or auth issue.
     }
     
     if (userData) {
+      // Security: Remove raw password field from session object
+      if ('password' in userData) {
+        delete userData.password;
+      }
       setCurrentUser(userData);
       return userData;
     }
@@ -634,6 +620,11 @@ export async function registerUser(
       ratingCount: 0,
       createdAt: new Date().toISOString().split('T')[0]
     };
+
+    // Exclude the password field before writing to Firestore for safety
+    if ('password' in newUser) {
+      delete newUser.password;
+    }
 
     // Clean up any undefined properties to prevent Firestore "Unsupported field value: undefined" error
     const cleanUser = Object.fromEntries(
