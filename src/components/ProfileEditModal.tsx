@@ -73,6 +73,7 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
   const [securityQuestion2, setSecurityQuestion2] = useState<string>(user.securityQuestion2 || '');
   const [securityAnswer2, setSecurityAnswer2] = useState<string>(user.securityAnswer2 || '');
   const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState<string>('');
   const [isOptimizing, setIsOptimizing] = useState<boolean>(false);
   const [hasOptimized, setHasOptimized] = useState<boolean>(false);
   const [originalBio, setOriginalBio] = useState<string>(user.bio);
@@ -124,6 +125,8 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
 
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
+    if (success) return; // Prevent double submission when success message is shown
+
     const isNameValid = firstName.trim() !== '' && lastName.trim() !== '';
     if (!isNameValid || !phone || !address) {
       setError('Шаардлагатай мэдээллүүдийг бүрэн бөглөнө үү. (Овог, Нэр, Утас, Хаяг)');
@@ -132,6 +135,16 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
 
     if (securityQuestion1 && securityQuestion2 && securityQuestion1 === securityQuestion2) {
       setError('Аюулгүй байдлын хоёр асуулт хоорондоо ижил байж болохгүй. Өөр асуултууд сонгоно уу.');
+      return;
+    }
+
+    // Validation for matching security questions and answers
+    if ((securityQuestion1 && !securityAnswer1.trim()) || (!securityQuestion1 && securityAnswer1.trim())) {
+      setError('Аюулгүй байдлын асуулт 1 болон түүний хариултыг хоёуланг нь бөглөх шаардлагатай.');
+      return;
+    }
+    if ((securityQuestion2 && !securityAnswer2.trim()) || (!securityQuestion2 && securityAnswer2.trim())) {
+      setError('Аюулгүй байдлын асуулт 2 болон түүний хариултыг хоёуланг нь бөглөх шаардлагатай.');
       return;
     }
 
@@ -161,7 +174,24 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
       // Save database state directly for this user document
       await saveSingleUser(updated);
 
-      onSave(updated);
+      // Determine what was updated to show a specific message
+      const isSecurityUpdated = 
+        (securityQuestion1 !== (user.securityQuestion1 || '') || 
+         securityAnswer1 !== (user.securityAnswer1 || '') ||
+         securityQuestion2 !== (user.securityQuestion2 || '') || 
+         securityAnswer2 !== (user.securityAnswer2 || ''));
+      
+      if (isSecurityUpdated && securityQuestion1 && securityAnswer1 && securityQuestion2 && securityAnswer2) {
+        setSuccess('Аюулгүй байдлын асуултууд амжилттай бүртгэгдлээ!');
+      } else {
+        setSuccess('Мэдээлэл амжилттай шинэчлэгдлээ!');
+      }
+      
+      setError('');
+      
+      setTimeout(() => {
+        onSave(updated);
+      }, 2000);
     } catch (err) {
       setError('Мэдээллийг хадгалахад алдаа гарлаа.');
     }
@@ -184,8 +214,15 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
         {/* Form */}
         <form onSubmit={handleSave} className="p-6 space-y-5">
           {error && (
-            <div className="bg-rose-500/10 border border-rose-500 text-rose-300 px-4 py-2 rounded text-xs">
+            <div className="bg-rose-500/10 border border-rose-500 text-rose-300 px-4 py-2 rounded text-xs animate-fade-in">
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="bg-emerald-500/10 border border-emerald-500 text-emerald-300 px-4 py-2 rounded text-xs flex items-center space-x-2 animate-fade-in">
+              <Check className="w-4 h-4 shrink-0" />
+              <span>{success}</span>
             </div>
           )}
 
@@ -565,18 +602,20 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
             <button
               id="cancel-profile-edit-btn"
               type="button"
+              disabled={!!success}
               onClick={onClose}
-              className="flex-1 py-1.5 px-4 border border-slate-700 text-gray-300 text-xs font-medium rounded hover:bg-slate-850 transition-colors cursor-pointer"
+              className="flex-1 py-1.5 px-4 border border-slate-700 text-gray-300 text-xs font-medium rounded hover:bg-slate-850 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Буцах
             </button>
             <button
               id="submit-profile-edit-btn"
               type="submit"
-              className="flex-1 py-1.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded transition-colors flex items-center justify-center space-x-2 cursor-pointer"
+              disabled={!!success}
+              className="flex-1 py-1.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded transition-colors flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save className="w-4 h-4" />
-              <span>Шинэчлэх</span>
+              {success ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+              <span>{success ? 'Шинэчлэгдлээ' : 'Шинэчлэх'}</span>
             </button>
           </div>
 

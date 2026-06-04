@@ -238,43 +238,67 @@ export default function JobBoard({
     });
   };
 
-  // Actions
+  // Actions with optimistic UI updates for instantaneous responsiveness
   const handleMarkAsRead = async (id: string) => {
+    // Optimistically mark as read in local state
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
     try {
       await markNotificationAsRead(id);
-      await refreshNotifications();
+      const freshNotifs = await getNotifications(currentUser.id);
+      setNotifications(freshNotifs);
     } catch (err) {
       console.error(err);
+      // Rollback on failure
+      const freshNotifs = await getNotifications(currentUser.id);
+      setNotifications(freshNotifs);
       addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
     }
   };
 
   const handleMarkAllAsRead = async () => {
+    // Optimistically mark all as read in local state
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     try {
       await markAllNotificationsAsRead(currentUser.id);
-      await refreshNotifications();
+      const freshNotifs = await getNotifications(currentUser.id);
+      setNotifications(freshNotifs);
     } catch (err) {
       console.error(err);
+      // Rollback on failure
+      const freshNotifs = await getNotifications(currentUser.id);
+      setNotifications(freshNotifs);
       addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
     }
   };
 
   const handleDeleteNotification = async (id: string) => {
+    // Optimistically remove from local state
+    setNotifications(prev => prev.filter(n => n.id !== id));
     try {
       await deleteNotification(id);
-      await refreshNotifications();
+      const freshNotifs = await getNotifications(currentUser.id);
+      setNotifications(freshNotifs);
     } catch (err) {
       console.error(err);
+      // Rollback on failure
+      const freshNotifs = await getNotifications(currentUser.id);
+      setNotifications(freshNotifs);
       addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
     }
   };
 
   const handleDeleteAllNotifications = async () => {
+    // Optimistically clear all in local state
+    setNotifications([]);
     try {
       await deleteAllNotifications(currentUser.id);
-      await refreshNotifications();
+      const freshNotifs = await getNotifications(currentUser.id);
+      setNotifications(freshNotifs);
     } catch (err) {
       console.error(err);
+      // Rollback on failure
+      const freshNotifs = await getNotifications(currentUser.id);
+      setNotifications(freshNotifs);
       addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
     }
   };
@@ -359,8 +383,7 @@ export default function JobBoard({
       
       {/* Dynamic Upper Banner alerting users about historical accountability */}
       <div className="bg-amber-500 text-slate-950 px-4 py-2.5 text-center text-xs font-semibold flex items-center justify-center space-x-2 border-b border-amber-600">
-        <AlertTriangle className="w-4 h-4 text-slate-950 shrink-0" />
-        <span>⚠️ АНХААРУУЛГА: Ноцтой зөрчил гаргасан (Архидан согтуурсан, шалтгаангүй ажил хаясан, техникт санаатай хохирол учруулсан, эсвэл цалин хөлс олгоогүй) хэрэглэгчдийн мэдээлэл Хар дансанд (Blacklist) бүртгэгдэж, дахин ажиллах эрх бүрэн хаагдахыг анхаарна уу.</span>
+        <span>АНХААРУУЛГА: Ажлын хариуцлага алдаж шалтгаангүй ажил хаясан, техникт санаатай хохирол учруулсан, ажлын байранд архидан согтуурсан, цалин хөлс олгоогүй гэх мэт ноцтой зөрчил гаргасан тохиолдолд хэрэглэгчийн мэдээллийг хар дансанд бүртгэж, цаашид системийг ашиглах боломжгүй болох эрсдэлтэйг анхаарна уу.</span>
       </div>
 
       {/* Nav bar */}
@@ -424,7 +447,7 @@ export default function JobBoard({
             <button
               type="button"
               onClick={toggleNotificationsMenu}
-              className="relative p-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full transition-colors cursor-pointer text-slate-300 hover:text-white"
+              className="relative p-2 bg-slate-800 hover:bg-slate-700/80 active:scale-95 border border-slate-700 hover:border-slate-600 rounded-full transition-all duration-200 cursor-pointer text-slate-350 hover:text-white shadow-inner focus:outline-none"
             >
               <Bell className="w-4 h-4" />
               {unreadNotifs.length > 0 && (
@@ -438,55 +461,59 @@ export default function JobBoard({
               <div
                 id="notifications-dropdown-menu"
                 ref={notificationsMenuRef}
-                className="absolute right-0 mt-2.5 w-80 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 py-1.5 animate-fade-in"
+                className="absolute right-0 mt-2.5 w-[360px] bg-slate-900/95 backdrop-blur-md border border-slate-700/70 rounded-2xl shadow-2xl z-50 py-2 animate-fade-in"
               >
-                <div className="px-4 py-2 border-b border-slate-800 flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-300 font-mono">Системийн мэдэгдлүүд</span>
+                <div className="px-4 py-2.5 border-b border-slate-800 flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-300 tracking-wide uppercase font-sans">Системийн мэдэгдлүүд</span>
                   {unreadNotifs.length > 0 && (
                     <button
                       type="button"
                       onClick={handleMarkAllAsRead}
-                      className="text-[10px] text-emerald-400 hover:underline font-semibold cursor-pointer"
+                      className="text-[10px] bg-emerald-950/40 hover:bg-emerald-900/50 text-emerald-400 border border-emerald-850/40 px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer"
                     >
                       Бүгдийг уншсанаар тэмдэглэх
                     </button>
                   )}
                 </div>
 
-                <div className="max-h-64 overflow-y-auto divide-y divide-slate-850">
+                <div className="max-h-80 overflow-y-auto divide-y divide-slate-800/60 scrollbar-thin">
                   {notifications.length === 0 ? (
-                    <p className="p-6 text-center text-xs text-slate-500 italic">Мэдэгдэл одоогоор байхгүй байна.</p>
+                    <div className="py-10 px-4 text-center flex flex-col items-center justify-center space-y-2">
+                      <CheckCircle className="w-8 h-8 text-slate-600 animate-pulse-soft" />
+                      <p className="text-xs text-slate-500 italic">Мэдэгдэл одоогоор байхгүй байна.</p>
+                    </div>
                   ) : (
                     notifications.map((notif) => (
                       <div
                         key={notif.id}
-                        className={`p-3 text-left transition-colors relative flex items-start space-x-2.5 ${
-                          notif.isRead ? 'bg-transparent/20' : 'bg-slate-850/50 border-l-2 border-emerald-500'
+                        onClick={() => {
+                          if (!notif.isRead) {
+                            handleMarkAsRead(notif.id);
+                          }
+                        }}
+                        className={`p-3.5 text-left transition-all duration-300 relative flex items-start space-x-3 hover:bg-slate-850/20 ${
+                          !notif.isRead ? 'cursor-pointer' : ''
+                        } ${
+                          notif.isRead ? 'bg-transparent opacity-70 hover:opacity-100' : 'bg-slate-850/40 border-l-3 border-emerald-500'
                         }`}
                       >
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-start gap-1">
-                            <h5 className="text-xs font-bold text-white leading-snug">{notif.title}</h5>
+                            <h5 className="text-xs font-bold text-white leading-tight font-sans">{notif.title}</h5>
                             <span className="text-[8px] text-slate-500 font-mono shrink-0">{notif.createdAt}</span>
                           </div>
-                          <p className="text-[10.5px] text-slate-300 leading-normal mt-0.5">{notif.message}</p>
+                          <p className="text-[11px] text-slate-300 leading-relaxed mt-1 font-sans">{notif.message}</p>
                           
-                          <div className="flex items-center space-x-3.5 mt-2">
-                            {!notif.isRead && (
-                              <button
-                                type="button"
-                                onClick={() => handleMarkAsRead(notif.id)}
-                                className="text-[9px] text-emerald-400 hover:underline font-medium cursor-pointer"
-                              >
-                                Уншсан гэж тэмдэглэх
-                              </button>
-                            )}
+                          <div className="flex items-center space-x-2 mt-2.5">
                             <button
                               type="button"
-                              onClick={() => handleDeleteNotification(notif.id)}
-                              className="text-[9px] text-rose-400 hover:underline font-medium cursor-pointer flex items-center space-x-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteNotification(notif.id);
+                              }}
+                              className="bg-rose-950/30 hover:bg-rose-900/50 active:scale-95 text-rose-455 border border-rose-800/30 px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center space-x-1 cursor-pointer"
                             >
-                              <Trash2 className="w-2.5 h-2.5" />
+                              <Trash2 className="w-3 h-3" />
                               <span>Устгах</span>
                             </button>
                           </div>
@@ -501,10 +528,10 @@ export default function JobBoard({
                     <button
                       type="button"
                       onClick={handleDeleteAllNotifications}
-                      className="text-[10px] text-rose-400 hover:underline font-bold font-mono flex items-center justify-center space-x-1 mx-auto cursor-pointer"
+                      className="w-full bg-rose-950/20 hover:bg-rose-900/40 active:scale-98 border border-rose-800/30 hover:border-rose-700/50 text-rose-400 hover:text-white py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer font-sans"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                      <span>МЭДЭГДЛҮҮДИЙГ БҮГДИЙГ УСТГАХ</span>
+                      <span>БҮХ МЭДЭГДЛИЙГ УСТГАХ</span>
                     </button>
                   </div>
                 )}
@@ -608,11 +635,13 @@ export default function JobBoard({
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
               <span className="text-[10px] text-gray-500 uppercase block font-mono">Гэрээт Зарууд</span>
-              <span className="text-xl font-black text-white">{jobs.length} идэвхтэй</span>
+              <span className="text-xl font-black text-white">{jobs.filter(j => j.status === 'open' || j.status === 'in_progress').length} идэвхтэй</span>
             </div>
             <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
               <span className="text-[10px] text-gray-500 uppercase block font-mono">Бүртгэлтэй Жолооч</span>
-              <span className="text-xl font-black text-emerald-400">{users.length > 0 ? users.filter(u => u.type === 'operator').length : '...'} оператор</span>
+              <span className="text-xl font-black text-emerald-400">
+                {users.length > 0 ? users.filter(u => u.type === 'operator').length : '...'} оператор
+              </span>
             </div>
             <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
               <span className="text-[10px] text-gray-500 uppercase block font-mono">Аюулгүй ажиллагаа</span>

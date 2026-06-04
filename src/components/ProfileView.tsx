@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User, Review, JobHistoryItem } from '../types';
-import { getReviews, getJobHistory, saveSingleUser } from '../lib/db';
+import { getReviews, getJobHistory, saveSingleUser, getSingleUser } from '../lib/db';
 import { Star, ShieldAlert, Award, Phone, Mail, MapPin, Calendar, CheckCircle, Clock } from 'lucide-react';
 import ProfileEditModal from './ProfileEditModal';
 
@@ -18,6 +18,7 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
   // Asynchronous state for reviews and history
   const [displayReviews, setDisplayReviews] = useState<Review[]>([]);
   const [historyItems, setHistoryItems] = useState<JobHistoryItem[]>([]);
+  const [success, setSuccess] = useState<string>('');
 
   useEffect(() => {
     setProfileUser(user);
@@ -25,6 +26,16 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
 
   useEffect(() => {
     const loadProfileData = async () => {
+      // Fetch fresh user data from Firestore to ensure privacy settings are absolute and up-to-date
+      try {
+        const freshUser = await getSingleUser(profileUser.id);
+        if (freshUser) {
+          setProfileUser(freshUser);
+        }
+      } catch (err) {
+        console.error('Error fetching fresh profile user:', err);
+      }
+
       const allReviews = await getReviews();
       const allHistory = await getJobHistory();
 
@@ -69,15 +80,36 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
       [fieldName]: !currentVal
     };
     
-    // Save database state
+    // 1. Optimistically update local and global state immediately for instant 60FPS UI toggle
+    setProfileUser(updated);
+    if (onUpdateCurrentUser) {
+      onUpdateCurrentUser(updated);
+    }
+
+    let fieldStr = '';
+    if (fieldName === 'emailVisible') fieldStr = 'Имэйл хаяг';
+    else if (fieldName === 'phoneVisible') fieldStr = 'Утасны дугаар';
+    else if (fieldName === 'historyVisible') fieldStr = 'Ажлын түүх';
+    else if (fieldName === 'reviewsVisible') fieldStr = 'Сэтгэгдэл, үнэлгээ';
+
+    const actionStr = !currentVal ? 'харагддаг боллоо' : 'нууцлагдлаа';
+    setSuccess(`${fieldStr} амжилттай ${actionStr}!`);
+    setTimeout(() => setSuccess(''), 3000);
+
+    // 2. Perform network write asynchronously in background
     try {
       await saveSingleUser(updated);
-      setProfileUser(updated);
-      if (onUpdateCurrentUser) {
-        onUpdateCurrentUser(updated);
-      }
     } catch (err) {
       console.error('Error toggling visibility:', err);
+      // Revert state if save fails
+      const reverted: User = {
+        ...profileUser,
+        [fieldName]: currentVal
+      };
+      setProfileUser(reverted);
+      if (onUpdateCurrentUser) {
+        onUpdateCurrentUser(reverted);
+      }
       alert('Тохиргоо хадгалахад алдаа гарлаа. Дахин оролдоно уу.');
     }
   };
@@ -104,6 +136,13 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
           </button>
         )}
       </div>
+
+      {success && (
+        <div className="fixed top-6 right-6 max-w-sm bg-slate-900/95 border border-emerald-500/80 text-emerald-300 p-4 rounded-xl text-xs flex items-center space-x-2.5 animate-fade-in text-left z-50 backdrop-blur-md shadow-2xl">
+          <CheckCircle className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+          <span>{success}</span>
+        </div>
+      )}
 
       {/* Security incompleteness alert banner */}
       {isOwnProfile && !(profileUser.securityQuestion1 && profileUser.securityAnswer1 && profileUser.securityQuestion2 && profileUser.securityAnswer2) && (
@@ -195,13 +234,13 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                     <button
                       type="button"
                       onClick={() => toggleFieldVisibility('emailVisible')}
-                      className={`relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none ${
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
                         profileUser.emailVisible !== false ? 'bg-emerald-600' : 'bg-rose-600'
                       }`}
                     >
                       <span
-                        className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white transition duration-200 mt-0.5 ml-0.5 ${
-                          profileUser.emailVisible !== false ? 'translate-x-3.5' : 'translate-x-0'
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out mt-0.5 ml-0.5 ${
+                          profileUser.emailVisible !== false ? 'translate-x-4' : 'translate-x-0'
                         }`}
                       />
                     </button>
@@ -213,13 +252,13 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                     <button
                       type="button"
                       onClick={() => toggleFieldVisibility('phoneVisible')}
-                      className={`relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none ${
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
                         profileUser.phoneVisible !== false ? 'bg-emerald-600' : 'bg-rose-600'
                       }`}
                     >
                       <span
-                        className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white transition duration-200 mt-0.5 ml-0.5 ${
-                          profileUser.phoneVisible !== false ? 'translate-x-3.5' : 'translate-x-0'
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out mt-0.5 ml-0.5 ${
+                          profileUser.phoneVisible !== false ? 'translate-x-4' : 'translate-x-0'
                         }`}
                       />
                     </button>
@@ -231,13 +270,13 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                     <button
                       type="button"
                       onClick={() => toggleFieldVisibility('historyVisible')}
-                      className={`relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none ${
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
                         profileUser.historyVisible !== false ? 'bg-emerald-600' : 'bg-rose-600'
                       }`}
                     >
                       <span
-                        className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white transition duration-200 mt-0.5 ml-0.5 ${
-                          profileUser.historyVisible !== false ? 'translate-x-3.5' : 'translate-x-0'
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out mt-0.5 ml-0.5 ${
+                          profileUser.historyVisible !== false ? 'translate-x-4' : 'translate-x-0'
                         }`}
                       />
                     </button>
@@ -249,13 +288,13 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                     <button
                       type="button"
                       onClick={() => toggleFieldVisibility('reviewsVisible')}
-                      className={`relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-none ${
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
                         profileUser.reviewsVisible !== false ? 'bg-emerald-600' : 'bg-rose-600'
                       }`}
                     >
                       <span
-                        className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white transition duration-200 mt-0.5 ml-0.5 ${
-                          profileUser.reviewsVisible !== false ? 'translate-x-3.5' : 'translate-x-0'
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out mt-0.5 ml-0.5 ${
+                          profileUser.reviewsVisible !== false ? 'translate-x-4' : 'translate-x-0'
                         }`}
                       />
                     </button>
@@ -270,6 +309,9 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                   <Mail className="w-4 h-4 text-emerald-450 shrink-0" />
                   <span className="font-semibold text-slate-500">Имэйл хаяг:</span>
                   <span className="select-all font-sans text-white">{profileUser.email ? profileUser.email : 'бөглөөгүй'}</span>
+                  {isOwnProfile && profileUser.emailVisible === false && (
+                    <span className="text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded font-medium ml-2 shrink-0">Бусдад харагдахгүй</span>
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center space-x-2 text-slate-500">
@@ -284,6 +326,9 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                   <Phone className="w-4 h-4 text-emerald-450 shrink-0" />
                   <span className="font-semibold text-slate-500">Утас:</span>
                   <span className="select-all font-mono font-bold text-emerald-400 text-neon-emerald">{profileUser.phone}</span>
+                  {isOwnProfile && profileUser.phoneVisible === false && (
+                    <span className="text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded font-medium ml-2 shrink-0">Бусдад харагдахгүй</span>
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center space-x-2 text-slate-500">
@@ -345,6 +390,9 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-850 pb-2.5 flex items-center space-x-2">
             <CheckCircle className="w-4.5 h-4.5 text-emerald-450 drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
             <span>Баталгаажсан Ажлын Түүх ({profileUser.historyVisible !== false || isOwnProfile ? historyItems.length : 0})</span>
+            {isOwnProfile && profileUser.historyVisible === false && (
+              <span className="text-[9px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded font-normal normal-case ml-2 shrink-0">Бусдад харагдахгүй</span>
+            )}
           </h3>
 
           {(profileUser.historyVisible !== false || isOwnProfile) ? (
@@ -391,6 +439,9 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-850 pb-2.5 flex items-center space-x-2">
             <Star className="w-4.5 h-4.5 text-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.2)]" />
             <span>Хамтран ажиллагсдын сэтгэгдэл ({profileUser.reviewsVisible !== false || isOwnProfile ? displayReviews.length : 0})</span>
+            {isOwnProfile && profileUser.reviewsVisible === false && (
+              <span className="text-[9px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded font-normal normal-case ml-2 shrink-0">Бусдад харагдахгүй</span>
+            )}
           </h3>
 
           {(profileUser.reviewsVisible !== false || isOwnProfile) ? (

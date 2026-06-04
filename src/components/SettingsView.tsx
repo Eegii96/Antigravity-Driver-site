@@ -196,14 +196,13 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                     placeholder="******"
                     className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-900 text-white text-xs focus:ring-1 focus:ring-emerald-550 focus:outline-none"
                   />
-                  <button
+                  <span
                     id="toggle-pass-visibility-1"
-                    type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+                  </span>
                 </div>
               </div>
 

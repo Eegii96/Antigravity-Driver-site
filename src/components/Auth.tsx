@@ -2,6 +2,7 @@ import { useState, FormEvent, ChangeEvent } from 'react';
 import { User as UserIcon, Phone, Mail, MapPin, Truck, Check, Wrench, Key, AlertCircle, ArrowLeft, Sparkles, X, Eye, EyeOff, FileText, Lock } from 'lucide-react';
 import { loginUser, registerUser, saveSingleUser } from '../lib/db';
 import { User, UserType } from '../types';
+
 import { optimizeBio } from '../lib/gemini';
 import { db, auth } from '../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
@@ -45,7 +46,7 @@ export default function Auth({ onSuccess }: AuthProps) {
   const [experienceYears, setExperienceYears] = useState<number | ''>(3);
   const [selectedMachines, setSelectedMachines] = useState<string[]>([]);
   const [customRegMachine, setCustomRegMachine] = useState<string>('');
-  
+
   const [regPassword, setRegPassword] = useState<string>('');
   const [regConfirmPassword, setRegConfirmPassword] = useState<string>('');
   const [showRegPassword, setShowRegPassword] = useState<boolean>(false);
@@ -113,7 +114,7 @@ export default function Auth({ onSuccess }: AuthProps) {
       setError('Нууц кодыг оруулна уу.');
       return;
     }
-    
+
     setError('');
     setSuccessMsg('Нэвтэрч байна, түр хүлээнэ үү...');
     setIsSubmitting(true);
@@ -238,7 +239,7 @@ export default function Auth({ onSuccess }: AuthProps) {
       } else {
         const q = query(collection(db, 'users'), where('phone', '==', inputVal));
         snapshot = await getDocs(q);
-        
+
         if (snapshot.empty && inputVal.startsWith('+976')) {
           const localPhone = inputVal.replace('+976', '');
           const qLocal = query(collection(db, 'users'), where('phone', '==', localPhone));
@@ -262,10 +263,10 @@ export default function Auth({ onSuccess }: AuthProps) {
         return;
       }
 
-      const hasSecurityQuestions = 
-        matched.securityQuestion1 && 
-        matched.securityAnswer1 && 
-        matched.securityQuestion2 && 
+      const hasSecurityQuestions =
+        matched.securityQuestion1 &&
+        matched.securityAnswer1 &&
+        matched.securityQuestion2 &&
         matched.securityAnswer2;
 
       if (!hasSecurityQuestions) {
@@ -352,7 +353,7 @@ export default function Auth({ onSuccess }: AuthProps) {
       await saveSingleUser(matchedUserObj);
 
       setSuccessMsg('Нууц код амжилттай сэргээгдлээ! Та шинэ нууц кодоор нэвтэрнэ үү. 🔑');
-      
+
       // Reset states
       setForgotInput('');
       setSecurityQ1('');
@@ -421,26 +422,26 @@ export default function Auth({ onSuccess }: AuthProps) {
               <circle cx="11" cy="50" r="2" fill="currentColor" />
               <circle cx="24" cy="50" r="2" fill="currentColor" />
               <circle cx="37" cy="50" r="2" fill="currentColor" />
-              
+
               {/* Rotating Cabin base structure */}
               <path d="M10 40h28v6H10z" fill="currentColor" fillOpacity="0.2" />
               <path d="M14 26h18v14H14z" fill="currentColor" fillOpacity="0.1" />
               <path d="M16 26h10l4 8H14l2-8z" />
-              
+
               {/* Boom (Main arm) - extending up and right */}
               <path d="M28 34 L44 14" strokeWidth="4.5" className="text-cyan-400" />
-              
+
               {/* Dipper / Stick (Outer arm) - pivoting down from boom tip */}
               <path d="M44 14 L52 30" strokeWidth="3.5" className="text-amber-400" />
-              
+
               {/* Bucket / Scoop - pivoting at the end of the stick */}
               <path d="M52 30 L46 36 L39 33 Z" fill="currentColor" fillOpacity="0.3" strokeWidth="2.5" className="text-amber-500" />
-              
+
               {/* Joint Pins */}
               <circle cx="28" cy="34" r="2" className="fill-white stroke-none" />
               <circle cx="44" cy="14" r="2" className="fill-white stroke-none" />
               <circle cx="52" cy="30" r="2" className="fill-white stroke-none" />
-              
+
               {/* Hydraulic lines */}
               <path d="M26 30 Q36 22 41 16" stroke="currentColor" strokeWidth="1" opacity="0.6" />
             </svg>
@@ -464,31 +465,29 @@ export default function Auth({ onSuccess }: AuthProps) {
             <div className="flex border-b border-slate-800 mb-6 pb-1">
               <button
                 id="switch-login-tab"
-                onClick={() => { 
-                  setIsLogin(true); 
-                  setError(''); 
+                onClick={() => {
+                  setIsLogin(true);
+                  setError('');
                   setSuccessMsg('');
                 }}
-                className={`flex-1 text-center py-2.5 font-medium text-sm transition-all border-b-2 cursor-pointer ${
-                  isLogin
+                className={`flex-1 text-center py-2.5 font-medium text-sm transition-all border-b-2 cursor-pointer ${isLogin
                     ? 'text-emerald-400 border-emerald-400 font-semibold text-neon-emerald'
                     : 'text-slate-400 border-transparent hover:text-white'
-                }`}
+                  }`}
               >
                 Нэвтрэх хэсэг
               </button>
               <button
                 id="switch-register-tab"
-                onClick={() => { 
-                  setIsLogin(false); 
-                  setError(''); 
+                onClick={() => {
+                  setIsLogin(false);
+                  setError('');
                   setSuccessMsg('');
                 }}
-                className={`flex-1 text-center py-2.5 font-medium text-sm transition-all border-b-2 cursor-pointer ${
-                  !isLogin
+                className={`flex-1 text-center py-2.5 font-medium text-sm transition-all border-b-2 cursor-pointer ${!isLogin
                     ? 'text-emerald-400 border-emerald-400 font-semibold text-neon-emerald'
                     : 'text-slate-400 border-transparent hover:text-white'
-                }`}
+                  }`}
               >
                 Бүртгүүлэх хэсэг
               </button>
@@ -593,13 +592,12 @@ export default function Auth({ onSuccess }: AuthProps) {
                             placeholder=""
                             className="block w-full pl-3 pr-10 py-2 border border-slate-600 rounded bg-slate-900/50 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none font-sans"
                           />
-                          <button
-                            type="button"
+                          <span
                             onClick={() => setShowForgotNewPassword(!showForgotNewPassword)}
                             className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white cursor-pointer"
                           >
                             {showForgotNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          </button>
+                          </span>
                         </div>
                         {forgotNewPassword !== '' && forgotNewPassword.length < 8 && (
                           <p className="text-[10px] text-rose-400 mt-1 font-sans flex items-center space-x-1">
@@ -629,13 +627,12 @@ export default function Auth({ onSuccess }: AuthProps) {
                             placeholder=""
                             className="block w-full pl-3 pr-10 py-2 border border-slate-600 rounded bg-slate-900/50 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none font-sans"
                           />
-                          <button
-                            type="button"
+                          <span
                             onClick={() => setShowForgotConfirmNewPassword(!showForgotConfirmNewPassword)}
                             className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white cursor-pointer"
                           >
                             {showForgotConfirmNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          </button>
+                          </span>
                         </div>
                         {forgotConfirmNewPassword !== '' && forgotNewPassword !== forgotConfirmNewPassword && (
                           <p className="text-[10px] text-rose-400 mt-1 font-sans flex items-center space-x-1">
@@ -710,14 +707,13 @@ export default function Auth({ onSuccess }: AuthProps) {
                       placeholder=""
                       className="block w-full pl-10 pr-10 py-2.5 glass-input text-sm text-white placeholder-slate-600 focus:outline-none"
                     />
-                    <button
+                    <span
                       id="toggle-login-pass-visibility"
-                      type="button"
                       onClick={() => setShowLoginPassword(!showLoginPassword)}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white cursor-pointer"
                     >
                       {showLoginPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
-                    </button>
+                    </span>
                   </div>
                 </div>
 
@@ -782,11 +778,10 @@ export default function Auth({ onSuccess }: AuthProps) {
                       setOriginalBio('');
                       setHasOptimized(false);
                     }}
-                    className={`flex items-center justify-center space-x-2 py-2.5 px-3 border rounded text-xs transition-colors cursor-pointer ${
-                      userType === 'operator'
+                    className={`flex items-center justify-center space-x-2 py-2.5 px-3 border rounded text-xs transition-colors cursor-pointer ${userType === 'operator'
                         ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400 font-semibold'
                         : 'border-slate-600 hover:border-slate-500 text-gray-400'
-                    }`}
+                      }`}
                   >
                     <Truck className="w-4 h-4" />
                     <span>Би Жолооч / Оператор</span>
@@ -801,11 +796,10 @@ export default function Auth({ onSuccess }: AuthProps) {
                       setOriginalBio('');
                       setHasOptimized(false);
                     }}
-                    className={`flex items-center justify-center space-x-2 py-2.5 px-3 border rounded text-xs transition-colors cursor-pointer ${
-                      userType === 'employer'
+                    className={`flex items-center justify-center space-x-2 py-2.5 px-3 border rounded text-xs transition-colors cursor-pointer ${userType === 'employer'
                         ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400 font-semibold'
                         : 'border-slate-600 hover:border-slate-500 text-gray-400'
-                    }`}
+                      }`}
                   >
                     <UserIcon className="w-4 h-4" />
                     <span>Би Ажил олгогч / Захиалагч</span>
@@ -918,7 +912,7 @@ export default function Auth({ onSuccess }: AuthProps) {
                   </div>
                 </div>
 
-                 <div>
+                <div>
                   <label className="block text-xs font-medium text-gray-300 mb-1" htmlFor="reg-password">
                     Нэвтрэх нууц код
                   </label>
@@ -932,14 +926,13 @@ export default function Auth({ onSuccess }: AuthProps) {
                       placeholder=""
                       className="block w-full pl-3 pr-10 py-1.5 border border-slate-600 rounded bg-slate-900/50 text-white placeholder-gray-500 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 font-sans"
                     />
-                    <button
+                    <span
                       id="toggle-reg-pass-visibility"
-                      type="button"
                       onClick={() => setShowRegPassword(!showRegPassword)}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white cursor-pointer"
                     >
                       {showRegPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
-                    </button>
+                    </span>
                   </div>
                   {regPassword !== '' && regPassword.length < 8 && (
                     <p className="text-[10px] text-rose-400 mt-1 font-sans flex items-center space-x-1">
@@ -969,14 +962,13 @@ export default function Auth({ onSuccess }: AuthProps) {
                       placeholder=""
                       className="block w-full pl-3 pr-10 py-1.5 border border-slate-600 rounded bg-slate-900/50 text-white placeholder-gray-500 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 font-sans"
                     />
-                    <button
+                    <span
                       id="toggle-reg-confirm-pass-visibility"
-                      type="button"
                       onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white cursor-pointer"
                     >
                       {showRegConfirmPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
-                    </button>
+                    </span>
                   </div>
                   {regConfirmPassword !== '' && regPassword !== regConfirmPassword && (
                     <p className="text-[10px] text-rose-400 mt-1 font-sans flex items-center space-x-1">
@@ -989,42 +981,39 @@ export default function Auth({ onSuccess }: AuthProps) {
                 {/* Live Password Checklist */}
                 <div className="bg-slate-950/40 p-3 rounded-lg border border-slate-800 space-y-1.5 font-sans">
                   <span className="text-[10px] font-semibold text-gray-400 block mb-1">Нууц үгэнд тавих шаардлага:</span>
-                  
+
                   {/* Rule 1: Min length 8 */}
                   <div className="flex items-center space-x-2 text-[10.5px]">
-                    <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${
-                      regPassword.length >= 8 
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-550/30' 
+                    <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${regPassword.length >= 8
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-550/30'
                         : 'bg-rose-500/10 text-rose-400 border-rose-550/30'
-                    }`}>
+                      }`}>
                       {regPassword.length >= 8 ? <Check className="w-2.5 h-2.5" /> : <X className="w-2.5 h-2.5" />}
                     </div>
                     <span className={regPassword.length >= 8 ? 'text-emerald-400 font-medium' : 'text-slate-400'}>
                       Хамгийн багадаа 8 тэмдэгт (Одоогийн урт: {regPassword.length})
                     </span>
                   </div>
-                  
+
                   {/* Rule 2: Special character */}
                   <div className="flex items-center space-x-2 text-[10.5px]">
-                    <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${
-                      /[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) 
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-550/30' 
+                    <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword)
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-550/30'
                         : 'bg-rose-500/10 text-rose-400 border-rose-550/30'
-                    }`}>
+                      }`}>
                       {/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) ? <Check className="w-2.5 h-2.5" /> : <X className="w-2.5 h-2.5" />}
                     </div>
                     <span className={/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) ? 'text-emerald-400 font-medium' : 'text-slate-400'}>
                       Дор хаяж нэг тусгай тэмдэгт (!@#$%^&* гэх мэт)
                     </span>
                   </div>
-                  
+
                   {/* Rule 3: Passwords match */}
                   <div className="flex items-center space-x-2 text-[10.5px]">
-                    <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${
-                      (regPassword === regConfirmPassword && regConfirmPassword !== '') 
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-550/30' 
+                    <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${(regPassword === regConfirmPassword && regConfirmPassword !== '')
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-550/30'
                         : 'bg-rose-500/10 text-rose-400 border-rose-550/30'
-                    }`}>
+                      }`}>
                       {(regPassword === regConfirmPassword && regConfirmPassword !== '') ? <Check className="w-2.5 h-2.5" /> : <X className="w-2.5 h-2.5" />}
                     </div>
                     <span className={(regPassword === regConfirmPassword && regConfirmPassword !== '') ? 'text-emerald-400 font-medium' : 'text-slate-400'}>
@@ -1045,9 +1034,8 @@ export default function Auth({ onSuccess }: AuthProps) {
                         key={idx}
                         type="button"
                         onClick={() => { setSelectedAvatar(avatar); }}
-                        className={`relative rounded-full overflow-hidden w-12 h-12 border-2 transition-colors cursor-pointer ${
-                          selectedAvatar === avatar ? 'border-emerald-500' : 'border-transparent'
-                        }`}
+                        className={`relative rounded-full overflow-hidden w-12 h-12 border-2 transition-colors cursor-pointer ${selectedAvatar === avatar ? 'border-emerald-500' : 'border-transparent'
+                          }`}
                       >
                         <img src={avatar} alt={`Avatar Preset ${idx + 1}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                         {selectedAvatar === avatar && (
@@ -1152,11 +1140,10 @@ export default function Auth({ onSuccess }: AuthProps) {
                           type="button"
                           key={id}
                           onClick={() => toggleMachine(item)}
-                          className={`flex items-center space-x-1.5 py-1 px-2.5 rounded transition-colors text-left border cursor-pointer ${
-                            selectedMachines.includes(item)
+                          className={`flex items-center space-x-1.5 py-1 px-2.5 rounded transition-colors text-left border cursor-pointer ${selectedMachines.includes(item)
                               ? 'border-emerald-500 bg-emerald-500/10 text-emerald-300'
                               : 'border-slate-700/80 bg-slate-900/20 text-gray-400 hover:border-slate-600'
-                          }`}
+                            }`}
                         >
                           <span className="text-xs">{item}</span>
                         </button>
@@ -1262,7 +1249,7 @@ export default function Auth({ onSuccess }: AuthProps) {
 
               {/* Terms and Privacy Policy Consent checkbox */}
               <div className="flex items-start space-x-2.5 bg-slate-950/40 p-3.5 rounded-lg border border-slate-800/80 mt-4 animate-fade-in">
-                <input 
+                <input
                   id="agree-terms-checkbox"
                   type="checkbox"
                   checked={isAgreedToTerms}
@@ -1283,11 +1270,10 @@ export default function Auth({ onSuccess }: AuthProps) {
                   id="submit-register-btn"
                   type="submit"
                   disabled={isSubmitting || firstName.trim() === '' || lastName.trim() === '' || (email.trim() !== '' && !email.includes('@')) || phone.trim() === '' || phone.trim().length < 8 || address.trim() === '' || regPassword.length < 8 || !/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) || regPassword !== regConfirmPassword || !isAgreedToTerms}
-                  className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded text-white font-medium text-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-                    !isSubmitting && firstName.trim() !== '' && lastName.trim() !== '' && (email.trim() === '' || email.includes('@')) && phone.trim() !== '' && phone.trim().length >= 8 && address.trim() !== '' && regPassword.length >= 8 && /[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) && regPassword === regConfirmPassword && isAgreedToTerms
+                  className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded text-white font-medium text-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${!isSubmitting && firstName.trim() !== '' && lastName.trim() !== '' && (email.trim() === '' || email.includes('@')) && phone.trim() !== '' && phone.trim().length >= 8 && address.trim() !== '' && regPassword.length >= 8 && /[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) && regPassword === regConfirmPassword && isAgreedToTerms
                       ? 'bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-950/20 glow-btn-emerald'
                       : 'bg-slate-700 text-gray-500 cursor-not-allowed opacity-50'
-                  }`}
+                    }`}
                 >
                   {isSubmitting ? 'Бүртгэж байна...' : 'Бүртгүүлэх'}
                 </button>
@@ -1321,14 +1307,14 @@ export default function Auth({ onSuccess }: AuthProps) {
                 <FileText className="w-5 h-5 text-emerald-400" />
                 <h3 className="text-sm font-bold text-white font-sans">Үйлчилгээний нөхцөл (Terms of Service)</h3>
               </div>
-              <button 
+              <button
                 onClick={() => setShowTerms(false)}
                 className="text-gray-400 hover:text-white transition-colors cursor-pointer p-1 rounded-lg hover:bg-slate-800"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             {/* Content */}
             <div className="p-6 space-y-5 text-xs text-gray-300 leading-relaxed font-sans">
               <div className="bg-emerald-500/5 border border-emerald-500/20 p-4 rounded-xl space-y-1.5">
@@ -1348,7 +1334,7 @@ export default function Auth({ onSuccess }: AuthProps) {
                 <h4 className="font-bold text-white text-sm">2. Хэрэглэгчийн хариуцлага ба Үнэлгээний систем</h4>
                 <p>2.1. Хэрэглэгч өөрийн бүртгэлийн мэдээлэл (нэр, утас, хаяг г.м)-ийн үнэн зөв байдлыг бүрэн хариуцна.</p>
                 <p>2.2. Жолооч болон ажил олгогч нар ажлын гүйцэтгэлийн дараа нөгөө талдаа бодитой, үнэн зөв үнэлгээ өгөх үүрэгтэй.</p>
-                <p className="text-amber-400 font-semibold">2.3. Ноцтой зөрчил (Архидан согтуурах, шалтгаангүй ажил хаях, техникт санаатайгаар хохирол учруулах, тохирсон цалин хөлсийг өгөхгүй хуурах зэрэг) гаргасан хэрэглэгчийн мэдээлэл системд Хар Дансанд (Blacklist) бүртгэгдэж, дахин үйлчилгээ авах эрх бүрэн хаагдана.</p>
+                <p className="text-amber-400 font-semibold">2.3. Ажлын хариуцлага алдаж шалтгаангүй ажил хаясан, техникт санаатай хохирол учруулсан, ажлын байранд архидан согтуурсан, цалин хөлс олгоогүй гэх мэт ноцтой зөрчил гаргасан тохиолдолд хэрэглэгчийн мэдээллийг хар дансанд бүртгэж, цаашид системийг ашиглах болон дахин үйлчилгээ авах боломжгүй болох эрсдэлтэйг анхаарна уу.</p>
               </div>
 
               <div className="space-y-2">
@@ -1361,10 +1347,10 @@ export default function Auth({ onSuccess }: AuthProps) {
                 <p>4.1. Үйлчилгээний нөхцөл шинэчлэгдэх бүрт хэрэглэгчдэд нээлттэй мэдээлэгдэх бөгөөд үйлчилгээг үргэлжлүүлэн ашиглах нь шинэ нөхцөлийг зөвшөөрсөнд тооцогдоно.</p>
               </div>
             </div>
-            
+
             {/* Footer */}
             <div className="border-t border-slate-800 px-6 py-4 flex justify-end bg-slate-950/40">
-              <button 
+              <button
                 onClick={() => setShowTerms(false)}
                 className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-5 py-2 rounded-xl transition-all cursor-pointer text-xs font-sans"
               >
@@ -1387,14 +1373,14 @@ export default function Auth({ onSuccess }: AuthProps) {
                 <Lock className="w-5 h-5 text-cyan-400" />
                 <h3 className="text-sm font-bold text-white font-sans">Нууцлалын бодлого (Privacy Policy)</h3>
               </div>
-              <button 
+              <button
                 onClick={() => setShowPrivacy(false)}
                 className="text-gray-400 hover:text-white transition-colors cursor-pointer p-1 rounded-lg hover:bg-slate-800"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             {/* Content */}
             <div className="p-6 space-y-5 text-xs text-gray-300 leading-relaxed font-sans">
               <div className="bg-cyan-500/5 border border-cyan-500/20 p-4 rounded-xl space-y-1.5">
@@ -1427,10 +1413,10 @@ export default function Auth({ onSuccess }: AuthProps) {
                 <p>4.1. Систем нь таны мэдээллийг хамгаалах сүүлийн үеийн SSL шифрлэлт болон аюулгүй байдлын стандартыг ашиглаж байна.</p>
               </div>
             </div>
-            
+
             {/* Footer */}
             <div className="border-t border-slate-800 px-6 py-4 flex justify-end bg-slate-950/40">
-              <button 
+              <button
                 onClick={() => setShowPrivacy(false)}
                 className="bg-cyan-600 hover:bg-cyan-550 text-white font-semibold px-5 py-2 rounded-xl transition-all cursor-pointer text-xs font-sans"
               >
