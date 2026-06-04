@@ -36,7 +36,6 @@ import {
   Clock,
   AlertTriangle,
   Bell,
-  Sparkles,
   X,
   Trash2
 } from 'lucide-react';
@@ -280,62 +279,7 @@ export default function JobBoard({
     }
   };
 
-  // Simulated cyber simulation to SHOW OFF the interactive toasts!
-  const handleTriggerAISimulation = async () => {
-    if (currentUser.type === 'employer') {
-      const allJobs = await getJobs();
-      const employerJobs = allJobs.filter(j => j.employerId === currentUser.id && j.status === 'open');
-      if (employerJobs.length === 0) {
-        // Auto create a job and apply to make it seamless if they don't have jobs
-        const simulatedJob = await addJob({
-          title: 'ЯАРАЛТАЙ: Баянзүрх дүүрэгт ковш жолоодох оператор авна',
-          description: 'Ковшоор шороо тэгшилгээ, ачилт хийнэ. Хоол, байр барилгын талбай дээр бэлэн. Архи уудаггүй, хариуцлагатай байх.',
-          employerId: currentUser.id,
-          employerName: currentUser.fullName,
-          employerRating: currentUser.rating,
-          type: 'operator_hiring',
-          machineryType: 'Ковш HL770',
-          salary: 180000,
-          salaryUnit: 'Өдрөөр',
-          duration: '7 хоног',
-          location: 'Улаанбаатар хот',
-          requirements: ['Үнэмлэхтэй байх', 'Архи уудаггүй байх']
-        });
-        
-        await applyForJob(simulatedJob.id, 'user_op_1');
-        await refreshJobs();
-        await refreshNotifications();
-        return;
-      }
-      
-      const randomJob = employerJobs[Math.floor(Math.random() * employerJobs.length)];
-      const operators = users.filter(u => u.type === 'operator');
-      const randomOp = operators[Math.floor(Math.random() * operators.length)] || { id: 'user_op_1' };
-      
-      await applyForJob(randomJob.id, randomOp.id);
-      await refreshJobs();
-      await refreshNotifications();
-    } else {
-      const rand = Math.random();
-      if (rand > 0.5) {
-        const machine = currentUser.machineTypes?.[0] || 'CAT 320 Экскаватор';
-        await addNotification(
-          currentUser.id,
-          'Тохирох шинэ зар нийтлэгдлээ 🚜',
-          `Таны мэргэшсэн "${machine}" техникт тохирох шинэ ажлын санал бүртгэгдлээ.`,
-          'info'
-        );
-      } else {
-        await addNotification(
-          currentUser.id,
-          'Шинэ үнэлгээ ирлээ ⭐',
-          `Ажил олгогч Залуус Констракшн танд 5.0⭐ үнэлгээ болон онцлох эерэг сэтгэгдэл үлдээлээ.`,
-          'success'
-        );
-      }
-      await refreshNotifications();
-    }
-  };
+
 
   const handleApply = async (jobId: string) => {
     try {
@@ -462,16 +406,7 @@ export default function JobBoard({
         {/* Profile and Notifications triggers */}
         <div className="flex items-center space-x-3.5">
           
-          {/* Simulation Demo Button */}
-          <button
-            type="button"
-            onClick={handleTriggerAISimulation}
-            title="Интерактив Тоаст болон Мэдэгдэл турших AI Симуляци ажиллуулах"
-            className="hidden sm:flex items-center space-x-1 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700/80 rounded-lg text-[10px] font-bold font-mono transition-all cursor-pointer shadow-inner animate-pulse"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>AI СИМУЛЯЦИ ⚡</span>
-          </button>
+
 
           {currentUser.type === 'employer' && (
             <button
