@@ -638,9 +638,9 @@ export default function JobBoard({
               <span className="text-xl font-black text-white">{jobs.filter(j => j.status === 'open' || j.status === 'in_progress').length} идэвхтэй</span>
             </div>
             <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
-              <span className="text-[10px] text-gray-500 uppercase block font-mono">Бүртгэлтэй Жолооч</span>
+              <span className="text-[10px] text-gray-500 uppercase block font-mono">Бүртгэлтэй хэрэглэгч</span>
               <span className="text-xl font-black text-emerald-400">
-                {users.length > 0 ? users.filter(u => u.type === 'operator').length : '...'} оператор
+                {users.length > 0 ? users.length : '...'} хэрэглэгч
               </span>
             </div>
             <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
