@@ -34,7 +34,8 @@ export default function JobPostModal({
 }: JobPostModalProps) {
   const [title, setTitle] = useState<string>('');
   const [description, setDescription] = useState<string>('');
-  const [type, setType] = useState<'operator_hiring' | 'machinery_rental' | 'earthwork'>('operator_hiring');
+  const [type, setType] = useState<string>('operator_hiring');
+  const [customType, setCustomType] = useState<string>('');
   const [machineryType, setMachineryType] = useState<string>('CAT 320 Экскаватор');
   const [salary, setSalary] = useState<number>(150000);
   const [salaryUnit, setSalaryUnit] = useState<'Өдрөөр' | 'Цагаар' | 'Төслөөр'>('Өдрөөр');
@@ -79,6 +80,11 @@ export default function JobPostModal({
       return;
     }
 
+    if (type === 'custom' && !customType.trim()) {
+      setError('Шинээр нэмэх зарын төрлийг бичнэ үү.');
+      return;
+    }
+
     setIsSubmitting(true);
     setError('');
 
@@ -89,7 +95,7 @@ export default function JobPostModal({
         employerId,
         employerName,
         employerRating,
-        type,
+        type: type === 'custom' ? customType.trim() : type,
         machineryType,
         salary,
         salaryUnit,
@@ -153,12 +159,13 @@ export default function JobPostModal({
               <select
                 id="job-type-selector"
                 value={type}
-                onChange={(e) => setType(e.target.value as any)}
+                onChange={(e) => setType(e.target.value)}
                 className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
               >
                 <option value="operator_hiring">Жолооч, оператор хайж байна</option>
                 <option value="machinery_rental">Машин механизм түрээслүүлнэ</option>
                 <option value="earthwork">Газар шорооны ажил гүйцэтгэнэ</option>
+                <option value="custom">✍️ Өөр төрөл гараар нэмэх...</option>
               </select>
             </div>
 
@@ -178,6 +185,23 @@ export default function JobPostModal({
               />
             </div>
           </div>
+
+          {type === 'custom' && (
+            <div className="animate-fade-in">
+              <label className="block text-xs font-medium text-gray-300 mb-1" htmlFor="custom-job-type">
+                Шинээр нэмэх зарын төрөл
+              </label>
+              <input
+                id="custom-job-type"
+                type="text"
+                required
+                value={customType}
+                onChange={(e) => setCustomType(e.target.value)}
+                placeholder="Жишээ: Харуул хамгаалалт"
+                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none placeholder-gray-500 font-sans"
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-3 gap-4">
             {/* Location */}

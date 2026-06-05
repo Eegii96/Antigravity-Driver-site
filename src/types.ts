@@ -61,7 +61,7 @@ export interface Job {
   employerName: string;
   employerRating: number;
   status: 'open' | 'in_progress' | 'completed';
-  type: 'operator_hiring' | 'machinery_rental' | 'earthwork';
+  type: string;
   machineryType: string; // Ex: Экскаватор, Дамп / Өөрөө буулгагч, Ковш
   salary: number;
   salaryUnit: 'Өдрөөр' | 'Цагаар' | 'Төслөөр';

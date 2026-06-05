@@ -381,6 +381,30 @@ export default function JobBoard({
     }
   };
 
+  // Get all unique job types present in the active jobs
+  const getUniqueJobTypes = () => {
+    const defaultTypes = [
+      { value: 'Бүгд', label: 'Бүх Маягт' },
+      { value: 'operator_hiring', label: 'Жолооч Хайж Буй' },
+      { value: 'machinery_rental', label: 'Түрээс / Механизм' },
+      { value: 'earthwork', label: 'Захиалгат Ажил' }
+    ];
+    
+    const activeTypes = new Set<string>();
+    jobs.forEach(j => {
+      if (j.type && j.type !== 'operator_hiring' && j.type !== 'machinery_rental' && j.type !== 'earthwork') {
+        activeTypes.add(j.type);
+      }
+    });
+    
+    const customTypes = Array.from(activeTypes).map(t => ({
+      value: t,
+      label: t
+    }));
+    
+    return [...defaultTypes, ...customTypes];
+  };
+
   // Filter & Search Logic
   const filteredJobs = jobs.filter(job => {
     const matchesKeyword = 
@@ -399,9 +423,7 @@ export default function JobBoard({
 
     const matchesType =
       selectedType === 'Бүгд' ||
-      (selectedType === 'Жолооч хайж буй' && job.type === 'operator_hiring') ||
-      (selectedType === 'Түрээс / Механизм' && job.type === 'machinery_rental') ||
-      (selectedType === 'Захиалгат ажил' && job.type === 'earthwork');
+      job.type === selectedType;
 
     return matchesKeyword && matchesCategory && matchesLocation && matchesType;
   });
@@ -709,10 +731,9 @@ export default function JobBoard({
                   onChange={(e) => setSelectedType(e.target.value)}
                   className="bg-slate-950 border border-slate-700 text-gray-300 text-xs px-2.5 py-1 rounded focus:outline-none"
                 >
-                  <option value="Бүгд">Бүх Маягт</option>
-                  <option value="Жолооч хайж буй">Жолооч Хайж Буй</option>
-                  <option value="Түрээс / Механизм">Түрээс / Механизм</option>
-                  <option value="Захиалгат ажил">Захиалгат Ажил</option>
+                  {getUniqueJobTypes().map((t, idx) => (
+                    <option key={idx} value={t.value}>{t.label}</option>
+                  ))}
                 </select>
               </div>
 
