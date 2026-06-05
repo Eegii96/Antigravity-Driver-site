@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { X, Plus, Trash2, ShieldCheck, Sparkles } from 'lucide-react';
+import { X, ShieldCheck, Sparkles } from 'lucide-react';
 import { Job } from '../types';
 import { addJob } from '../lib/db';
 import { generateJobDescription } from '../lib/gemini';
@@ -38,16 +38,15 @@ export default function JobPostModal({
   const [machineryType, setMachineryType] = useState<string>('CAT 320 Экскаватор');
   const [salary, setSalary] = useState<number>(150000);
   const [salaryUnit, setSalaryUnit] = useState<'Өдрөөр' | 'Цагаар' | 'Төслөөр'>('Өдрөөр');
-  const [duration, setDuration] = useState<string>('14 хоног');
   const [location, setLocation] = useState<string>('Улаанбаатар хот');
   
-  // Custom requirement list states
-  const [requirements, setRequirements] = useState<string[]>([
+  // Default values for database schema and AI generator, hidden from user form
+  const [duration] = useState<string>('Тохиролцоно');
+  const [requirements] = useState<string[]>([
     'Архидан согтуурахаас хол, хариуцлагатай байх',
-    'Хүнд машин механизмын хүчин төгөлдөр үнэмлэхтэй байх',
-    'Систем дэх ажлын түүхийн үнэлгээ муугүй байх'
+    'Хүнд машин механизмын хүчин төгөлдөр үнэмлэхтэй байх'
   ]);
-  const [newReq, setNewReq] = useState<string>('');
+  
   const [error, setError] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -73,20 +72,9 @@ export default function JobPostModal({
     }
   };
 
-  const handleAddRequirement = () => {
-    if (newReq.trim()) {
-      setRequirements([...requirements, newReq.trim()]);
-      setNewReq('');
-    }
-  };
-
-  const handleRemoveRequirement = (idx: number) => {
-    setRequirements(requirements.filter((_, i) => i !== idx));
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!title || !description || !machineryType || !salary || !duration) {
+    if (!title || !description || !machineryType || !salary) {
       setError('Шаардлагатай бүх талбарыг бөглөнө үү.');
       return;
     }
@@ -153,7 +141,7 @@ export default function JobPostModal({
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Дундговьд гүүрэн замын барилгад дамп жолоодох 2 хүн авна"
+              placeholder="Дундговьд гүүрэн замын барилгад дамп жолоодох жолооч хайж байна"
               className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none placeholder-gray-500 font-sans"
             />
           </div>
@@ -166,7 +154,7 @@ export default function JobPostModal({
                 id="job-type-selector"
                 value={type}
                 onChange={(e) => setType(e.target.value as any)}
-                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1"
+                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
               >
                 <option value="operator_hiring">Жолооч, оператор хайж байна</option>
                 <option value="machinery_rental">Машин механизм түрээслүүлнэ</option>
@@ -186,7 +174,7 @@ export default function JobPostModal({
                 value={machineryType}
                 onChange={(e) => setMachineryType(e.target.value)}
                 placeholder="Экскаватор САТ-320 эсвэл Shacman Дамп"
-                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:outline-none placeholder-gray-500"
+                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none placeholder-gray-500"
               />
             </div>
           </div>
@@ -199,7 +187,7 @@ export default function JobPostModal({
                 id="job-location-selector"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1"
+                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
               >
                 {AIMAGS.map((a, idx) => (
                   <option key={idx} value={a}>{a}</option>
@@ -219,7 +207,7 @@ export default function JobPostModal({
                 min={100}
                 value={salary}
                 onChange={(e) => setSalary(parseInt(e.target.value) || 0)}
-                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:outline-none"
+                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
               />
             </div>
 
@@ -230,35 +218,12 @@ export default function JobPostModal({
                 id="job-salary-unit"
                 value={salaryUnit}
                 onChange={(e) => setSalaryUnit(e.target.value as any)}
-                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1"
+                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
               >
                 <option value="Өдрөөр">Өдрөөр бодож өгнө</option>
                 <option value="Цагаар">Цагаар бодож өгнө</option>
                 <option value="Төслөөр">Төслөөр гэрээнээс өгнө</option>
               </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            {/* Duration */}
-            <div>
-              <label className="block text-xs font-medium text-gray-300 mb-1" htmlFor="job-duration">
-                Ажлын Хугацаа / Багаж
-              </label>
-              <input
-                id="job-duration"
-                type="text"
-                required
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                placeholder="14 хоног (эсвэл Сарын хугацаанд)"
-                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:outline-none"
-              />
-            </div>
-
-            <div className="p-3 bg-slate-800 rounded-lg flex items-center justify-between border border-slate-800 text-xs">
-              <span className="text-gray-400">Тавигдах шаардлага:</span>
-              <span className="font-semibold text-emerald-400 font-mono">{requirements.length} ш</span>
             </div>
           </div>
 
@@ -280,52 +245,13 @@ export default function JobPostModal({
             </div>
             <textarea
               id="job-desc"
-              rows={5}
+              rows={6}
               required
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Газар ухах гүн 4 метр, нийт 100 урт суваг ухна. Байр, 3 хоол барилгын кэмп дотор өгнө. Согтууруулах ундаа бүрэн хориотой..."
               className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white placeholder-gray-500 text-xs focus:ring-1 focus:outline-none resize-none font-sans"
             />
-          </div>
-
-          {/* Requirements addition list */}
-          <div className="space-y-2">
-            <label className="block text-xs font-medium text-gray-300">Ажлын тусгай шаардлага нэмэх</label>
-            <div className="flex space-x-2">
-              <input
-                id="new-requirement-input"
-                type="text"
-                value={newReq}
-                onChange={(e) => setNewReq(e.target.value)}
-                placeholder="Жишээ: Согтууруулж ажил хаяхгүй байхаар барьцаа гэрээ хийнэ"
-                className="flex-1 px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:outline-none placeholder-gray-500"
-              />
-              <button
-                id="add-requirement-btn"
-                type="button"
-                onClick={handleAddRequirement}
-                className="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 px-3 py-1.5 rounded text-xs cursor-pointer flex items-center"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
-            
-            <div className="max-h-24 overflow-y-auto space-y-1.5 pt-1.5">
-              {requirements.map((req, idx) => (
-                <div key={idx} className="flex items-center justify-between bg-slate-850 px-2.5 py-1 rounded text-xs text-gray-300 border border-slate-800/80">
-                  <span className="truncate max-w-[90%]">• {req}</span>
-                  <button
-                    id={`remove-req-${idx}`}
-                    type="button"
-                    onClick={() => handleRemoveRequirement(idx)}
-                    className="text-rose-400 hover:text-rose-350 transition-colors pointer-events-auto cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
           </div>
 
           <div className="bg-slate-950/40 p-3.5 rounded-lg border border-slate-800/60 flex items-center space-x-2 text-[10px] text-gray-400">
