@@ -634,8 +634,8 @@ export default function JobBoard({
           {/* Dashboard Quick Stats */}
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
-              <span className="text-[10px] text-gray-500 uppercase block font-mono">Гэрээт Зарууд</span>
-              <span className="text-xl font-black text-white">{jobs.filter(j => j.status === 'open' || j.status === 'in_progress').length} идэвхтэй</span>
+              <span className="text-[10px] text-gray-500 uppercase block font-mono">Нийт зар</span>
+              <span className="text-xl font-black text-white">{jobs.length} зар</span>
             </div>
             <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
               <span className="text-[10px] text-gray-500 uppercase block font-mono">Бүртгэлтэй хэрэглэгч</span>
