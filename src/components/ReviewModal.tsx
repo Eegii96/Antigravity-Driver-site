@@ -135,11 +135,7 @@ export default function ReviewModal({
               required
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder={
-                reviewerType === 'employer'
-                  ? 'Жолооч цагтаа ирсэн үү? Машин механизмыг зөв ажиллуулж чадсан уу? Ямар нэгэн асуудал үүссэн үү? Энд бичиж үлдээнэ үү.'
-                  : 'Захиалагч хоол байраар хангасан уу? Цалингаа тохирсон хугацаандаа бүрэн өгсөн үү? Бусад жолооч нарт өгөх зөвлөгөө.'
-              }
+              placeholder="Үнэлгээ болон сэтгэгдлийн дэлгэрэнгүйг энд бичнэ үү..."
               className="block w-full px-3 py-2 border border-slate-700 rounded bg-slate-950 text-white placeholder-gray-500 text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none resize-none font-sans"
             />
           </div>
