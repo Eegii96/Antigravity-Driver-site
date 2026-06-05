@@ -257,6 +257,34 @@ export default function JobBoard({
     }
   };
 
+  const handleNotificationClick = (notif: AppNotification) => {
+    // 1. Mark as read if not already read
+    if (!notif.isRead) {
+      handleMarkAsRead(notif.id);
+    }
+    
+    // 2. Close notifications menu and remove from toasts
+    setShowNotificationsMenu(false);
+    setToasts(prev => prev.filter(t => t.id !== notif.id));
+    
+    // 3. Determine target navigation
+    const title = notif.title.toLowerCase();
+    const msg = notif.message.toLowerCase();
+    
+    if (title.includes('хүсэлт') || title.includes('сонгогдлоо') || title.includes('ажил дууслаа') || title.includes('гүйцэтгэл')) {
+      onNavigateToApplications();
+    } else if (title.includes('үнэлгээ') || title.includes('аюулгүй байдал') || title.includes('профайл') || msg.includes('миний профайл')) {
+      onNavigateToProfile();
+    } else {
+      // Default fallbacks based on content
+      if (msg.includes('хүсэлт') || msg.includes('ажилд')) {
+        onNavigateToApplications();
+      } else {
+        onNavigateToProfile();
+      }
+    }
+  };
+
   const handleMarkAllAsRead = async () => {
     // Optimistically mark all as read in local state
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
@@ -488,14 +516,8 @@ export default function JobBoard({
                     notifications.map((notif) => (
                       <div
                         key={notif.id}
-                        onClick={() => {
-                          if (!notif.isRead) {
-                            handleMarkAsRead(notif.id);
-                          }
-                        }}
-                        className={`p-3.5 text-left transition-all duration-300 relative flex items-start space-x-3 hover:bg-slate-850/20 ${
-                          !notif.isRead ? 'cursor-pointer' : ''
-                        } ${
+                        onClick={() => handleNotificationClick(notif)}
+                        className={`p-3.5 text-left transition-all duration-300 relative flex items-start space-x-3 hover:bg-slate-850/20 cursor-pointer ${
                           notif.isRead ? 'bg-transparent opacity-70 hover:opacity-100' : 'bg-slate-850/40 border-l-3 border-emerald-500'
                         }`}
                       >
@@ -1066,7 +1088,8 @@ export default function JobBoard({
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="pointer-events-auto bg-slate-900/90 backdrop-blur-md border-l-4 border-emerald-500 text-white px-5 py-4 rounded-xl shadow-2xl border border-slate-800 flex items-start space-x-3 w-80 animate-slide-in relative"
+            onClick={() => handleNotificationClick(t)}
+            className="pointer-events-auto bg-slate-900/90 backdrop-blur-md border-l-4 border-emerald-500 text-white px-5 py-4 rounded-xl shadow-2xl border border-slate-800 flex items-start space-x-3 w-80 animate-slide-in relative cursor-pointer hover:bg-slate-850/30 transition-colors"
           >
             <div className="flex-1 text-left">
               <div className="flex justify-between items-start">
