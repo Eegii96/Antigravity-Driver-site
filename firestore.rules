@@ -12,8 +12,8 @@ service cloud.firestore {
       allow update: if (request.auth != null && request.auth.uid == userId) ||
                        (request.auth != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rating', 'ratingCount'])) ||
                        (resource.data.securityAnswer1 != null &&
-                        request.resource.data.securityAnswer1.trim().lower() == resource.data.securityAnswer1.trim().lower() &&
-                        request.resource.data.securityAnswer2.trim().lower() == resource.data.securityAnswer2.trim().lower() &&
+                        request.resource.data.securityAnswer1.lower() == resource.data.securityAnswer1.lower() &&
+                        request.resource.data.securityAnswer2.lower() == resource.data.securityAnswer2.lower() &&
                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['password']));
       allow delete: if request.auth != null && request.auth.uid == userId;
     }

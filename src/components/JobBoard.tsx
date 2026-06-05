@@ -490,7 +490,7 @@ export default function JobBoard({
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-3.5 py-2 rounded-lg flex items-center space-x-1.5 transition-all cursor-pointer shadow-md shadow-emerald-950/20"
             >
               <PlusCircle className="w-4 h-4" />
-              <span className="hidden md:inline">Зар нэмэх</span>
+              <span>Зар нэмэх</span>
             </button>
           )}
 

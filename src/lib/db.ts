@@ -573,6 +573,10 @@ export async function loginUser(email: string, phone: string, password?: string)
         const localPhone = cleanPhone.replace('+976', '');
         q = query(collection(db, 'users'), where('phone', '==', localPhone));
         snapshot = await getDocs(q);
+      } else if (snapshot.empty && !cleanPhone.startsWith('+976')) {
+        const countryPhone = '+976' + cleanPhone;
+        q = query(collection(db, 'users'), where('phone', '==', countryPhone));
+        snapshot = await getDocs(q);
       }
     }
     
