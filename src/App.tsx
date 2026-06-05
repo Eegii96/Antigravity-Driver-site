@@ -18,6 +18,7 @@ export default function App() {
   const [view, setView] = useState<ViewState>('auth');
   const [currentUser, setLocalCurrentUser] = useState<User | null>(null);
   const [inspectUser, setInspectUser] = useState<User | null>(null);
+  const [previousView, setPreviousView] = useState<ViewState>('board');
 
   useEffect(() => {
     const init = async () => {
@@ -52,6 +53,9 @@ export default function App() {
   };
 
   const navigateToInspectProfile = (targetUser: User) => {
+    if (view !== 'inspector') {
+      setPreviousView(view);
+    }
     setInspectUser(targetUser);
     setView('inspector');
   };
@@ -81,6 +85,7 @@ export default function App() {
             defaultTab="profile"
             onBack={() => setView('board')}
             onUpdateCurrentUser={handleUserUpdatedProfile}
+            onViewUserProfile={navigateToInspectProfile}
           />
         )}
 
@@ -91,6 +96,7 @@ export default function App() {
             defaultTab="applications"
             onBack={() => setView('board')}
             onUpdateCurrentUser={handleUserUpdatedProfile}
+            onViewUserProfile={navigateToInspectProfile}
           />
         )}
 
@@ -106,9 +112,10 @@ export default function App() {
             isOwnProfile={false}
             defaultTab="profile"
             onBack={() => {
-              setView('board');
+              setView(previousView);
               setInspectUser(null);
             }}
+            onViewUserProfile={navigateToInspectProfile}
           />
         )}
       </div>

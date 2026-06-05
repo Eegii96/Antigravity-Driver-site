@@ -11,9 +11,10 @@ interface ProfileViewProps {
   onBack?: () => void; // If inspector mode support back action
   onUpdateCurrentUser?: (updated: User) => void; // Callback to notify app state has changed
   defaultTab?: 'profile' | 'applications';
+  onViewUserProfile?: (user: User) => void;
 }
 
-export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurrentUser, defaultTab }: ProfileViewProps) {
+export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurrentUser, defaultTab, onViewUserProfile }: ProfileViewProps) {
   const [showEdit, setShowEdit] = useState<boolean>(false);
   const [profileUser, setProfileUser] = useState<User>(user);
   
@@ -656,7 +657,22 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                         
                         <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-850 flex justify-between items-center text-[10.5px]">
                           <span className="text-slate-500">Захиалагч:</span>
-                          <span className="font-semibold text-slate-300">{job.employerName}</span>
+                          {onViewUserProfile ? (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const empUser = allUsers.find(u => u.id === job.employerId) || await getSingleUser(job.employerId);
+                                if (empUser) {
+                                  onViewUserProfile(empUser);
+                                }
+                              }}
+                              className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
+                            >
+                              {job.employerName}
+                            </button>
+                          ) : (
+                            <span className="font-semibold text-slate-300">{job.employerName}</span>
+                          )}
                         </div>
 
                         {/* Status badge and description */}
@@ -767,6 +783,28 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                           </p>
                         </div>
 
+                        {job.hiredOperatorId && (
+                          <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-850 flex justify-between items-center text-[10.5px] mt-2">
+                            <span className="text-slate-500">Томилогдсон жолооч:</span>
+                            {onViewUserProfile ? (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  const opUser = allUsers.find(u => u.id === job.hiredOperatorId) || await getSingleUser(job.hiredOperatorId!);
+                                  if (opUser) {
+                                    onViewUserProfile(opUser);
+                                  }
+                                }}
+                                className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
+                              >
+                                {job.hiredOperatorName}
+                              </button>
+                            ) : (
+                              <span className="font-semibold text-slate-300">{job.hiredOperatorName}</span>
+                            )}
+                          </div>
+                        )}
+
                         {/* Applicants rendering for open jobs */}
                         {job.status === 'open' && job.applicants.length > 0 && (
                           <div className="space-y-2 pt-2 border-t border-slate-850">
@@ -783,15 +821,18 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                                     key={op.id}
                                     className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-850 flex items-center justify-between text-xs"
                                   >
-                                    <div className="flex items-center space-x-2">
+                                    <div
+                                      onClick={() => onViewUserProfile && onViewUserProfile(op)}
+                                      className={`flex items-center space-x-2 ${onViewUserProfile ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                                    >
                                       <img
                                         src={op.profileImage}
                                         alt={op.fullName}
-                                        className="w-7 h-7 rounded-full object-cover"
+                                        className="w-7 h-7 rounded-full object-cover border border-slate-800"
                                         onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }}
                                       />
                                       <div>
-                                        <div className="font-bold text-white">{op.fullName}</div>
+                                        <div className={`font-bold text-white ${onViewUserProfile ? 'hover:text-emerald-400 hover:underline' : ''}`}>{op.fullName}</div>
                                         <div className="text-[10px] text-amber-400 flex items-center space-x-0.5">
                                           <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500" />
                                           <span>{op.rating.toFixed(1)} ({op.experienceYears || 0} жил)</span>
