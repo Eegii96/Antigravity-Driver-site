@@ -12,16 +12,29 @@ interface JobPostModalProps {
 }
 
 const AIMAGS = [
+  'custom',
   'Улаанбаатар хот',
-  'Өмнөговь аймаг',
-  'Дархан-Уул аймаг',
-  'Орхон аймаг',
-  'Сэлэнгэ аймаг',
-  'Дорноговь аймаг',
-  'Хэнтий аймаг',
+  'Архангай аймаг',
   'Баян-Өлгий аймаг',
+  'Баянхонгор аймаг',
+  'Булган аймаг',
+  'Говь-Алтай аймаг',
+  'Говьсүмбэр аймаг',
+  'Дархан-Уул аймаг',
+  'Дорноговь аймаг',
+  'Дорнод аймаг',
+  'Дундговь аймаг',
+  'Завхан аймаг',
+  'Орхон аймаг',
+  'Өвөрхангай аймаг',
+  'Өмнөговь аймаг',
+  'Сүхбаатар аймаг',
+  'Сэлэнгэ аймаг',
+  'Төв аймаг',
+  'Увс аймаг',
+  'Ховд аймаг',
   'Хөвсгөл аймаг',
-  'Төв аймаг'
+  'Хэнтий аймаг'
 ];
 
 export default function JobPostModal({
@@ -37,6 +50,7 @@ export default function JobPostModal({
   const [customType, setCustomType] = useState<string>('');
   const [salary, setSalary] = useState<number>(150000);
   const [location, setLocation] = useState<string>('Улаанбаатар хот');
+  const [customLocation, setCustomLocation] = useState<string>('');
   
   // Default values for database schema, hidden from user form
   const [machineryType] = useState<string>('Бусад');
@@ -62,6 +76,11 @@ export default function JobPostModal({
       return;
     }
 
+    if (location === 'custom' && !customLocation.trim()) {
+      setError('Байршлыг гараар оруулна уу.');
+      return;
+    }
+
     setIsSubmitting(true);
     setError('');
 
@@ -77,7 +96,7 @@ export default function JobPostModal({
         salary,
         salaryUnit,
         duration,
-        location,
+        location: location === 'custom' ? customLocation.trim() : location,
         requirements
       });
 
@@ -174,7 +193,9 @@ export default function JobPostModal({
                 className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
               >
                 {AIMAGS.map((a, idx) => (
-                  <option key={idx} value={a}>{a}</option>
+                  <option key={idx} value={a}>
+                    {a === 'custom' ? '✍️ Гараар байршил оруулах...' : a}
+                  </option>
                 ))}
               </select>
             </div>
@@ -195,6 +216,24 @@ export default function JobPostModal({
               />
             </div>
           </div>
+
+          {/* Custom location input */}
+          {location === 'custom' && (
+            <div className="animate-fade-in">
+              <label className="block text-xs font-medium text-gray-300 mb-1" htmlFor="custom-job-location">
+                Гараар оруулах байршил
+              </label>
+              <input
+                id="custom-job-location"
+                type="text"
+                required
+                value={customLocation}
+                onChange={(e) => setCustomLocation(e.target.value)}
+                placeholder="Жишээ: Өмнөговь аймаг, Цогтцэций сум, 3-р баг"
+                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none placeholder-gray-500 font-sans"
+              />
+            </div>
+          )}
 
           {/* Additional Info / Description */}
           <div>
