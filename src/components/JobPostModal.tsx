@@ -143,9 +143,12 @@ export default function JobPostModal({
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Дундговьд гүүрэн замын барилгад дамп жолоодох жолооч хайж байна"
+              placeholder="Жишээ: Дундговьд дампны жолооч авна"
               className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none placeholder-gray-500 font-sans"
             />
+            <span className="text-[10px] text-gray-500 mt-1 block leading-normal font-sans">
+              Жишээ: Дундговьд гүүрэн замын барилгад дамп жолоодох жолооч хайж байна
+            </span>
           </div>
 
           {/* Job Type Options */}
