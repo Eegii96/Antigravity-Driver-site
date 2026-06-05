@@ -48,7 +48,7 @@ export default function JobPostModal({
   const [description, setDescription] = useState<string>('');
   const [type, setType] = useState<string>('operator_hiring');
   const [customType, setCustomType] = useState<string>('');
-  const [salary, setSalary] = useState<number>(150000);
+  const [salary, setSalary] = useState<number | ''>(150000);
   const [location, setLocation] = useState<string>('Улаанбаатар хот');
   const [customLocation, setCustomLocation] = useState<string>('');
   
@@ -66,7 +66,7 @@ export default function JobPostModal({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!title || !salary) {
+    if (!title || salary === '' || salary <= 0) {
       setError('Шаардлагатай бүх талбарыг бөглөнө үү.');
       return;
     }
@@ -93,7 +93,7 @@ export default function JobPostModal({
         employerRating,
         type: type === 'custom' ? customType.trim() : type,
         machineryType,
-        salary,
+        salary: Number(salary),
         salaryUnit,
         duration,
         location: location === 'custom' ? customLocation.trim() : location,
@@ -211,7 +211,8 @@ export default function JobPostModal({
                 required
                 min={100}
                 value={salary}
-                onChange={(e) => setSalary(parseInt(e.target.value) || 0)}
+                onChange={(e) => setSalary(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
+                onFocus={(e) => e.target.select()}
                 className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
               />
             </div>
