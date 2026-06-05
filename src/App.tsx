@@ -19,6 +19,7 @@ export default function App() {
   const [currentUser, setLocalCurrentUser] = useState<User | null>(null);
   const [inspectUser, setInspectUser] = useState<User | null>(null);
   const [previousView, setPreviousView] = useState<ViewState>('board');
+  const [highlightedJobId, setHighlightedJobId] = useState<string | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -73,7 +74,10 @@ export default function App() {
             onLogout={handleLogout}
             onNavigateToProfile={() => setView('profile')}
             onNavigateToSettings={() => setView('settings')}
-            onNavigateToApplications={() => setView('applications')}
+            onNavigateToApplications={(jobId) => {
+              setHighlightedJobId(jobId || null);
+              setView('applications');
+            }}
             onViewUserProfile={navigateToInspectProfile}
           />
         )}
@@ -94,7 +98,11 @@ export default function App() {
             user={currentUser}
             isOwnProfile={true}
             defaultTab="applications"
-            onBack={() => setView('board')}
+            highlightJobId={highlightedJobId || undefined}
+            onBack={() => {
+              setHighlightedJobId(null);
+              setView('board');
+            }}
             onUpdateCurrentUser={handleUserUpdatedProfile}
             onViewUserProfile={navigateToInspectProfile}
           />

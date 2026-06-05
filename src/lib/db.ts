@@ -390,6 +390,21 @@ export async function getReviews(): Promise<Review[]> {
   }
 }
 
+export async function getSingleReview(reviewId: string): Promise<Review | null> {
+  try {
+    const snap = await getDoc(doc(db, 'reviews', reviewId));
+    if (snap.exists()) {
+      const r = snap.data() as Review;
+      r.id = reviewId;
+      return r;
+    }
+  } catch (err) {
+    console.error('Error fetching single review from Firestore:', err);
+  }
+  return null;
+}
+
+
 export async function saveReviews(reviews: Review[]): Promise<void> {
   try {
     const batch = writeBatch(db);
@@ -817,7 +832,8 @@ export async function applyForJob(jobId: string, operatorId: string): Promise<bo
         job.employerId,
         'Шинэ хүсэлт ирлээ 🚜',
         `Оператор ${opName} таны "${job.title}" заранд ажиллах хүсэлт ирүүлж, ажлын түүхээ илгээлээ.`,
-        'info'
+        'info',
+        jobId
       );
       
       return true;
@@ -881,7 +897,8 @@ export async function hireOperator(jobId: string, operatorId: string): Promise<b
       operatorId,
       'Ажилд сонгогдлоо 🎉',
       `Баяр хүргэе! Захиалагч ${job.employerName} таныг "${job.title}" ажилдаа сонгон томиллоо.`,
-      'success'
+      'success',
+      jobId
     );
     
     return true;
@@ -921,7 +938,8 @@ export async function completeJob(jobId: string): Promise<boolean> {
         job.hiredOperatorId,
         'Ажил дууслаа ✓',
         `Захиалагч ${job.employerName} ажлыг гүйцэтгэж дууссаныг баталгаажууллаа. Одоо нэвтэрч үнэлгээгээ өгнө үү.`,
-        'success'
+        'success',
+        jobId
       );
     }
     
@@ -930,7 +948,8 @@ export async function completeJob(jobId: string): Promise<boolean> {
       job.employerId,
       'Ажлын гүйцэтгэл дууслаа',
       `"${job.title}" ажил амжилттай дууслаа. Та жолооч ${job.hiredOperatorName || 'оператор'}-д сэтгэгдэл үнэлгээ өгнө үү.`,
-      'info'
+      'info',
+      jobId
     );
     
     return true;
@@ -1002,7 +1021,8 @@ export async function submitReview(reviewData: Omit<Review, 'id' | 'createdAt'>)
           targetUserId,
           'Шинэ үнэлгээ ирлээ ⭐',
           `${reviewData.reviewerName} танд ${reviewData.rating}⭐ үнэлгээ болон сэтгэгдэл үлдээлээ.`,
-          'success'
+          'success',
+          id
         );
       }
       
@@ -1043,7 +1063,8 @@ export async function addNotification(
   userId: string,
   title: string,
   message: string,
-  type: 'info' | 'success' | 'warning' | 'alert'
+  type: 'info' | 'success' | 'warning' | 'alert',
+  relatedId?: string
 ): Promise<AppNotification> {
   try {
     const id = 'notif_' + Math.random().toString(36).substr(2, 9);
@@ -1054,10 +1075,15 @@ export async function addNotification(
       message,
       type,
       isRead: false,
-      createdAt: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString().slice(0, 5)
+      createdAt: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString().slice(0, 5),
+      relatedId
     };
     
-    await setDoc(doc(db, 'notifications', id), newNotif);
+    const cleanNotif = Object.fromEntries(
+      Object.entries(newNotif).filter(([_, v]) => v !== undefined)
+    ) as unknown as AppNotification;
+    
+    await setDoc(doc(db, 'notifications', id), cleanNotif);
     return newNotif;
   } catch (err) {
     console.error('Error adding notification to Firestore:', err);

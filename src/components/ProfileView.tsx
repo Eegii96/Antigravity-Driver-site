@@ -12,9 +12,10 @@ interface ProfileViewProps {
   onUpdateCurrentUser?: (updated: User) => void; // Callback to notify app state has changed
   defaultTab?: 'profile' | 'applications';
   onViewUserProfile?: (user: User) => void;
+  highlightJobId?: string;
 }
 
-export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurrentUser, defaultTab, onViewUserProfile }: ProfileViewProps) {
+export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurrentUser, defaultTab, onViewUserProfile, highlightJobId }: ProfileViewProps) {
   const [showEdit, setShowEdit] = useState<boolean>(false);
   const [profileUser, setProfileUser] = useState<User>(user);
   
@@ -29,6 +30,7 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
   const [activeReviewJob, setActiveReviewJob] = useState<Job | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [inspectUserProfile, setInspectUserProfile] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     setProfileUser(user);
@@ -36,53 +38,62 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
 
   useEffect(() => {
     const loadProfileData = async () => {
-      // Fetch fresh user data from Firestore to ensure privacy settings are absolute and up-to-date
+      setIsLoading(true);
       try {
-        const freshUser = await getSingleUser(profileUser.id);
+        // Run all queries in parallel to optimize load speed and eliminate the delay waterfall
+        const [freshUser, allReviews, allHistory, usersList, allJobs] = await Promise.all([
+          getSingleUser(profileUser.id).catch(err => {
+            console.error('Error fetching fresh profile user:', err);
+            return null;
+          }),
+          getReviews().catch(err => {
+            console.error('Error fetching reviews:', err);
+            return [] as Review[];
+          }),
+          getJobHistory().catch(err => {
+            console.error('Error fetching job history:', err);
+            return [] as JobHistoryItem[];
+          }),
+          getUsers().catch(err => {
+            console.error('Error fetching users:', err);
+            return [] as User[];
+          }),
+          getJobs().catch(err => {
+            console.error('Error loading jobs:', err);
+            return [] as Job[];
+          })
+        ]);
+
         if (freshUser) {
           setProfileUser(freshUser);
         }
-      } catch (err) {
-        console.error('Error fetching fresh profile user:', err);
-      }
-
-      const allReviews = await getReviews();
-      const allHistory = await getJobHistory();
-
-      // Fetch all users to resolve applicant profiles
-      try {
-        const usersList = await getUsers();
-        setAllUsers(usersList);
-      } catch (err) {
-        console.error('Error fetching users for profile view:', err);
-      }
-
-      const reviews = allReviews.filter(r => {
-        if (profileUser.type === 'operator') {
-          return r.reviewerType === 'employer' && (r.jobId.includes('unreliable') ? profileUser.id === 'user_op_unreliable' : profileUser.id !== 'user_op_unreliable');
-        } else {
-          return r.reviewerType === 'operator';
+        if (usersList) {
+          setAllUsers(usersList);
         }
-      });
 
-      const isDemoUnreliable = profileUser.id === 'user_op_unreliable';
-      const dispReviews = isDemoUnreliable 
-        ? allReviews.filter(r => r.id.includes('unreliable'))
-        : reviews.filter(r => !r.id.includes('unreliable'));
+        const reviews = allReviews.filter(r => {
+          if (profileUser.type === 'operator') {
+            return r.reviewerType === 'employer' && (r.jobId.includes('unreliable') ? profileUser.id === 'user_op_unreliable' : profileUser.id !== 'user_op_unreliable');
+          } else {
+            return r.reviewerType === 'operator';
+          }
+        });
 
-      const histItems = allHistory.filter(h => {
-        if (isDemoUnreliable) {
-          return h.id.includes('unreliable');
-        }
-        return h.role === profileUser.type && !h.id.includes('unreliable');
-      });
+        const isDemoUnreliable = profileUser.id === 'user_op_unreliable';
+        const dispReviews = isDemoUnreliable 
+          ? allReviews.filter(r => r.id.includes('unreliable'))
+          : reviews.filter(r => !r.id.includes('unreliable'));
 
-      setDisplayReviews(dispReviews);
-      setHistoryItems(histItems);
+        const histItems = allHistory.filter(h => {
+          if (isDemoUnreliable) {
+            return h.id.includes('unreliable');
+          }
+          return h.role === profileUser.type && !h.id.includes('unreliable');
+        });
 
-      // Load driver applications or employer posted jobs
-      try {
-        const allJobs = await getJobs();
+        setDisplayReviews(dispReviews);
+        setHistoryItems(histItems);
+
         const filteredJobs = allJobs.filter(j => {
           if (profileUser.type === 'operator') {
             return j.applicants.includes(profileUser.id) || j.hiredOperatorId === profileUser.id;
@@ -92,11 +103,25 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
         });
         setDriverJobs(filteredJobs);
       } catch (err) {
-        console.error('Error loading jobs for profile view:', err);
+        console.error('Error loading profile data:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     loadProfileData();
   }, [profileUser.id]);
+
+  useEffect(() => {
+    if (highlightJobId && activeTab === 'applications' && driverJobs.length > 0) {
+      const timer = setTimeout(() => {
+        const element = document.getElementById(`job-card-${highlightJobId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightJobId, activeTab, driverJobs]);
 
   const handleHireOperator = async (jobId: string, operatorId: string) => {
     try {
@@ -600,7 +625,12 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
             </span>
           </h3>
 
-          {driverJobs.length === 0 ? (
+          {isLoading ? (
+            <div className="glass-panel p-12 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-400 font-sans flex flex-col items-center justify-center space-y-4">
+              <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+              <span>Мэдээллийг ачаалж байна...</span>
+            </div>
+          ) : driverJobs.length === 0 ? (
             <div className="glass-panel p-12 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-500 font-sans">
               {profileUser.type === 'operator' 
                 ? 'Та одоогоор ямар нэгэн заранд хүсэлт илгээгээгүй байна.' 
@@ -641,7 +671,12 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                   return (
                     <div
                       key={job.id}
-                      className="glass-card p-5 rounded-2xl border border-slate-800/80 hover:border-slate-700/80 transition-all flex flex-col justify-between space-y-4"
+                      id={`job-card-${job.id}`}
+                      className={`glass-card p-5 rounded-2xl transition-all flex flex-col justify-between space-y-4 ${
+                        highlightJobId === job.id
+                          ? 'highlighted-job-card'
+                          : 'border-slate-800/80 hover:border-slate-700/80'
+                      }`}
                     >
                       <div className="space-y-3">
                         <div className="flex justify-between items-start gap-1">
@@ -708,26 +743,50 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
 
                       {/* Footer / Review action if completed & not reviewed yet */}
                       {isHired && job.status === 'completed' && (
-                        <div className="border-t border-slate-850/80 pt-3.5 flex items-center justify-between">
-                          <div className="flex items-center space-x-1 text-xs">
-                            <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="font-mono font-bold text-white">{job.salary.toLocaleString()} ₮</span>
-                            <span className="text-[10px] text-gray-500"> / {job.salaryUnit}</span>
-                          </div>
+                        <div className="space-y-3 pt-2">
+                          {(() => {
+                            const receivedReview = displayReviews.find(r => r.jobId === job.id);
+                            if (!receivedReview) return null;
+                            return (
+                              <div className="bg-emerald-950/10 border border-emerald-500/20 p-3 rounded-lg text-xs space-y-1.5 mt-2">
+                                <div className="flex justify-between items-center text-[10.5px]">
+                                  <span className="font-bold text-emerald-400">Захиалагчийн үнэлгээ:</span>
+                                  <div className="flex items-center space-x-0.5">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <Star 
+                                        key={star} 
+                                        className={`w-3 h-3 ${star <= receivedReview.rating ? 'fill-amber-400 text-amber-500' : 'text-slate-700'}`} 
+                                      />
+                                    ))}
+                                    <span className="font-bold font-mono ml-1 text-white">{receivedReview.rating}.0</span>
+                                  </div>
+                                </div>
+                                <p className="text-[11px] text-slate-300 italic">"{receivedReview.comment}"</p>
+                              </div>
+                            );
+                          })()}
 
-                          {job.isReviewedByOperator ? (
-                            <span className="text-[10px] text-emerald-400 bg-emerald-950/20 px-2 py-1 rounded font-semibold border border-emerald-900/30">
-                              ✓ Захиалагчийг үнэлсэн
-                            </span>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => setActiveReviewJob(job)}
-                              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
-                            >
-                              Захиалагчийг Үнэлэх
-                            </button>
-                          )}
+                          <div className="border-t border-slate-850/80 pt-3.5 flex items-center justify-between">
+                            <div className="flex items-center space-x-1 text-xs">
+                              <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                              <span className="font-mono font-bold text-white">{job.salary.toLocaleString()} ₮</span>
+                              <span className="text-[10px] text-gray-500"> / {job.salaryUnit}</span>
+                            </div>
+
+                            {job.isReviewedByOperator ? (
+                              <span className="text-[10px] text-emerald-400 bg-emerald-950/20 px-2 py-1 rounded font-semibold border border-emerald-900/30">
+                                ✓ Захиалагчийг үнэлсэн
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setActiveReviewJob(job)}
+                                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
+                              >
+                                Захиалагчийг Үнэлэх
+                              </button>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -755,7 +814,12 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                   return (
                     <div
                       key={job.id}
-                      className="glass-card p-5 rounded-2xl border border-slate-800/80 hover:border-slate-700/80 transition-all flex flex-col justify-between space-y-4 text-left"
+                      id={`job-card-${job.id}`}
+                      className={`glass-card p-5 rounded-2xl transition-all flex flex-col justify-between space-y-4 text-left ${
+                        highlightJobId === job.id
+                          ? 'highlighted-job-card'
+                          : 'border-slate-800/80 hover:border-slate-700/80'
+                      }`}
                     >
                       <div className="space-y-3">
                         <div className="flex justify-between items-start gap-1">
@@ -862,26 +926,50 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
 
                       {/* Completed Job action */}
                       {job.status === 'completed' && (
-                        <div className="border-t border-slate-850/80 pt-3.5 flex items-center justify-between">
-                          <div className="flex items-center space-x-1 text-xs">
-                            <DollarSign className="w-3.5 h-3.5 text-emerald-450" />
-                            <span className="font-mono font-bold text-white">{job.salary.toLocaleString()} ₮</span>
-                            <span className="text-[10px] text-slate-500"> / {job.salaryUnit}</span>
-                          </div>
+                        <div className="space-y-3 pt-2">
+                          {(() => {
+                            const receivedReview = displayReviews.find(r => r.jobId === job.id);
+                            if (!receivedReview) return null;
+                            return (
+                              <div className="bg-emerald-950/10 border border-emerald-500/20 p-3 rounded-lg text-xs space-y-1.5 mt-2">
+                                <div className="flex justify-between items-center text-[10.5px]">
+                                  <span className="font-bold text-emerald-400">Жолоочийн үнэлгээ:</span>
+                                  <div className="flex items-center space-x-0.5">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <Star 
+                                        key={star} 
+                                        className={`w-3 h-3 ${star <= receivedReview.rating ? 'fill-amber-400 text-amber-500' : 'text-slate-700'}`} 
+                                      />
+                                    ))}
+                                    <span className="font-bold font-mono ml-1 text-white">{receivedReview.rating}.0</span>
+                                  </div>
+                                </div>
+                                <p className="text-[11px] text-slate-300 italic">"{receivedReview.comment}"</p>
+                              </div>
+                            );
+                          })()}
 
-                          {job.isReviewedByEmployer ? (
-                            <span className="text-[10px] text-emerald-450 bg-emerald-950/20 px-2.5 py-1 rounded font-semibold border border-emerald-900/30">
-                              ✓ Жолоочийг үнэлсэн
-                            </span>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => setActiveReviewJob(job)}
-                              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
-                            >
-                              Жолоочийг Үнэлэх
-                            </button>
-                          )}
+                          <div className="border-t border-slate-850/80 pt-3.5 flex items-center justify-between">
+                            <div className="flex items-center space-x-1 text-xs">
+                              <DollarSign className="w-3.5 h-3.5 text-emerald-450" />
+                              <span className="font-mono font-bold text-white">{job.salary.toLocaleString()} ₮</span>
+                              <span className="text-[10px] text-slate-500"> / {job.salaryUnit}</span>
+                            </div>
+
+                            {job.isReviewedByEmployer ? (
+                              <span className="text-[10px] text-emerald-450 bg-emerald-950/20 px-2.5 py-1 rounded font-semibold border border-emerald-900/30">
+                                ✓ Жолоочийг үнэлсэн
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setActiveReviewJob(job)}
+                                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
+                              >
+                                Жолоочийг Үнэлэх
+                              </button>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>

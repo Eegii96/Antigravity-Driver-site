@@ -13,7 +13,9 @@ import {
   addNotification,
   deleteNotification,
   deleteAllNotifications,
-  addJob
+  addJob,
+  getReviews,
+  getSingleReview
 } from '../lib/db';
 import {
   Search,
@@ -47,7 +49,7 @@ interface JobBoardProps {
   onLogout: () => void;
   onNavigateToProfile: () => void;
   onNavigateToSettings: () => void;
-  onNavigateToApplications: () => void;
+  onNavigateToApplications: (jobId?: string) => void;
   onViewUserProfile: (user: User) => void;
 }
 
@@ -69,9 +71,31 @@ const getFirstName = (userOrName?: any): string => {
   }
   return '';
 };
-
-const MACHINERY_CATEGORIES = ['Бүгд', 'Экскаватор', 'Дамп', 'Ковш', 'Бульдозер', 'Кран', 'Грейдер'];
-const LOCATION_OPTIONS = ['Бүгд', 'Улаанбаатар', 'Өмнөговь', 'Дархан', 'Сэлэнгэ', 'Дорноговь'];
+const LOCATION_OPTIONS = [
+  'Бүгд',
+  'Улаанбаатар хот',
+  'Архангай аймаг',
+  'Баян-Өлгий аймаг',
+  'Баянхонгор аймаг',
+  'Булган аймаг',
+  'Говь-Алтай аймаг',
+  'Говьсүмбэр аймаг',
+  'Дархан-Уул аймаг',
+  'Дорноговь аймаг',
+  'Дорнод аймаг',
+  'Дундговь аймаг',
+  'Завхан аймаг',
+  'Орхон аймаг',
+  'Өвөрхангай аймаг',
+  'Өмнөговь аймаг',
+  'Сүхбаатар аймаг',
+  'Сэлэнгэ аймаг',
+  'Төв аймаг',
+  'Увс аймаг',
+  'Ховд аймаг',
+  'Хөвсгөл аймаг',
+  'Хэнтий аймаг'
+];
 
 export default function JobBoard({
   currentUser,
@@ -84,7 +108,6 @@ export default function JobBoard({
   const [jobs, setJobs] = useState<Job[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('Бүгд');
   const [selectedLocation, setSelectedLocation] = useState<string>('Бүгд');
   const [selectedType, setSelectedType] = useState<string>('Бүгд');
   
@@ -104,6 +127,8 @@ export default function JobBoard({
   const [toasts, setToasts] = useState<AppNotification[]>([]);
 
   const [successMessage, setSuccessMessage] = useState<string>('');
+  const [viewingReview, setViewingReview] = useState<Review | null>(null);
+  const [isLoadingReview, setIsLoadingReview] = useState<boolean>(false);
 
   const notificationsRef = useRef<AppNotification[]>([]);
   const notificationsMenuRef = useRef<HTMLDivElement>(null);
@@ -257,7 +282,7 @@ export default function JobBoard({
     }
   };
 
-  const handleNotificationClick = (notif: AppNotification) => {
+  const handleNotificationClick = async (notif: AppNotification) => {
     // 1. Mark as read if not already read
     if (!notif.isRead) {
       handleMarkAsRead(notif.id);
@@ -271,14 +296,109 @@ export default function JobBoard({
     const title = notif.title.toLowerCase();
     const msg = notif.message.toLowerCase();
     
-    if (title.includes('хүсэлт') || title.includes('сонгогдлоо') || title.includes('ажил дууслаа') || title.includes('гүйцэтгэл')) {
-      onNavigateToApplications();
-    } else if (title.includes('үнэлгээ') || title.includes('аюулгүй байдал') || title.includes('профайл') || msg.includes('миний профайл')) {
+    if (title.includes('үнэлгээ')) {
+      setIsLoadingReview(true);
+      try {
+        let reviewToShow: Review | null = null;
+        if (notif.relatedId) {
+          reviewToShow = await getSingleReview(notif.relatedId);
+        }
+        
+        if (!reviewToShow) {
+          // Fallback: fetch all reviews for this user and get the latest one
+          const allReviews = await getReviews();
+          const allJobs = await getJobs();
+          
+          const myJobIds = new Set<string>();
+          for (const j of allJobs) {
+            if (currentUser.type === 'operator' && j.hiredOperatorId === currentUser.id) {
+              myJobIds.add(j.id);
+            } else if (currentUser.type === 'employer' && j.employerId === currentUser.id) {
+              myJobIds.add(j.id);
+            }
+          }
+          
+          const myReviews = allReviews.filter(r => 
+            myJobIds.has(r.jobId) && 
+            r.reviewerType !== currentUser.type && 
+            r.reviewerId !== currentUser.id
+          );
+          
+          if (myReviews.length > 0) {
+            myReviews.sort((a, b) => b.id.localeCompare(a.id));
+            reviewToShow = myReviews[0];
+          }
+        }
+        
+        if (reviewToShow) {
+          onNavigateToApplications(reviewToShow.jobId);
+        } else {
+          onNavigateToProfile();
+        }
+      } catch (err) {
+        console.error('Error loading review details:', err);
+        onNavigateToProfile();
+      } finally {
+        setIsLoadingReview(false);
+      }
+    } else if (title.includes('хүсэлт') || title.includes('сонгогдлоо') || title.includes('ажил дууслаа') || title.includes('гүйцэтгэл')) {
+      let resolvedJobId: string | null = null;
+      if (notif.relatedId) {
+        resolvedJobId = notif.relatedId;
+      } else {
+        // Fallback for old notifications
+        try {
+          const quoteMatch = notif.message.match(/"([^"]+)"/);
+          const jobTitle = quoteMatch ? quoteMatch[1] : null;
+          
+          const allJobs = await getJobs();
+          let candidateJobs = allJobs.filter(j => {
+            if (currentUser.type === 'operator') {
+              return j.hiredOperatorId === currentUser.id || j.applicants.includes(currentUser.id);
+            } else {
+              return j.employerId === currentUser.id;
+            }
+          });
+          
+          if (jobTitle) {
+            candidateJobs = candidateJobs.filter(j => j.title.toLowerCase().includes(jobTitle.toLowerCase()));
+          }
+          
+          // Filter by status matching the notification type
+          const titleLower = title.toLowerCase();
+          let statusFiltered = [...candidateJobs];
+          if (titleLower.includes('дууслаа')) {
+            statusFiltered = candidateJobs.filter(j => j.status === 'completed');
+          } else if (titleLower.includes('сонгогдлоо')) {
+            statusFiltered = candidateJobs.filter(j => j.status === 'in_progress');
+          } else if (titleLower.includes('хүсэлт')) {
+            statusFiltered = candidateJobs.filter(j => j.status === 'open');
+          }
+          
+          // If status filtering resulted in matches, use them. Otherwise, keep the candidates matching only the title.
+          if (statusFiltered.length > 0) {
+            candidateJobs = statusFiltered;
+          }
+          
+          if (candidateJobs.length > 0) {
+            candidateJobs.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+            resolvedJobId = candidateJobs[0].id;
+          }
+        } catch (err) {
+          console.error('Error resolving fallback job ID:', err);
+        }
+      }
+      onNavigateToApplications(resolvedJobId || undefined);
+    } else if (title.includes('аюулгүй байдал') || title.includes('профайл') || msg.includes('миний профайл')) {
       onNavigateToProfile();
     } else {
       // Default fallbacks based on content
       if (msg.includes('хүсэлт') || msg.includes('ажилд')) {
-        onNavigateToApplications();
+        let resolvedJobId: string | null = null;
+        if (notif.relatedId) {
+          resolvedJobId = notif.relatedId;
+        }
+        onNavigateToApplications(resolvedJobId || undefined);
       } else {
         onNavigateToProfile();
       }
@@ -384,10 +504,10 @@ export default function JobBoard({
   // Get all unique job types present in the active jobs
   const getUniqueJobTypes = () => {
     const defaultTypes = [
-      { value: 'Бүгд', label: 'Бүх Маягт' },
-      { value: 'operator_hiring', label: 'Жолооч Хайж Буй' },
-      { value: 'machinery_rental', label: 'Түрээс / Механизм' },
-      { value: 'earthwork', label: 'Захиалгат Ажил' }
+      { value: 'Бүгд', label: 'Бүх маягт' },
+      { value: 'operator_hiring', label: 'Жолооч, оператор хайж байна' },
+      { value: 'machinery_rental', label: 'Машин механизмын түрээс' },
+      { value: 'earthwork', label: 'Барилга, зам, газар шорооны ажил' }
     ];
     
     const activeTypes = new Set<string>();
@@ -412,20 +532,22 @@ export default function JobBoard({
       job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.machineryType.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory = 
-      selectedCategory === 'Бүгд' || 
-      job.machineryType.toLowerCase().includes(selectedCategory.toLowerCase()) ||
-      job.title.toLowerCase().includes(selectedCategory.toLowerCase());
+    const cleanLocation = (loc: string) => {
+      return loc
+        .toLowerCase()
+        .replace(/\s*(аймаг|хот)\b/gi, '')
+        .trim();
+    };
 
     const matchesLocation = 
       selectedLocation === 'Бүгд' || 
-      job.location.toLowerCase().includes(selectedLocation.toLowerCase());
+      cleanLocation(job.location).includes(cleanLocation(selectedLocation));
 
     const matchesType =
       selectedType === 'Бүгд' ||
       job.type === selectedType;
 
-    return matchesKeyword && matchesCategory && matchesLocation && matchesType;
+    return matchesKeyword && matchesLocation && matchesType;
   });
 
   const unreadNotifs = notifications.filter(n => !n.isRead);
@@ -705,72 +827,95 @@ export default function JobBoard({
           </div>
 
           {/* Search bar & filter buttons */}
-          <div className="bg-slate-900/30 p-4 border border-slate-800/80 rounded-xl space-y-3">
+          <div className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 backdrop-blur-md p-5 border border-slate-800/80 rounded-2xl space-y-4 shadow-xl shadow-slate-950/40">
             
             {/* Search inputs */}
             <div className="relative">
-              <Search className="absolute left-3.5 top-2.5 h-4.5 w-4.5 text-gray-500" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-gray-500" />
               <input
                 id="board-search-input"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Экскаватор, Шакман жолооч, Дамп, Өмнөговь гэж хайх..."
-                className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-700 rounded text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                className="w-full pl-10 pr-10 py-2.5 bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all placeholder-gray-550 font-sans"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1 transition-colors cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
 
             {/* Dropdown Filters row */}
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Type Category */}
-              <div className="flex items-center space-x-1">
-                <span className="text-[10px] text-gray-500 font-mono uppercase mr-1">Төрөл:</span>
-                <select
-                  id="filter-type"
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
-                  className="bg-slate-950 border border-slate-700 text-gray-300 text-xs px-2.5 py-1 rounded focus:outline-none"
-                >
-                  {getUniqueJobTypes().map((t, idx) => (
-                    <option key={idx} value={t.value}>{t.label}</option>
-                  ))}
-                </select>
+              <div className="flex flex-col space-y-1.5">
+                <label className="text-[10px] text-gray-450 font-bold uppercase tracking-wider text-left">Зарын төрөл</label>
+                <div className="relative">
+                  <select
+                    id="filter-type"
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 hover:border-slate-750 text-gray-250 text-xs px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer appearance-none"
+                  >
+                    {getUniqueJobTypes().map((t, idx) => (
+                      <option key={idx} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                </div>
               </div>
 
               {/* Aimag location */}
-              <div className="flex items-center space-x-1">
-                <span className="text-[10px] text-gray-500 font-mono uppercase mr-1">Байршил:</span>
-                <select
-                  id="filter-location"
-                  value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
-                  className="bg-slate-950 border border-slate-700 text-gray-300 text-xs px-2.5 py-1 rounded focus:outline-none"
-                >
-                  <option value="Бүгд">Бүх Байршил</option>
-                  {LOCATION_OPTIONS.filter(l => l !== 'Бүгд').map((l, id) => (
-                    <option key={id} value={l}>{l}</option>
-                  ))}
-                </select>
+              <div className="flex flex-col space-y-1.5">
+                <label className="text-[10px] text-gray-455 font-bold uppercase tracking-wider text-left">Аймаг / Байршил</label>
+                <div className="relative">
+                  <select
+                    id="filter-location"
+                    value={selectedLocation}
+                    onChange={(e) => setSelectedLocation(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 hover:border-slate-750 text-gray-255 text-xs px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer appearance-none"
+                  >
+                    <option value="Бүгд">Бүх байршил (21 аймаг + Хот)</option>
+                    {LOCATION_OPTIONS.filter(l => l !== 'Бүгд').map((l, id) => (
+                      <option key={id} value={l}>{l}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                </div>
               </div>
             </div>
 
-            {/* Quick Machinery Category Tocs */}
-            <div className="flex flex-wrap gap-1.5 pt-1 border-t border-slate-800/60">
-              {MACHINERY_CATEGORIES.map((cat, idx) => (
+            {/* Active Filters Summary */}
+            {(searchQuery || selectedLocation !== 'Бүгд' || selectedType !== 'Бүгд') && (
+              <div className="flex items-center justify-between text-[10px] bg-emerald-500/5 border border-emerald-500/10 p-2.5 rounded-xl animate-fade-in">
+                <div className="flex flex-wrap items-center gap-1.5 text-gray-400">
+                  <Filter className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Шүүлтүүр:</span>
+                  {searchQuery && <span className="bg-slate-950 px-2 py-0.5 rounded border border-slate-850 text-white font-mono font-medium">"{searchQuery}"</span>}
+                  {selectedLocation !== 'Бүгд' && <span className="bg-slate-950 px-2 py-0.5 rounded border border-slate-855 text-white font-mono font-medium">{selectedLocation}</span>}
+                  {selectedType !== 'Бүгд' && (
+                    <span className="bg-slate-950 px-2 py-0.5 rounded border border-slate-855 text-white font-mono font-medium">
+                      {getUniqueJobTypes().find(t => t.value === selectedType)?.label || selectedType}
+                    </span>
+                  )}
+                </div>
                 <button
-                  id={`cat-filter-btn-${idx}`}
-                  key={idx}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-2.5 py-1 rounded text-[11px] font-mono transition-all cursor-pointer ${
-                    selectedCategory === cat
-                      ? 'bg-emerald-600 text-white font-semibold'
-                      : 'bg-slate-950 text-gray-400 hover:text-white border border-slate-800'
-                  }`}
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedLocation('Бүгд');
+                    setSelectedType('Бүгд');
+                  }}
+                  className="text-emerald-500 hover:text-emerald-450 font-bold hover:underline transition-all cursor-pointer flex items-center space-x-1 shrink-0 ml-2"
                 >
-                  {cat === 'Бүгд' ? '🚜 Бүх техник' : cat}
+                  <span>Арилгах ✕</span>
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
 
           </div>
 
@@ -787,7 +932,6 @@ export default function JobBoard({
                   id="reset-filters-btn"
                   onClick={() => {
                     setSearchQuery('');
-                    setSelectedCategory('Бүгд');
                     setSelectedLocation('Бүгд');
                     setSelectedType('Бүгд');
                   }}
@@ -1124,19 +1268,6 @@ export default function JobBoard({
         ))}
       </div>
 
-      {/* Footer */}
-      <footer className="mt-12 bg-slate-900 border-t border-slate-800 px-6 py-8 text-left text-xs text-slate-400">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="space-y-1">
-            <span className="font-bold text-white block text-sm">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>
-            <p className="text-[11px] text-slate-500">Үнэлгээ болон хариуцлага дээр суурилсан Монголын уул уурхай, барилгын механизмын нэгдсэн бүртгэл.</p>
-          </div>
-          <div className="text-[10px] font-mono text-slate-500">
-            © 2026 Antigravity Driver Site • All rights reserved.
-          </div>
-        </div>
-      </footer>
-
       {/* Modals trigger definitions */}
       {showPostModal && (
         <JobPostModal
@@ -1179,6 +1310,115 @@ export default function JobBoard({
             setTimeout(() => setSuccessMessage(''), 4500);
           }}
         />
+      )}
+
+      {/* Viewing Review Detail Modal */}
+      {viewingReview && (
+        <div id="view-review-detail-modal-backdrop" className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div id="view-review-detail-modal-container" className="bg-[#0b1329] border border-slate-800 max-w-md w-full rounded-2xl overflow-hidden shadow-2xl relative">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-500/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+            
+            {/* Header */}
+            <div className="flex justify-between items-center border-b border-slate-850 px-6 py-4.5">
+              <div className="flex items-center space-x-2">
+                <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <h3 className="text-sm font-semibold text-white tracking-wide">Шинэ үнэлгээний дэлгэрэнгүй</h3>
+              </div>
+              <button 
+                id="close-view-review-modal" 
+                onClick={() => setViewingReview(null)} 
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1 rounded-lg hover:bg-slate-850"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content body */}
+            <div className="p-6 space-y-5">
+              {/* Rating Big Circle */}
+              <div className="flex flex-col items-center justify-center py-4 bg-slate-950/40 rounded-2xl border border-slate-850/80">
+                <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/20 mb-3 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                  <Star className="w-8 h-8 text-amber-400 fill-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]" />
+                </div>
+                <span className="text-2xl font-bold font-mono text-white tracking-tight">{viewingReview.rating}.0 / 5.0</span>
+                <div className="flex items-center space-x-1 mt-1.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star 
+                      key={star} 
+                      className={`w-4 h-4 ${star <= viewingReview.rating ? 'fill-amber-400 text-amber-500' : 'text-slate-700'}`} 
+                    />
+                  ))}
+                </div>
+                <span className="text-[10px] text-slate-500 font-mono mt-2 uppercase tracking-widest">Үнэлгээний оноо</span>
+              </div>
+
+              {/* Reviewer & Job info */}
+              <div className="space-y-3 bg-[#070b19]/60 p-4 rounded-xl border border-slate-850/80 text-xs text-left">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-850/40">
+                  <span className="text-slate-500">Үнэлгээ өгсөн хүн:</span>
+                  <span className="font-semibold text-emerald-400 font-sans">{viewingReview.reviewerName}</span>
+                </div>
+                <div className="flex justify-between items-center pb-2 border-b border-slate-850/40">
+                  <span className="text-slate-500">Төсөл / Ажлын нэр:</span>
+                  <span className="font-semibold text-slate-250 font-sans text-right truncate max-w-[60%]">{viewingReview.jobTitle}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Огноо:</span>
+                  <span className="font-mono text-slate-400">{viewingReview.createdAt}</span>
+                </div>
+              </div>
+
+              {/* Comment text block */}
+              <div className="space-y-2 text-left">
+                <span className="text-[10px] text-slate-500 uppercase font-mono tracking-wider block">Бичсэн сэтгэгдэл:</span>
+                <div className="relative bg-[#070b19]/60 p-4.5 rounded-xl border border-slate-850/80 italic text-xs text-slate-250 leading-relaxed font-sans shadow-inner">
+                  <span className="absolute -top-1 left-2 text-3xl text-emerald-500/20 font-serif pointer-events-none">“</span>
+                  <p className="relative z-10 px-2">"{viewingReview.comment}"</p>
+                  <span className="absolute -bottom-4 right-3 text-3xl text-emerald-500/20 font-serif pointer-events-none">”</span>
+                </div>
+              </div>
+
+              {/* Footer info/warning */}
+              <p className="text-[9.5px] text-slate-500 leading-normal text-center bg-slate-950/20 p-2 rounded-lg border border-slate-850/40">
+                🛡️ Энэхүү үнэлгээ нь таны профайлын дундаж үнэлгээ болон ажилчны түүхэнд шууд нөлөөлж, бусад хэрэглэгчдэд харагдах болно.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex space-x-3 pt-1">
+                <button
+                  id="close-review-detail-btn"
+                  type="button"
+                  onClick={() => setViewingReview(null)}
+                  className="flex-1 py-2.5 border border-slate-800 text-slate-350 hover:text-white text-xs font-medium rounded-xl hover:bg-slate-850/40 transition-colors cursor-pointer font-sans"
+                >
+                  Хаах
+                </button>
+                <button
+                  id="go-to-profile-from-review-btn"
+                  type="button"
+                  onClick={() => {
+                    setViewingReview(null);
+                    onNavigateToProfile();
+                  }}
+                  className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold rounded-xl transition-all shadow-lg shadow-emerald-950/25 cursor-pointer font-sans"
+                >
+                  Миний Профайл руу очих
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loading Review Detail Spinner */}
+      {isLoadingReview && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-2xl flex flex-col items-center space-y-3">
+            <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-xs text-slate-305 font-mono">Үнэлгээг ачаалж байна...</span>
+          </div>
+        </div>
       )}
 
     </div>

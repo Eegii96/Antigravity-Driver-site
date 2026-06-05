@@ -84,5 +84,6 @@ export interface AppNotification {
   type: 'info' | 'success' | 'warning' | 'alert';
   isRead: boolean;
   createdAt: string;
+  relatedId?: string;
 }
 

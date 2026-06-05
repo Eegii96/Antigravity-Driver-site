@@ -161,9 +161,9 @@ export default function JobPostModal({
               className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
             >
               <option value="operator_hiring">Жолооч, оператор хайж байна</option>
-              <option value="machinery_rental">Машин механизм түрээслүүлнэ</option>
-              <option value="earthwork">Газар шорооны ажил гүйцэтгэнэ</option>
-              <option value="custom">✍️ Өөр төрөл гараар нэмэх...</option>
+              <option value="machinery_rental">Машин механизмын түрээс</option>
+              <option value="earthwork">Барилга, зам, газар шорооны ажил</option>
+              <option value="custom">✍️ Өөр төрөл нэмэх...</option>
             </select>
           </div>
 
