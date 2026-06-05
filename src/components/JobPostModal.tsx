@@ -1,8 +1,7 @@
 import { useState, FormEvent } from 'react';
-import { X, ShieldCheck, Sparkles } from 'lucide-react';
+import { X, ShieldCheck } from 'lucide-react';
 import { Job } from '../types';
 import { addJob } from '../lib/db';
-import { generateJobDescription } from '../lib/gemini';
 
 interface JobPostModalProps {
   employerId: string;
@@ -36,12 +35,12 @@ export default function JobPostModal({
   const [description, setDescription] = useState<string>('');
   const [type, setType] = useState<string>('operator_hiring');
   const [customType, setCustomType] = useState<string>('');
-  const [machineryType, setMachineryType] = useState<string>('CAT 320 Экскаватор');
   const [salary, setSalary] = useState<number>(150000);
-  const [salaryUnit, setSalaryUnit] = useState<'Өдрөөр' | 'Цагаар' | 'Төслөөр'>('Өдрөөр');
   const [location, setLocation] = useState<string>('Улаанбаатар хот');
   
-  // Default values for database schema and AI generator, hidden from user form
+  // Default values for database schema, hidden from user form
+  const [machineryType] = useState<string>('Бусад');
+  const [salaryUnit] = useState<'Өдрөөр' | 'Цагаар' | 'Төслөөр'>('Өдрөөр');
   const [duration] = useState<string>('Тохиролцоно');
   const [requirements] = useState<string[]>([
     'Архидан согтуурахаас хол, хариуцлагатай байх',
@@ -49,33 +48,11 @@ export default function JobPostModal({
   ]);
   
   const [error, setError] = useState<string>('');
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
-  const handleGenerateAIDesc = async () => {
-    setIsGenerating(true);
-    setError('');
-    try {
-      const generated = await generateJobDescription({
-        machineryType,
-        salary,
-        salaryUnit,
-        location,
-        duration,
-        requirements
-      });
-      setDescription(generated);
-    } catch (err: any) {
-      console.error(err);
-      setError('AI зар үүсгэхэд алдаа гарлаа. Та дахин оролдоно уу.');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!title || !description || !machineryType || !salary) {
+    if (!title || !salary) {
       setError('Шаардлагатай бүх талбарыг бөглөнө үү.');
       return;
     }
@@ -91,7 +68,7 @@ export default function JobPostModal({
     try {
       const job = await addJob({
         title,
-        description,
+        description: description.trim() || 'Нэмэлт мэдээлэл оруулаагүй.',
         employerId,
         employerName,
         employerRating,
@@ -152,40 +129,23 @@ export default function JobPostModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {/* Job Type Options */}
-            <div>
-              <label className="block text-xs font-medium text-gray-300 mb-1">Зарын Төрөл</label>
-              <select
-                id="job-type-selector"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-              >
-                <option value="operator_hiring">Жолооч, оператор хайж байна</option>
-                <option value="machinery_rental">Машин механизм түрээслүүлнэ</option>
-                <option value="earthwork">Газар шорооны ажил гүйцэтгэнэ</option>
-                <option value="custom">✍️ Өөр төрөл гараар нэмэх...</option>
-              </select>
-            </div>
-
-            {/* Machinery selection */}
-            <div>
-              <label className="block text-xs font-medium text-gray-300 mb-1" htmlFor="job-machinery-type">
-                Техникийн Ангилал / Загвар
-              </label>
-              <input
-                id="job-machinery-type"
-                type="text"
-                required
-                value={machineryType}
-                onChange={(e) => setMachineryType(e.target.value)}
-                placeholder="Экскаватор САТ-320 эсвэл Shacman Дамп"
-                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none placeholder-gray-500"
-              />
-            </div>
+          {/* Job Type Options */}
+          <div>
+            <label className="block text-xs font-medium text-gray-300 mb-1">Зарын Төрөл</label>
+            <select
+              id="job-type-selector"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+            >
+              <option value="operator_hiring">Жолооч, оператор хайж байна</option>
+              <option value="machinery_rental">Машин механизм түрээслүүлнэ</option>
+              <option value="earthwork">Газар шорооны ажил гүйцэтгэнэ</option>
+              <option value="custom">✍️ Өөр төрөл гараар нэмэх...</option>
+            </select>
           </div>
 
+          {/* Custom job type input */}
           {type === 'custom' && (
             <div className="animate-fade-in">
               <label className="block text-xs font-medium text-gray-300 mb-1" htmlFor="custom-job-type">
@@ -203,7 +163,7 @@ export default function JobPostModal({
             </div>
           )}
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             {/* Location */}
             <div>
               <label className="block text-xs font-medium text-gray-300 mb-1">Байршил (Аймаг/Хот)</label>
@@ -234,46 +194,19 @@ export default function JobPostModal({
                 className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
               />
             </div>
-
-            {/* Price cycle Unit */}
-            <div>
-              <label className="block text-xs font-medium text-gray-300 mb-1">Төлбөрийн мөчлөг</label>
-              <select
-                id="job-salary-unit"
-                value={salaryUnit}
-                onChange={(e) => setSalaryUnit(e.target.value as any)}
-                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-              >
-                <option value="Өдрөөр">Өдрөөр бодож өгнө</option>
-                <option value="Цагаар">Цагаар бодож өгнө</option>
-                <option value="Төслөөр">Төслөөр гэрээнээс өгнө</option>
-              </select>
-            </div>
           </div>
 
-          {/* Description */}
+          {/* Additional Info / Description */}
           <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="block text-xs font-medium text-gray-300" htmlFor="job-desc">
-                Дэлгэрэнгүй тодорхойлолт, ажлын нөхцөлүүд
-              </label>
-              <button
-                type="button"
-                onClick={handleGenerateAIDesc}
-                disabled={isGenerating}
-                className="text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 border border-emerald-500/30 bg-emerald-500/5 px-2.5 py-1 rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Sparkles className={`w-3 h-3 ${isGenerating ? 'animate-spin' : ''}`} />
-                <span>{isGenerating ? 'AI бичиж байна...' : 'AI-аар бичүүлэх'}</span>
-              </button>
-            </div>
+            <label className="block text-xs font-medium text-gray-300 mb-1" htmlFor="job-desc">
+              Нэмэлт мэдээлэл
+            </label>
             <textarea
               id="job-desc"
               rows={6}
-              required
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Газар ухах гүн 4 метр, нийт 100 урт суваг ухна. Байр, 3 хоол барилгын кэмп дотор өгнө. Согтууруулах ундаа бүрэн хориотой..."
+              placeholder="Ажлын нөхцөл, хангамж, тавигдах шаардлага зэрэг бусад мэдээллийг энд оруулах боломжтой..."
               className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white placeholder-gray-500 text-xs focus:ring-1 focus:outline-none resize-none font-sans"
             />
           </div>
