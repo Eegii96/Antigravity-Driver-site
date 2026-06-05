@@ -10,9 +10,10 @@ interface ProfileViewProps {
   isOwnProfile: boolean; // Flag to enable edit options
   onBack?: () => void; // If inspector mode support back action
   onUpdateCurrentUser?: (updated: User) => void; // Callback to notify app state has changed
+  defaultTab?: 'profile' | 'applications';
 }
 
-export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurrentUser }: ProfileViewProps) {
+export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurrentUser, defaultTab }: ProfileViewProps) {
   const [showEdit, setShowEdit] = useState<boolean>(false);
   const [profileUser, setProfileUser] = useState<User>(user);
   
@@ -22,7 +23,7 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
   const [success, setSuccess] = useState<string>('');
 
   // Tracking driver applications and job status
-  const [activeTab, setActiveTab] = useState<'profile' | 'applications'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'applications'>(defaultTab || 'profile');
   const [driverJobs, setDriverJobs] = useState<Job[]>([]);
   const [activeReviewJob, setActiveReviewJob] = useState<Job | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -208,7 +209,11 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
       <div className="flex items-center justify-between relative z-10">
         <h2 className="text-xl font-bold tracking-tight text-white flex items-center space-x-2">
           <Award className="w-6 h-6 text-amber-400 text-neon-cyan animate-pulse-soft" />
-          <span>{isOwnProfile ? 'Миний Хувийн Профайл' : `${profileUser.fullName}-ийн Профайл`}</span>
+          <span>
+            {defaultTab === 'applications'
+              ? (profileUser.type === 'operator' ? 'Миний Хүсэлтүүд & Ажлын Явц' : 'Миний Зарласан Зарууд')
+              : (isOwnProfile ? 'Миний Хувийн Профайл' : `${profileUser.fullName}-ийн Профайл`)}
+          </span>
         </h2>
         {onBack && (
           <button
@@ -220,39 +225,6 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
           </button>
         )}
       </div>
-
-      {/* Navigation tabs for driver/employer tracking */}
-      {isOwnProfile && (
-        <div className="flex border-b border-slate-800 space-x-6 text-sm relative z-10">
-          <button
-            id="profile-tab-btn"
-            onClick={() => setActiveTab('profile')}
-            className={`pb-2.5 font-bold transition-all relative cursor-pointer focus:outline-none ${
-              activeTab === 'profile'
-                ? 'text-white border-b-2 border-emerald-500'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            Миний мэдээлэл
-          </button>
-          <button
-            id="driver-applications-tab"
-            onClick={() => setActiveTab('applications')}
-            className={`pb-2.5 font-bold transition-all relative cursor-pointer focus:outline-none ${
-              activeTab === 'applications'
-                ? 'text-white border-b-2 border-emerald-500'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            {profileUser.type === 'operator' ? 'Миний хүсэлтүүд & Ажлын явц' : 'Миний зарласан зарууд'}
-            {driverJobs.filter(j => j.status === 'open' || (j.status === 'in_progress' && (profileUser.type === 'operator' ? j.hiredOperatorId === profileUser.id : true))).length > 0 && (
-              <span className="ml-2 bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                {driverJobs.filter(j => j.status === 'open' || (j.status === 'in_progress' && (profileUser.type === 'operator' ? j.hiredOperatorId === profileUser.id : true))).length}
-              </span>
-            )}
-          </button>
-        </div>
-      )}
 
       {success && (
         <div className="fixed top-6 right-6 max-w-sm bg-slate-900/95 border border-emerald-500/80 text-emerald-300 p-4 rounded-xl text-xs flex items-center space-x-2.5 animate-fade-in text-left z-50 backdrop-blur-md shadow-2xl">

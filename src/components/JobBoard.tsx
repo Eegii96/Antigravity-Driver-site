@@ -47,6 +47,7 @@ interface JobBoardProps {
   onLogout: () => void;
   onNavigateToProfile: () => void;
   onNavigateToSettings: () => void;
+  onNavigateToApplications: () => void;
   onViewUserProfile: (user: User) => void;
 }
 
@@ -77,6 +78,7 @@ export default function JobBoard({
   onLogout,
   onNavigateToProfile,
   onNavigateToSettings,
+  onNavigateToApplications,
   onViewUserProfile
 }: JobBoardProps) {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -588,6 +590,15 @@ export default function JobBoard({
                   >
                     <UserIcon className="w-4 h-4 text-emerald-400" />
                     <span>Миний профайл</span>
+                  </button>
+
+                  <button
+                    id="menu-goto-applications"
+                    onClick={() => { onNavigateToApplications(); setShowProfileMenu(false); }}
+                    className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
+                  >
+                    <Briefcase className="w-4 h-4 text-emerald-450" />
+                    <span>{currentUser.type === 'operator' ? 'Миний хүсэлтүүд' : 'Миний зарууд'}</span>
                   </button>
                   
                   <button

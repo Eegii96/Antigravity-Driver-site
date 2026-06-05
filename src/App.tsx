@@ -12,7 +12,7 @@ import ProfileView from './components/ProfileView';
 import SettingsView from './components/SettingsView';
 import Footer from './components/Footer';
 
-type ViewState = 'auth' | 'board' | 'profile' | 'settings' | 'inspector';
+type ViewState = 'auth' | 'board' | 'profile' | 'settings' | 'inspector' | 'applications';
 
 export default function App() {
   const [view, setView] = useState<ViewState>('auth');
@@ -69,6 +69,7 @@ export default function App() {
             onLogout={handleLogout}
             onNavigateToProfile={() => setView('profile')}
             onNavigateToSettings={() => setView('settings')}
+            onNavigateToApplications={() => setView('applications')}
             onViewUserProfile={navigateToInspectProfile}
           />
         )}
@@ -77,6 +78,17 @@ export default function App() {
           <ProfileView
             user={currentUser}
             isOwnProfile={true}
+            defaultTab="profile"
+            onBack={() => setView('board')}
+            onUpdateCurrentUser={handleUserUpdatedProfile}
+          />
+        )}
+
+        {view === 'applications' && currentUser && (
+          <ProfileView
+            user={currentUser}
+            isOwnProfile={true}
+            defaultTab="applications"
             onBack={() => setView('board')}
             onUpdateCurrentUser={handleUserUpdatedProfile}
           />
@@ -92,6 +104,7 @@ export default function App() {
           <ProfileView
             user={inspectUser}
             isOwnProfile={false}
+            defaultTab="profile"
             onBack={() => {
               setView('board');
               setInspectUser(null);
