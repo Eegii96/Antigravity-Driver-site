@@ -1,16 +1,13 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
+'use client';
 
 import { useState, useEffect } from 'react';
-import { User } from './types';
-import { getCurrentUser, setCurrentUser, initializeDB } from './lib/db';
-import Auth from './components/Auth';
-import JobBoard from './components/JobBoard';
-import ProfileView from './components/ProfileView';
-import SettingsView from './components/SettingsView';
-import Footer from './components/Footer';
+import { User } from '../types';
+import { getCurrentUser, setCurrentUser, initializeDB } from '../lib/db';
+import Auth from './Auth';
+import JobBoard from './JobBoard';
+import ProfileView from './ProfileView';
+import SettingsView from './SettingsView';
+import Footer from './Footer';
 
 type ViewState = 'auth' | 'board' | 'profile' | 'settings' | 'inspector' | 'applications';
 

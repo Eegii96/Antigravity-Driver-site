@@ -275,8 +275,8 @@ export default function Auth({ onSuccess }: AuthProps) {
         return;
       }
 
-      setSecurityQ1(matched.securityQuestion1);
-      setSecurityQ2(matched.securityQuestion2);
+      setSecurityQ1(matched.securityQuestion1 || '');
+      setSecurityQ2(matched.securityQuestion2 || '');
       setMatchedUserObj(matched);
       setRecoveryStep(2);
       setSuccessMsg('Аюулгүй байдлын асуултууд амжилттай ачаалагдлаа.');

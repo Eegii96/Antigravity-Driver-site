@@ -17,9 +17,8 @@ const getApiKey = (): string => {
   if (localKey && localKey.trim()) {
     return localKey.trim();
   }
-  // Vite environment variables
-  const key = import.meta.env.VITE_GEMINI_API_KEY || 
-              import.meta.env.GEMINI_API_KEY || 
+  // Next.js environment variables
+  const key = process.env.NEXT_PUBLIC_GEMINI_API_KEY || 
               (window as any).GEMINI_API_KEY ||
               '';
   return key;

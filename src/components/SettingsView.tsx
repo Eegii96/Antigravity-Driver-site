@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { ShieldCheck, Key, Trash2, Eye, EyeOff, Check, AlertCircle, X } from 'lucide-react';
 import { getCurrentUser, saveSingleUser, setCurrentUser, getFreshCurrentUser } from '../lib/db';
+import { User } from '../types';
 import { auth } from '../lib/firebase';
 import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 
@@ -98,7 +99,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
       await saveSingleUser(updatedUser);
 
       // Save to localStorage session without the password
-      const sessionUser = { ...updatedUser };
+      const sessionUser: User = { ...updatedUser };
       if ('password' in sessionUser) {
         delete sessionUser.password;
       }
