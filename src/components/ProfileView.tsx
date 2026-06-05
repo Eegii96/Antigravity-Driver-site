@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User, Review, JobHistoryItem, Job } from '../types';
 import { getReviews, getJobHistory, saveSingleUser, getSingleUser, getJobs, getUsers, hireOperator, completeJob } from '../lib/db';
-import { Star, ShieldAlert, Award, Phone, Mail, MapPin, Calendar, CheckCircle, Clock, DollarSign, Briefcase, Users } from 'lucide-react';
+import { Star, ShieldAlert, Award, Phone, Mail, MapPin, Calendar, CheckCircle, Clock, DollarSign, Briefcase, Users, X } from 'lucide-react';
 import ProfileEditModal from './ProfileEditModal';
 import ReviewModal from './ReviewModal';
 
@@ -28,6 +28,7 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
   const [driverJobs, setDriverJobs] = useState<Job[]>([]);
   const [activeReviewJob, setActiveReviewJob] = useState<Job | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [inspectUserProfile, setInspectUserProfile] = useState<User | null>(null);
 
   useEffect(() => {
     setProfileUser(user);
@@ -657,22 +658,18 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                         
                         <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-850 flex justify-between items-center text-[10.5px]">
                           <span className="text-slate-500">Захиалагч:</span>
-                          {onViewUserProfile ? (
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                const empUser = allUsers.find(u => u.id === job.employerId) || await getSingleUser(job.employerId);
-                                if (empUser) {
-                                  onViewUserProfile(empUser);
-                                }
-                              }}
-                              className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
-                            >
-                              {job.employerName}
-                            </button>
-                          ) : (
-                            <span className="font-semibold text-slate-300">{job.employerName}</span>
-                          )}
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const empUser = allUsers.find(u => u.id === job.employerId) || await getSingleUser(job.employerId);
+                              if (empUser) {
+                                setInspectUserProfile(empUser);
+                              }
+                            }}
+                            className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
+                          >
+                            {job.employerName}
+                          </button>
                         </div>
 
                         {/* Status badge and description */}
@@ -786,22 +783,18 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                         {job.hiredOperatorId && (
                           <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-850 flex justify-between items-center text-[10.5px] mt-2">
                             <span className="text-slate-500">Томилогдсон жолооч:</span>
-                            {onViewUserProfile ? (
-                              <button
-                                type="button"
-                                onClick={async () => {
-                                  const opUser = allUsers.find(u => u.id === job.hiredOperatorId) || await getSingleUser(job.hiredOperatorId!);
-                                  if (opUser) {
-                                    onViewUserProfile(opUser);
-                                  }
-                                }}
-                                className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
-                              >
-                                {job.hiredOperatorName}
-                              </button>
-                            ) : (
-                              <span className="font-semibold text-slate-300">{job.hiredOperatorName}</span>
-                            )}
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const opUser = allUsers.find(u => u.id === job.hiredOperatorId) || await getSingleUser(job.hiredOperatorId!);
+                                if (opUser) {
+                                  setInspectUserProfile(opUser);
+                                }
+                              }}
+                              className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
+                            >
+                              {job.hiredOperatorName}
+                            </button>
                           </div>
                         )}
 
@@ -822,8 +815,8 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                                     className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-850 flex items-center justify-between text-xs"
                                   >
                                     <div
-                                      onClick={() => onViewUserProfile && onViewUserProfile(op)}
-                                      className={`flex items-center space-x-2 ${onViewUserProfile ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                                      onClick={() => setInspectUserProfile(op)}
+                                      className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
                                     >
                                       <img
                                         src={op.profileImage}
@@ -832,7 +825,7 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                                         onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }}
                                       />
                                       <div>
-                                        <div className={`font-bold text-white ${onViewUserProfile ? 'hover:text-emerald-400 hover:underline' : ''}`}>{op.fullName}</div>
+                                        <div className="font-bold text-white hover:text-emerald-400 hover:underline">{op.fullName}</div>
                                         <div className="text-[10px] text-amber-400 flex items-center space-x-0.5">
                                           <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500" />
                                           <span>{op.rating.toFixed(1)} ({op.experienceYears || 0} жил)</span>
@@ -956,6 +949,26 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
             setTimeout(() => setSuccess(''), 3000);
           }}
         />
+      )}
+
+      {inspectUserProfile && (
+        <div id="partner-profile-inspector-modal" className="fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in text-left">
+          <div className="bg-slate-900 border border-slate-700 max-w-4xl w-full rounded-2xl overflow-hidden shadow-2xl relative p-6 my-8">
+            <button
+              onClick={() => setInspectUserProfile(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors cursor-pointer z-50 bg-slate-800/80 p-2 rounded-full border border-slate-700"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="max-h-[80vh] overflow-y-auto pt-4">
+              <ProfileView
+                user={inspectUserProfile}
+                isOwnProfile={false}
+                defaultTab="profile"
+              />
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
