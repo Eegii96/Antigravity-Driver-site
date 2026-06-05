@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User, Review, JobHistoryItem, Job } from '../types';
-import { getReviews, getJobHistory, saveSingleUser, getSingleUser, getJobs } from '../lib/db';
-import { Star, ShieldAlert, Award, Phone, Mail, MapPin, Calendar, CheckCircle, Clock, DollarSign, Briefcase } from 'lucide-react';
+import { getReviews, getJobHistory, saveSingleUser, getSingleUser, getJobs, getUsers, hireOperator, completeJob } from '../lib/db';
+import { Star, ShieldAlert, Award, Phone, Mail, MapPin, Calendar, CheckCircle, Clock, DollarSign, Briefcase, Users } from 'lucide-react';
 import ProfileEditModal from './ProfileEditModal';
 import ReviewModal from './ReviewModal';
 
@@ -25,6 +25,7 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
   const [activeTab, setActiveTab] = useState<'profile' | 'applications'>('profile');
   const [driverJobs, setDriverJobs] = useState<Job[]>([]);
   const [activeReviewJob, setActiveReviewJob] = useState<Job | null>(null);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
 
   useEffect(() => {
     setProfileUser(user);
@@ -44,6 +45,14 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
 
       const allReviews = await getReviews();
       const allHistory = await getJobHistory();
+
+      // Fetch all users to resolve applicant profiles
+      try {
+        const usersList = await getUsers();
+        setAllUsers(usersList);
+      } catch (err) {
+        console.error('Error fetching users for profile view:', err);
+      }
 
       const reviews = allReviews.filter(r => {
         if (profileUser.type === 'operator') {
@@ -68,13 +77,16 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
       setDisplayReviews(dispReviews);
       setHistoryItems(histItems);
 
-      // Load driver applications
+      // Load driver applications or employer posted jobs
       try {
         const allJobs = await getJobs();
-        const filteredJobs = allJobs.filter(j => 
-          j.applicants.includes(profileUser.id) || 
-          j.hiredOperatorId === profileUser.id
-        );
+        const filteredJobs = allJobs.filter(j => {
+          if (profileUser.type === 'operator') {
+            return j.applicants.includes(profileUser.id) || j.hiredOperatorId === profileUser.id;
+          } else {
+            return j.employerId === profileUser.id;
+          }
+        });
         setDriverJobs(filteredJobs);
       } catch (err) {
         console.error('Error loading jobs for profile view:', err);
@@ -82,6 +94,60 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
     };
     loadProfileData();
   }, [profileUser.id]);
+
+  const handleHireOperator = async (jobId: string, operatorId: string) => {
+    try {
+      const success = await hireOperator(jobId, operatorId);
+      if (success) {
+        setSuccess('🤝 Жолоочийг ажилд амжилттай томиллоо. Гэрээ идэвхжлээ.');
+        setTimeout(() => setSuccess(''), 4500);
+        
+        // Refresh data
+        const allJobs = await getJobs();
+        const filteredJobs = allJobs.filter(j => {
+          if (profileUser.type === 'operator') {
+            return j.applicants.includes(profileUser.id) || j.hiredOperatorId === profileUser.id;
+          } else {
+            return j.employerId === profileUser.id;
+          }
+        });
+        setDriverJobs(filteredJobs);
+      }
+    } catch (err) {
+      console.error('Error hiring operator:', err);
+      alert('Алдаа гарлаа. Дахин оролдоно уу.');
+    }
+  };
+
+  const handleCompleteJobTrigger = async (job: Job) => {
+    try {
+      const success = await completeJob(job.id);
+      if (success) {
+        setSuccess('✓ Ажил амжилттай дууслаа. Одоо үнэлгээгээ өгнө үү.');
+        setTimeout(() => setSuccess(''), 4500);
+        
+        // Refresh jobs
+        const allJobs = await getJobs();
+        const filteredJobs = allJobs.filter(j => {
+          if (profileUser.type === 'operator') {
+            return j.applicants.includes(profileUser.id) || j.hiredOperatorId === profileUser.id;
+          } else {
+            return j.employerId === profileUser.id;
+          }
+        });
+        setDriverJobs(filteredJobs);
+        
+        // Set active review job to open review modal immediately!
+        const updatedJob = allJobs.find(j => j.id === job.id);
+        if (updatedJob) {
+          setActiveReviewJob(updatedJob);
+        }
+      }
+    } catch (err) {
+      console.error('Error completing job:', err);
+      alert('Алдаа гарлаа. Дахин оролдоно уу.');
+    }
+  };
 
   const handleProfileSaved = (updated: User) => {
     setProfileUser(updated);
@@ -155,8 +221,8 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
         )}
       </div>
 
-      {/* Navigation tabs for driver application tracking */}
-      {isOwnProfile && profileUser.type === 'operator' && (
+      {/* Navigation tabs for driver/employer tracking */}
+      {isOwnProfile && (
         <div className="flex border-b border-slate-800 space-x-6 text-sm relative z-10">
           <button
             id="profile-tab-btn"
@@ -178,10 +244,10 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            Миний хүсэлтүүд & Ажлын явц
-            {driverJobs.filter(j => j.status === 'open' || (j.status === 'in_progress' && j.hiredOperatorId === profileUser.id)).length > 0 && (
+            {profileUser.type === 'operator' ? 'Миний хүсэлтүүд & Ажлын явц' : 'Миний зарласан зарууд'}
+            {driverJobs.filter(j => j.status === 'open' || (j.status === 'in_progress' && (profileUser.type === 'operator' ? j.hiredOperatorId === profileUser.id : true))).length > 0 && (
               <span className="ml-2 bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                {driverJobs.filter(j => j.status === 'open' || (j.status === 'in_progress' && j.hiredOperatorId === profileUser.id)).length}
+                {driverJobs.filter(j => j.status === 'open' || (j.status === 'in_progress' && (profileUser.type === 'operator' ? j.hiredOperatorId === profileUser.id : true))).length}
               </span>
             )}
           </button>
@@ -553,127 +619,268 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
         <div className="space-y-6 animate-fade-in relative z-10 text-left">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-850 pb-2.5 flex items-center space-x-2">
             <Clock className="w-4.5 h-4.5 text-emerald-450 drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
-            <span>Миний илгээсэн хүсэлтүүд & Ажлын явц ({driverJobs.length})</span>
+            <span>
+              {profileUser.type === 'operator' 
+                ? `Миний илгээсэн хүсэлтүүд & Ажлын явц (${driverJobs.length})` 
+                : `Миний зарласан зарууд (${driverJobs.length})`}
+            </span>
           </h3>
 
           {driverJobs.length === 0 ? (
             <div className="glass-panel p-12 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-500 font-sans">
-              Та одоогоор ямар нэгэн заранд хүсэлт илгээгээгүй байна.
+              {profileUser.type === 'operator' 
+                ? 'Та одоогоор ямар нэгэн заранд хүсэлт илгээгээгүй байна.' 
+                : 'Та одоогоор ямар нэгэн зар оруулаагүй байна.'}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {driverJobs.map((job) => {
-                const isHired = job.hiredOperatorId === profileUser.id;
-                const isPending = !job.hiredOperatorId && job.status === 'open';
-                const isRejected = job.hiredOperatorId && job.hiredOperatorId !== profileUser.id;
+                if (profileUser.type === 'operator') {
+                  const isHired = job.hiredOperatorId === profileUser.id;
+                  const isPending = !job.hiredOperatorId && job.status === 'open';
+                  const isRejected = job.hiredOperatorId && job.hiredOperatorId !== profileUser.id;
 
-                let statusText = '';
-                let badgeClass = '';
-                let statusDesc = '';
+                  let statusText = '';
+                  let badgeClass = '';
+                  let statusDesc = '';
 
-                if (isHired) {
-                  if (job.status === 'in_progress') {
-                    statusText = 'Ажилд сонгогдсон • Ажил явагдаж байна';
-                    badgeClass = 'bg-emerald-950/20 text-emerald-400 border border-emerald-900/40';
-                    statusDesc = '🤝 Баяр хүргэе! Захиалагч таныг ажилд сонгосон байна. Ажлын хариуцлагын гэрээ идэвхтэй байгаа тул хариуцлагатай ажиллана уу.';
-                  } else if (job.status === 'completed') {
-                    statusText = 'Ажил амжилттай дууссан';
-                    badgeClass = 'bg-cyan-950/25 text-cyan-400 border border-cyan-800/40';
-                    statusDesc = '✓ Ажил дууссан. Захиалагч ажлын гүйцэтгэлийг баталгаажуулсан байна. Танд ажлын хөлс бүрэн олгогдсон эсэхийг шалгана уу.';
+                  if (isHired) {
+                    if (job.status === 'in_progress') {
+                      statusText = 'Ажилд сонгогдсон • Ажил явагдаж байна';
+                      badgeClass = 'bg-emerald-950/20 text-emerald-400 border border-emerald-900/40';
+                      statusDesc = '🤝 Баяр хүргэе! Захиалагч таныг ажилд сонгосон байна. Ажлын хариуцлагын гэрээ идэвхтэй байгаа тул хариуцлагатай ажиллана уу.';
+                    } else if (job.status === 'completed') {
+                      statusText = 'Ажил амжилттай дууссан';
+                      badgeClass = 'bg-cyan-950/25 text-cyan-400 border border-cyan-800/40';
+                      statusDesc = '✓ Ажил дууссан. Захиалагч ажлын гүйцэтгэлийг баталгаажуулсан байна. Танд ажлын хөлс бүрэн олгогдсон эсэхийг шалгана уу.';
+                    }
+                  } else if (isPending) {
+                    statusText = 'Хүсэлт илгээсэн • Хүлээгдэж буй';
+                    badgeClass = 'bg-amber-950/20 text-amber-400 border border-amber-900/30';
+                    statusDesc = '⏳ Таны ажилд орох хүсэлтийг захиалагч хянаж байна. Хэрэв та сонгогдвол системд шинэчлэгдэн харагдах болно.';
+                  } else if (isRejected) {
+                    statusText = 'Өөр жолооч сонгогдсон';
+                    badgeClass = 'bg-rose-950/25 text-rose-455 border border-rose-800/30';
+                    statusDesc = '❌ Захиалагч энэ заранд өөр жолооч сонгон ажилласан байна. Та дараагийн зар руу хүсэлтээ илгээнэ үү.';
                   }
-                } else if (isPending) {
-                  statusText = 'Хүсэлт илгээсэн • Хүлээгдэж буй';
-                  badgeClass = 'bg-amber-950/20 text-amber-400 border border-amber-900/30';
-                  statusDesc = '⏳ Таны ажилд орох хүсэлтийг захиалагч хянаж байна. Хэрэв та сонгогдвол системд шинэчлэгдэн харагдах болно.';
-                } else if (isRejected) {
-                  statusText = 'Өөр жолооч сонгогдсон';
-                  badgeClass = 'bg-rose-950/25 text-rose-455 border border-rose-800/30';
-                  statusDesc = '❌ Захиалагч энэ заранд өөр жолооч сонгон ажилласан байна. Та дараагийн зар руу хүсэлтээ илгээнэ үү.';
-                }
 
-                return (
-                  <div
-                    key={job.id}
-                    className="glass-card p-5 rounded-2xl border border-slate-800/80 hover:border-slate-700/80 transition-all flex flex-col justify-between space-y-4"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-start gap-1">
-                        <span className="font-mono text-[10px] text-emerald-400 bg-emerald-900/10 px-2 py-0.5 rounded border border-emerald-900/25">
-                          🚜 {job.machineryType}
-                        </span>
-                        <span className="text-[10px] text-gray-500 shrink-0 flex items-center space-x-1">
-                          <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                          <span>{job.location.split(',')[0]}</span>
-                        </span>
-                      </div>
+                  return (
+                    <div
+                      key={job.id}
+                      className="glass-card p-5 rounded-2xl border border-slate-800/80 hover:border-slate-700/80 transition-all flex flex-col justify-between space-y-4"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start gap-1">
+                          <span className="font-mono text-[10px] text-emerald-400 bg-emerald-900/10 px-2 py-0.5 rounded border border-emerald-900/25">
+                            🚜 {job.machineryType}
+                          </span>
+                          <span className="text-[10px] text-gray-500 shrink-0 flex items-center space-x-1">
+                            <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                            <span>{job.location.split(',')[0]}</span>
+                          </span>
+                        </div>
 
-                      <h4 className="text-xs font-bold text-white leading-snug">{job.title}</h4>
-                      
-                      <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-850 flex justify-between items-center text-[10.5px]">
-                        <span className="text-slate-500">Захиалагч:</span>
-                        <span className="font-semibold text-slate-300">{job.employerName}</span>
-                      </div>
+                        <h4 className="text-xs font-bold text-white leading-snug">{job.title}</h4>
+                        
+                        <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-850 flex justify-between items-center text-[10.5px]">
+                          <span className="text-slate-500">Захиалагч:</span>
+                          <span className="font-semibold text-slate-300">{job.employerName}</span>
+                        </div>
 
-                      {/* Status badge and description */}
-                      <div className="space-y-2 pt-1.5">
-                        <span className={`inline-flex px-2.5 py-0.5 rounded text-[9.5px] font-bold font-mono tracking-wide uppercase ${badgeClass}`}>
-                          {statusText}
-                        </span>
-                        <p className="text-[11px] text-gray-400 leading-relaxed bg-[#080d1a]/40 p-3 rounded-lg border border-slate-850/80 font-sans">
-                          {statusDesc}
-                        </p>
-                      </div>
+                        {/* Status badge and description */}
+                        <div className="space-y-2 pt-1.5">
+                          <span className={`inline-flex px-2.5 py-0.5 rounded text-[9.5px] font-bold font-mono tracking-wide uppercase ${badgeClass}`}>
+                            {statusText}
+                          </span>
+                          <p className="text-[11px] text-gray-400 leading-relaxed bg-[#080d1a]/40 p-3 rounded-lg border border-slate-850/80 font-sans">
+                            {statusDesc}
+                          </p>
+                        </div>
 
-                      {/* Step Indicator for active jobs */}
-                      {isHired && job.status === 'in_progress' && (
-                        <div className="pt-2">
-                          <span className="text-[10px] text-slate-500 block uppercase font-mono tracking-wider mb-2">Ажлын явцын төлөв:</span>
-                          <div className="flex items-center space-x-2 text-xs">
-                            <div className="flex items-center text-emerald-400">
-                              <span className="h-4 w-4 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-[9px] font-bold mr-1.5">1</span>
-                              <span>Сонгогдсон</span>
-                            </div>
-                            <span className="text-slate-600">➔</span>
-                            <div className="flex items-center text-emerald-400 font-bold animate-pulse-soft">
-                              <span className="h-4 w-4 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-[9px] font-bold mr-1.5">2</span>
-                              <span>Ажиллаж байна</span>
-                            </div>
-                            <span className="text-slate-600">➔</span>
-                            <div className="flex items-center text-slate-500">
-                              <span className="h-4 w-4 rounded-full bg-slate-800 text-slate-500 flex items-center justify-center text-[9px] font-bold mr-1.5">3</span>
-                              <span>Үнэлгээ</span>
+                        {/* Step Indicator for active jobs */}
+                        {isHired && job.status === 'in_progress' && (
+                          <div className="pt-2">
+                            <span className="text-[10px] text-slate-500 block uppercase font-mono tracking-wider mb-2">Ажлын явцын төлөв:</span>
+                            <div className="flex items-center space-x-2 text-xs">
+                              <div className="flex items-center text-emerald-400">
+                                <span className="h-4 w-4 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-[9px] font-bold mr-1.5">1</span>
+                                <span>Сонгогдсон</span>
+                              </div>
+                              <span className="text-slate-600">➔</span>
+                              <div className="flex items-center text-emerald-400 font-bold animate-pulse-soft">
+                                <span className="h-4 w-4 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-[9px] font-bold mr-1.5 animate-ping-slow">2</span>
+                                <span>Ажиллаж байна</span>
+                              </div>
+                              <span className="text-slate-600">➔</span>
+                              <div className="flex items-center text-slate-500">
+                                <span className="h-4 w-4 rounded-full bg-slate-800 text-slate-500 flex items-center justify-center text-[9px] font-bold mr-1.5">3</span>
+                                <span>Үнэлгээ</span>
+                              </div>
                             </div>
                           </div>
+                        )}
+                      </div>
+
+                      {/* Footer / Review action if completed & not reviewed yet */}
+                      {isHired && job.status === 'completed' && (
+                        <div className="border-t border-slate-850/80 pt-3.5 flex items-center justify-between">
+                          <div className="flex items-center space-x-1 text-xs">
+                            <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                            <span className="font-mono font-bold text-white">{job.salary.toLocaleString()} ₮</span>
+                            <span className="text-[10px] text-gray-500"> / {job.salaryUnit}</span>
+                          </div>
+
+                          {job.isReviewedByOperator ? (
+                            <span className="text-[10px] text-emerald-400 bg-emerald-950/20 px-2 py-1 rounded font-semibold border border-emerald-900/30">
+                              ✓ Захиалагчийг үнэлсэн
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setActiveReviewJob(job)}
+                              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
+                            >
+                              Захиалагчийг Үнэлэх
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
+                  );
+                } else {
+                  // Employer posted jobs tracking
+                  let statusText = '';
+                  let badgeClass = '';
+                  let statusDesc = '';
 
-                    {/* Footer / Review action if completed & not reviewed yet */}
-                    {isHired && job.status === 'completed' && (
-                      <div className="border-t border-slate-850/80 pt-3.5 flex items-center justify-between">
-                        <div className="flex items-center space-x-1 text-xs">
-                          <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                          <span className="font-mono font-bold text-white">{job.salary.toLocaleString()} ₮</span>
-                          <span className="text-[10px] text-gray-500"> / {job.salaryUnit}</span>
+                  if (job.status === 'open') {
+                    statusText = 'Нээлттэй • Жолооч хайж буй';
+                    badgeClass = 'bg-amber-950/20 text-amber-400 border border-amber-900/30';
+                    statusDesc = `⏳ Хүсэлт ирүүлсэн жолооч нарын тоо: ${job.applicants.length}. Жолооч сонгох буюу ажилд томилох боломжтой.`;
+                  } else if (job.status === 'in_progress') {
+                    statusText = 'Ажил явагдаж байна';
+                    badgeClass = 'bg-emerald-950/20 text-emerald-400 border border-emerald-900/40';
+                    statusDesc = `🤝 Томилогдсон жолооч: ${job.hiredOperatorName || 'Оператор'}. Ажил дууссаны дараа гүйцэтгэлийг баталгаажуулж үнэлнэ үү.`;
+                  } else if (job.status === 'completed') {
+                    statusText = 'Ажил дууссан';
+                    badgeClass = 'bg-slate-950 text-slate-400 border border-slate-800';
+                    statusDesc = `✓ Ажил амжилттай дууссан. Томилогдож ажилласан жолооч: ${job.hiredOperatorName || 'Оператор'}.`;
+                  }
+
+                  return (
+                    <div
+                      key={job.id}
+                      className="glass-card p-5 rounded-2xl border border-slate-800/80 hover:border-slate-700/80 transition-all flex flex-col justify-between space-y-4 text-left"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start gap-1">
+                          <span className="font-mono text-[10px] text-emerald-400 bg-emerald-900/10 px-2 py-0.5 rounded border border-emerald-900/25">
+                            🚜 {job.machineryType}
+                          </span>
+                          <span className="text-[10px] text-gray-500 shrink-0 flex items-center space-x-1">
+                            <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                            <span>{job.location.split(',')[0]}</span>
+                          </span>
                         </div>
 
-                        {job.isReviewedByOperator ? (
-                          <span className="text-[10px] text-emerald-400 bg-emerald-950/20 px-2 py-1 rounded font-semibold border border-emerald-900/30">
-                            ✓ Захиалагчийг үнэлсэн
+                        <h4 className="text-xs font-bold text-white leading-snug">{job.title}</h4>
+
+                        {/* Status badge and description */}
+                        <div className="space-y-2 pt-1.5">
+                          <span className={`inline-flex px-2.5 py-0.5 rounded text-[9.5px] font-bold font-mono tracking-wide uppercase ${badgeClass}`}>
+                            {statusText}
                           </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setActiveReviewJob(job)}
-                            className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
-                          >
-                            Захиалагчийг Үнэлэх
-                          </button>
+                          <p className="text-[11px] text-gray-400 leading-relaxed bg-[#080d1a]/40 p-3 rounded-lg border border-slate-850/80 font-sans">
+                            {statusDesc}
+                          </p>
+                        </div>
+
+                        {/* Applicants rendering for open jobs */}
+                        {job.status === 'open' && job.applicants.length > 0 && (
+                          <div className="space-y-2 pt-2 border-t border-slate-850">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase font-mono tracking-wider flex items-center space-x-1.5">
+                              <Users className="w-3.5 h-3.5 text-emerald-500" />
+                              <span>Ирүүлсэн хүсэлтүүд ({job.applicants.length}):</span>
+                            </span>
+                            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                              {job.applicants.map((opId) => {
+                                const op = allUsers.find(u => u.id === opId);
+                                if (!op) return null;
+                                return (
+                                  <div
+                                    key={op.id}
+                                    className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-850 flex items-center justify-between text-xs"
+                                  >
+                                    <div className="flex items-center space-x-2">
+                                      <img
+                                        src={op.profileImage}
+                                        alt={op.fullName}
+                                        className="w-7 h-7 rounded-full object-cover"
+                                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }}
+                                      />
+                                      <div>
+                                        <div className="font-bold text-white">{op.fullName}</div>
+                                        <div className="text-[10px] text-amber-400 flex items-center space-x-0.5">
+                                          <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500" />
+                                          <span>{op.rating.toFixed(1)} ({op.experienceYears || 0} жил)</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleHireOperator(job.id, op.id)}
+                                      className="bg-emerald-600 hover:bg-emerald-555 text-white font-bold text-[10px] py-1 px-2.5 rounded-lg transition-colors cursor-pointer"
+                                    >
+                                      Томилох
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Active Job Workflow for Employer */}
+                        {job.status === 'in_progress' && (
+                          <div className="pt-2">
+                            <button
+                              type="button"
+                              onClick={() => handleCompleteJobTrigger(job)}
+                              className="w-full bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer flex items-center justify-center space-x-1"
+                            >
+                              <span>✓ Ажил Дууссаныг Баталгаажуулж Үнэлэх</span>
+                            </button>
+                          </div>
                         )}
                       </div>
-                    )}
-                  </div>
-                );
+
+                      {/* Completed Job action */}
+                      {job.status === 'completed' && (
+                        <div className="border-t border-slate-850/80 pt-3.5 flex items-center justify-between">
+                          <div className="flex items-center space-x-1 text-xs">
+                            <DollarSign className="w-3.5 h-3.5 text-emerald-450" />
+                            <span className="font-mono font-bold text-white">{job.salary.toLocaleString()} ₮</span>
+                            <span className="text-[10px] text-slate-500"> / {job.salaryUnit}</span>
+                          </div>
+
+                          {job.isReviewedByEmployer ? (
+                            <span className="text-[10px] text-emerald-450 bg-emerald-950/20 px-2.5 py-1 rounded font-semibold border border-emerald-900/30">
+                              ✓ Жолоочийг үнэлсэн
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setActiveReviewJob(job)}
+                              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
+                            >
+                              Жолоочийг Үнэлэх
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
               })}
             </div>
           )}
