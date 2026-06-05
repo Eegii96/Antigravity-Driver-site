@@ -1,4 +1,7 @@
+'use client';
+
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { User, Review, JobHistoryItem, Job } from '../types';
 import { getReviews, getJobHistory, saveSingleUser, getSingleUser, getJobs, getUsers, hireOperator, completeJob } from '../lib/db';
 import { Star, ShieldAlert, Award, Phone, Mail, MapPin, Calendar, CheckCircle, Clock, DollarSign, Briefcase, Users, X } from 'lucide-react';
@@ -8,14 +11,15 @@ import ReviewModal from './ReviewModal';
 interface ProfileViewProps {
   user: User; // User being viewed
   isOwnProfile: boolean; // Flag to enable edit options
-  onBack?: () => void; // If inspector mode support back action
   onUpdateCurrentUser?: (updated: User) => void; // Callback to notify app state has changed
   defaultTab?: 'profile' | 'applications';
-  onViewUserProfile?: (user: User) => void;
   highlightJobId?: string;
+  onBack?: () => void;
+  onViewUserProfile?: (targetUser: User) => void;
 }
 
-export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurrentUser, defaultTab, onViewUserProfile, highlightJobId }: ProfileViewProps) {
+export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, defaultTab, highlightJobId }: ProfileViewProps) {
+  const router = useRouter();
   const [showEdit, setShowEdit] = useState<boolean>(false);
   const [profileUser, setProfileUser] = useState<User>(user);
   
@@ -29,7 +33,6 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
   const [driverJobs, setDriverJobs] = useState<Job[]>([]);
   const [activeReviewJob, setActiveReviewJob] = useState<Job | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [inspectUserProfile, setInspectUserProfile] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -242,15 +245,13 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
               : (isOwnProfile ? 'Миний Хувийн Профайл' : `${profileUser.fullName}-ийн Профайл`)}
           </span>
         </h2>
-        {onBack && (
-          <button
-            id="back-to-board-btn"
-            onClick={onBack}
-            className="text-xs bg-slate-900/60 hover:bg-slate-800 text-emerald-450 border border-slate-800/80 px-4 py-2 rounded-xl transition-all cursor-pointer shadow-md"
-          >
-            Жагсаалт руу буцах
-          </button>
-        )}
+        <button
+          id="back-to-board-btn"
+          onClick={() => router.push('/board')}
+          className="text-xs bg-slate-900/60 hover:bg-slate-800 text-emerald-450 border border-slate-800/80 px-4 py-2 rounded-xl transition-all cursor-pointer shadow-md"
+        >
+          Жагсаалт руу буцах
+        </button>
       </div>
 
       {success && (
@@ -695,11 +696,8 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                           <span className="text-slate-500">Захиалагч:</span>
                           <button
                             type="button"
-                            onClick={async () => {
-                              const empUser = allUsers.find(u => u.id === job.employerId) || await getSingleUser(job.employerId);
-                              if (empUser) {
-                                setInspectUserProfile(empUser);
-                              }
+                            onClick={() => {
+                              router.push(`/profile/${job.employerId}`);
                             }}
                             className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
                           >
@@ -849,11 +847,8 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                             <span className="text-slate-500">Томилогдсон жолооч:</span>
                             <button
                               type="button"
-                              onClick={async () => {
-                                const opUser = allUsers.find(u => u.id === job.hiredOperatorId) || await getSingleUser(job.hiredOperatorId!);
-                                if (opUser) {
-                                  setInspectUserProfile(opUser);
-                                }
+                              onClick={() => {
+                                router.push(`/profile/${job.hiredOperatorId}`);
                               }}
                               className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
                             >
@@ -879,7 +874,7 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
                                     className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-850 flex items-center justify-between text-xs"
                                   >
                                     <div
-                                      onClick={() => setInspectUserProfile(op)}
+                                      onClick={() => router.push(`/profile/${op.id}`)}
                                       className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
                                     >
                                       <img
@@ -1039,25 +1034,7 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
         />
       )}
 
-      {inspectUserProfile && (
-        <div id="partner-profile-inspector-modal" className="fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in text-left">
-          <div className="bg-slate-900 border border-slate-700 max-w-4xl w-full rounded-2xl overflow-hidden shadow-2xl relative p-6 my-8">
-            <button
-              onClick={() => setInspectUserProfile(null)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors cursor-pointer z-50 bg-slate-800/80 p-2 rounded-full border border-slate-700"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="max-h-[80vh] overflow-y-auto pt-4">
-              <ProfileView
-                user={inspectUserProfile}
-                isOwnProfile={false}
-                defaultTab="profile"
-              />
-            </div>
-          </div>
-        </div>
-      )}
+
 
     </div>
   );

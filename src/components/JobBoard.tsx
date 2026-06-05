@@ -1,4 +1,7 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { User, Job, Review, AppNotification } from '../types';
 import {
   getJobs,
@@ -15,7 +18,8 @@ import {
   deleteAllNotifications,
   addJob,
   getReviews,
-  getSingleReview
+  getSingleReview,
+  setCurrentUser
 } from '../lib/db';
 import {
   Search,
@@ -46,11 +50,11 @@ import ReviewModal from './ReviewModal';
 
 interface JobBoardProps {
   currentUser: User;
-  onLogout: () => void;
-  onNavigateToProfile: () => void;
-  onNavigateToSettings: () => void;
-  onNavigateToApplications: (jobId?: string) => void;
-  onViewUserProfile: (user: User) => void;
+  onLogout?: () => void;
+  onNavigateToProfile?: () => void;
+  onNavigateToSettings?: () => void;
+  onNavigateToApplications?: (jobId?: string) => void;
+  onViewUserProfile?: (user: User) => void;
 }
 
 const getFirstName = (userOrName?: any): string => {
@@ -98,13 +102,9 @@ const LOCATION_OPTIONS = [
 ];
 
 export default function JobBoard({
-  currentUser,
-  onLogout,
-  onNavigateToProfile,
-  onNavigateToSettings,
-  onNavigateToApplications,
-  onViewUserProfile
+  currentUser
 }: JobBoardProps) {
+  const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -331,13 +331,13 @@ export default function JobBoard({
         }
         
         if (reviewToShow) {
-          onNavigateToApplications(reviewToShow.jobId);
+          router.push(`/applications?jobId=${reviewToShow.jobId}`);
         } else {
-          onNavigateToProfile();
+          router.push('/profile');
         }
       } catch (err) {
         console.error('Error loading review details:', err);
-        onNavigateToProfile();
+        router.push('/profile');
       } finally {
         setIsLoadingReview(false);
       }
@@ -388,9 +388,9 @@ export default function JobBoard({
           console.error('Error resolving fallback job ID:', err);
         }
       }
-      onNavigateToApplications(resolvedJobId || undefined);
+      router.push(resolvedJobId ? `/applications?jobId=${resolvedJobId}` : '/applications');
     } else if (title.includes('аюулгүй байдал') || title.includes('профайл') || msg.includes('миний профайл')) {
-      onNavigateToProfile();
+      router.push('/profile');
     } else {
       // Default fallbacks based on content
       if (msg.includes('хүсэлт') || msg.includes('ажилд')) {
@@ -398,9 +398,9 @@ export default function JobBoard({
         if (notif.relatedId) {
           resolvedJobId = notif.relatedId;
         }
-        onNavigateToApplications(resolvedJobId || undefined);
+        router.push(resolvedJobId ? `/applications?jobId=${resolvedJobId}` : '/applications');
       } else {
-        onNavigateToProfile();
+        router.push('/profile');
       }
     }
   };
@@ -751,7 +751,7 @@ export default function JobBoard({
                   
                   <button
                     id="menu-goto-profile"
-                    onClick={() => { onNavigateToProfile(); setShowProfileMenu(false); }}
+                    onClick={() => { router.push('/profile'); setShowProfileMenu(false); }}
                     className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
                   >
                     <UserIcon className="w-4 h-4 text-emerald-400" />
@@ -760,16 +760,16 @@ export default function JobBoard({
 
                   <button
                     id="menu-goto-applications"
-                    onClick={() => { onNavigateToApplications(); setShowProfileMenu(false); }}
+                    onClick={() => { router.push('/applications'); setShowProfileMenu(false); }}
                     className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
                   >
-                    <Briefcase className="w-4 h-4 text-emerald-450" />
+                    <Briefcase className="w-4 h-4 text-emerald-455" />
                     <span>{currentUser.type === 'operator' ? 'Миний хүсэлтүүд' : 'Миний байршуулсан зарууд'}</span>
                   </button>
                   
                   <button
                     id="menu-goto-settings"
-                    onClick={() => { onNavigateToSettings(); setShowProfileMenu(false); }}
+                    onClick={() => { router.push('/settings'); setShowProfileMenu(false); }}
                     className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
                   >
                     <SettingsIcon className="w-4 h-4 text-emerald-400" />
@@ -780,7 +780,11 @@ export default function JobBoard({
 
                   <button
                     id="menu-logout"
-                    onClick={() => { onLogout(); setShowProfileMenu(false); }}
+                    onClick={() => {
+                      setCurrentUser(null);
+                      router.push('/auth');
+                      setShowProfileMenu(false);
+                    }}
                     className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-rose-400 hover:text-rose-400 flex items-center space-x-2.5 transition-colors cursor-pointer"
                   >
                     <LogOut className="w-4 h-4" />
@@ -1016,7 +1020,7 @@ export default function JobBoard({
                   onClick={() => {
                     const employerUser = users.find(u => u.id === selectedJob.employerId);
                     if (employerUser) {
-                      onViewUserProfile(employerUser);
+                      router.push(`/profile/${employerUser.id}`);
                     }
                   }}
                   className="w-full mt-3 flex items-center justify-between bg-slate-850/40 p-2 rounded-lg border border-slate-800/50 hover:bg-slate-800 transition-colors text-left focus:outline-none"
@@ -1124,7 +1128,7 @@ export default function JobBoard({
                                     <button
                                       id={`view-op-profile-${op.id}`}
                                       type="button"
-                                      onClick={() => onViewUserProfile(op)}
+                                      onClick={() => router.push(`/profile/${op.id}`)}
                                       className="flex items-center space-x-2 text-left hover:underline cursor-pointer focus:outline-none"
                                     >
                                       <img src={op.profileImage} alt={op.fullName} className="w-7 h-7 rounded-full object-cover" referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }} />
@@ -1399,7 +1403,7 @@ export default function JobBoard({
                   type="button"
                   onClick={() => {
                     setViewingReview(null);
-                    onNavigateToProfile();
+                    router.push('/profile');
                   }}
                   className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold rounded-xl transition-all shadow-lg shadow-emerald-950/25 cursor-pointer font-sans"
                 >

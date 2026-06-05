@@ -2,17 +2,17 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser } from '../lib/db';
+import { getCurrentUser } from '@/lib/db';
 
-export default function Home() {
+export default function ProfilePage() {
   const router = useRouter();
 
   useEffect(() => {
     const user = getCurrentUser();
-    if (user) {
-      router.replace('/board');
-    } else {
+    if (!user) {
       router.replace('/auth');
+    } else {
+      router.replace(`/profile/${user.id}`);
     }
   }, [router]);
 

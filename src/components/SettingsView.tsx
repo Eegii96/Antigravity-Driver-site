@@ -1,4 +1,7 @@
+'use client';
+
 import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { ShieldCheck, Key, Trash2, Eye, EyeOff, Check, AlertCircle, X } from 'lucide-react';
 import { getCurrentUser, saveSingleUser, setCurrentUser, getFreshCurrentUser } from '../lib/db';
 import { User } from '../types';
@@ -6,10 +9,11 @@ import { auth } from '../lib/firebase';
 import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 
 interface SettingsViewProps {
-  onBack: () => void;
+  onBack?: () => void;
 }
 
-export default function SettingsView({ onBack }: SettingsViewProps) {
+export default function SettingsView() {
+  const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
@@ -131,7 +135,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         </div>
         <button
           id="back-to-jobs-from-settings"
-          onClick={onBack}
+          onClick={() => router.push('/board')}
           className="text-xs bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 px-3 py-1.5 rounded transition-colors cursor-pointer"
         >
           Зарын хэсэг рүү буцах
