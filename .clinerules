@@ -1,5 +1,0 @@
-# Antigravity IDE Agent Rules
-
-1. **File Modification Auto-Approval:**
-   - The user wishes for file modifications and writes to be applied automatically without requiring manual approval (i.e. bypassing the "Accept / Reject" prompt).
-   - *Action for User:* In the extension settings pane (Settings gear icon in the top right of the sidebar panel), scroll down to "Auto-Approve Settings" and check the "Write Files" (and optionally "Execute Commands") checkbox.
