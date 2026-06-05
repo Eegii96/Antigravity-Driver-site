@@ -1,33 +1,12 @@
-'use client';
+import { Metadata } from 'next';
+import BoardClient from './BoardClient';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import JobBoard from '../../components/JobBoard';
-import { getCurrentUser } from '../../lib/db';
-import { User } from '../../types';
+export const metadata: Metadata = {
+  title: 'Ажлын зарын самбар | Жолооч Монголиа',
+  description: 'Хүнд машин механизм, газар шорооны ажлын нээлттэй ажлын байрууд, захиалгууд болон түрээсийн зар мэдээлэл.',
+};
 
 export default function BoardPage() {
-  const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const user = getCurrentUser();
-    if (!user) {
-      router.push('/auth');
-    } else {
-      setCurrentUser(user);
-    }
-    setLoading(false);
-  }, [router]);
-
-  if (loading || !currentUser) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  return <JobBoard currentUser={currentUser} />;
+  return <BoardClient />;
 }
+

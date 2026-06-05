@@ -1013,6 +1013,13 @@ export default function JobBoard({
                   </button>
                 </div>
                 <h3 className="text-sm font-bold text-white leading-snug">{selectedJob.title}</h3>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/jobs/${selectedJob.id}`)}
+                  className="mt-1.5 text-[10px] text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer flex items-center space-x-1"
+                >
+                  <span>🔗 Зарын линк харах / Хуваалцах</span>
+                </button>
                 
                 {/* Employer preview */}
                 <button

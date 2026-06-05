@@ -427,6 +427,20 @@ export async function getJobs(): Promise<Job[]> {
   }
 }
 
+export async function getSingleJob(jobId: string): Promise<Job | null> {
+  try {
+    const snap = await getDoc(doc(db, 'jobs', jobId));
+    if (snap.exists()) {
+      const j = snap.data() as Job;
+      j.id = jobId;
+      return j;
+    }
+  } catch (err) {
+    console.error('Error fetching single job from Firestore:', err);
+  }
+  return null;
+}
+
 export async function saveJobs(jobs: Job[]): Promise<void> {
   try {
     const batch = writeBatch(db);
