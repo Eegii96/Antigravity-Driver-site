@@ -620,7 +620,7 @@ export default function JobBoard({
                     className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
                   >
                     <Briefcase className="w-4 h-4 text-emerald-450" />
-                    <span>{currentUser.type === 'operator' ? 'Миний хүсэлтүүд' : 'Миний зарууд'}</span>
+                    <span>{currentUser.type === 'operator' ? 'Миний хүсэлтүүд' : 'Миний байршуулсан зарууд'}</span>
                   </button>
                   
                   <button

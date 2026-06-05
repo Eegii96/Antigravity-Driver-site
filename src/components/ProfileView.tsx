@@ -212,7 +212,7 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
           <Award className="w-6 h-6 text-amber-400 text-neon-cyan animate-pulse-soft" />
           <span>
             {defaultTab === 'applications'
-              ? (profileUser.type === 'operator' ? 'Миний Хүсэлтүүд & Ажлын Явц' : 'Миний Зарласан Зарууд')
+              ? (profileUser.type === 'operator' ? 'Миний Хүсэлтүүд & Ажлын Явц' : 'Миний Байршуулсан Зарууд')
               : (isOwnProfile ? 'Миний Хувийн Профайл' : `${profileUser.fullName}-ийн Профайл`)}
           </span>
         </h2>
@@ -595,7 +595,7 @@ export default function ProfileView({ user, isOwnProfile, onBack, onUpdateCurren
             <span>
               {profileUser.type === 'operator' 
                 ? `Миний илгээсэн хүсэлтүүд & Ажлын явц (${driverJobs.length})` 
-                : `Миний зарласан зарууд (${driverJobs.length})`}
+                : `Миний байршуулсан зарууд (${driverJobs.length})`}
             </span>
           </h3>
 
