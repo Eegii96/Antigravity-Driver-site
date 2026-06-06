@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, Key, Trash2, Eye, EyeOff, Check, AlertCircle, X, Phone } from 'lucide-react';
+import { ShieldCheck, Key, Trash2, Eye, EyeOff, Check, AlertCircle, X } from 'lucide-react';
 import { getCurrentUser, saveSingleUser, setCurrentUser, getFreshCurrentUser } from '../lib/db';
 import { User } from '../types';
 import { auth } from '../lib/firebase';
@@ -14,9 +14,6 @@ interface SettingsViewProps {
 
 export default function SettingsView() {
   const router = useRouter();
-  const [currentUser, setLocalUser] = useState<User | null>(null);
-  const [newPhone, setNewPhone] = useState<string>('');
-  const [showLimitAlert, setShowLimitAlert] = useState<boolean>(false);
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
@@ -31,90 +28,6 @@ export default function SettingsView() {
   const [otherReasonText, setOtherReasonText] = useState<string>('');
   const [deleteSuccess, setDeleteSuccess] = useState<boolean>(false);
   const [deleteError, setDeleteError] = useState<string>('');
-
-  useEffect(() => {
-    const user = getCurrentUser();
-    if (user) {
-      setLocalUser(user);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (showLimitAlert) {
-      const timer = setTimeout(() => {
-        setShowLimitAlert(false);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [showLimitAlert]);
-
-  const handleAddPhone = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!currentUser) return;
-
-    const trimmed = newPhone.trim();
-    if (!trimmed) {
-      setError('Утасны дугаар оруулна уу.');
-      return;
-    }
-
-    if (trimmed.length < 8) {
-      setError('Утасны дугаар хамгийн багадаа 8 оронтой байх ёстой.');
-      return;
-    }
-
-    const currentList = currentUser.secondaryPhones || [];
-    if (currentList.length >= 1) {
-      setShowLimitAlert(true);
-      setNewPhone('');
-      return;
-    }
-
-    if (currentList.includes(trimmed) || currentUser.phone === trimmed) {
-      setError('Энэ дугаар аль хэдийн бүртгэгдсэн байна.');
-      return;
-    }
-
-    try {
-      const updatedUser = {
-        ...currentUser,
-        secondaryPhones: [...currentList, trimmed]
-      };
-
-      await saveSingleUser(updatedUser);
-      setCurrentUser(updatedUser);
-      setLocalUser(updatedUser);
-      setNewPhone('');
-      setSuccess('Нэмэлт дугаар амжилттай бүртгэгдлээ.');
-      setError('');
-      setTimeout(() => setSuccess(''), 4000);
-    } catch (err) {
-      console.error(err);
-      setError('Нэмэлт дугаар хадгалахад алдаа гарлаа.');
-    }
-  };
-
-  const handleRemovePhone = async (phoneToRemove: string) => {
-    if (!currentUser) return;
-
-    try {
-      const currentList = currentUser.secondaryPhones || [];
-      const updatedUser = {
-        ...currentUser,
-        secondaryPhones: currentList.filter(p => p !== phoneToRemove)
-      };
-
-      await saveSingleUser(updatedUser);
-      setCurrentUser(updatedUser);
-      setLocalUser(updatedUser);
-      setSuccess('Нэмэлт дугаар амжилттай устгагдлаа.');
-      setError('');
-      setTimeout(() => setSuccess(''), 4000);
-    } catch (err) {
-      console.error(err);
-      setError('Нэмэлт дугаар устгахад алдаа гарлаа.');
-    }
-  };
 
   const deleteReasons = [
     'Ажлын санал хангалтгүй байна',
@@ -338,58 +251,6 @@ export default function SettingsView() {
             </form>
           </div>
 
-          {/* Secondary Phone Numbers Panel */}
-          <div className="bg-slate-800/20 border border-slate-700/50 p-6 rounded-xl space-y-4">
-            <h3 className="text-sm font-semibold text-white flex items-center space-x-2 border-b border-slate-800 pb-2">
-              <Phone className="w-4 h-4 text-emerald-500" />
-              <span>Нэмэлт холбоо барих дугаар</span>
-            </h3>
-            
-            <p className="text-xs text-gray-400 font-sans leading-relaxed">
-              Та системд үндсэн утасны дугаараас гадна 1 нэмэлт холбоо барих дугаар (нийт 2 дугаар) бүртгүүлэх боломжтой.
-            </p>
-
-            {/* List of secondary numbers */}
-            {currentUser && currentUser.secondaryPhones && currentUser.secondaryPhones.length > 0 ? (
-              <div className="space-y-2">
-                {currentUser.secondaryPhones.map((phoneNum, idx) => (
-                  <div key={idx} className="flex justify-between items-center bg-slate-900/50 border border-slate-800 px-3.5 py-2 rounded-lg text-xs">
-                    <span className="font-mono text-gray-200">{phoneNum}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemovePhone(phoneNum)}
-                      className="text-gray-400 hover:text-rose-450 p-1.5 transition-colors cursor-pointer rounded hover:bg-slate-850"
-                      title="Дугаар устгах"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-xs text-gray-500 italic p-3 bg-slate-900/10 border border-slate-850 rounded-lg text-center">
-                Одоогоор нэмэлт дугаар бүртгэгдээгүй байна.
-              </div>
-            )}
-
-            {/* Add phone number form */}
-            <form onSubmit={handleAddPhone} className="flex gap-2">
-              <input
-                type="tel"
-                value={newPhone}
-                onChange={(e) => setNewPhone(e.target.value.replace(/[^0-9]/g, ''))}
-                placeholder="Нэмэлт утасны дугаар (жишээ нь: 99112233)"
-                className="flex-1 px-3 py-1.5 border border-slate-700 rounded bg-slate-900 text-white text-xs focus:ring-1 focus:ring-emerald-550 focus:outline-none font-sans"
-              />
-              <button
-                type="submit"
-                className="bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 px-4 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer shrink-0"
-              >
-                Нэмэх
-              </button>
-            </form>
-          </div>
-
           {/* Dangerous accounts zone */}
           <div className="bg-rose-950/10 border border-rose-900/40 p-6 rounded-xl space-y-3">
             <h3 className="text-xs font-bold text-rose-300 uppercase tracking-widest flex items-center space-x-2">
@@ -546,51 +407,6 @@ export default function SettingsView() {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* 3rd Phone Limit Alert Page (overlay) */}
-      {showLimitAlert && (
-        <div 
-          id="phone-limit-alert-backdrop" 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 animate-fade-in"
-        >
-          {/* Keyframe stylesheet */}
-          <style dangerouslySetInnerHTML={{ __html: `
-            @keyframes shrink {
-              from { width: 100%; }
-              to { width: 0%; }
-            }
-          `}} />
-
-          <div className="max-w-md w-full bg-slate-900 border border-rose-500/30 rounded-2xl p-8 text-center space-y-6 shadow-2xl relative overflow-hidden">
-            {/* Ambient red glow */}
-            <div className="absolute -top-12 -left-12 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl"></div>
-            <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl"></div>
-            
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-rose-500/15 text-rose-500 animate-bounce">
-              <AlertCircle className="w-8 h-8" />
-            </div>
-
-            <div className="space-y-2.5">
-              <h3 className="text-base font-bold text-rose-450 uppercase tracking-wide">
-                Дугаар нэмэх боломжгүй
-              </h3>
-              <p className="text-xs text-gray-300 leading-relaxed font-sans">
-                Уучлаарай, та системд хамгийн ихдээ <strong className="text-white">1 нэмэлт холбоо барих дугаар</strong> (үндсэн дугаартайгаа нийлээд 2 дугаар) бүртгүүлэх боломжтой.
-              </p>
-              <p className="text-[10px] text-gray-500 font-sans">
-                Гурав дахь дугаарыг бүртгэх боломжгүй.
-              </p>
-            </div>
-            
-            <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-rose-550" 
-                style={{ animation: 'shrink 3s linear forwards' }}
-              ></div>
-            </div>
           </div>
         </div>
       )}

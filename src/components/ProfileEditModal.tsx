@@ -60,6 +60,7 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
   const [firstName, setFirstName] = useState<string>(initialNames.firstName);
   const [companyName, setCompanyName] = useState<string>(user.companyName || '');
   const [phone, setPhone] = useState<string>(user.phone);
+  const [phone2, setPhone2] = useState<string>(user.phone2 || '');
   const [address, setAddress] = useState<string>(user.address);
   const [avatar, setAvatar] = useState<string>(user.profileImage);
   const [email, setEmail] = useState<string>(user.email);
@@ -157,6 +158,7 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
       firstName: firstName.trim(),
       companyName: user.type === 'employer' && companyName.trim() !== '' ? companyName.trim() : undefined,
       phone,
+      phone2: phone2.trim() || undefined,
       address,
       profileImage: avatar,
       email,
@@ -296,6 +298,20 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
                 className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none font-sans"
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-300 mb-1">Утасны дугаар 2 (Заавал биш)</label>
+              <input
+                id="edit-phone2"
+                type="tel"
+                value={phone2}
+                onChange={(e) => setPhone2(e.target.value.replace(/[^0-9]/g, ''))}
+                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none font-sans"
+              />
+            </div>
+            <div></div>
           </div>
 
           <div className="grid grid-cols-1">

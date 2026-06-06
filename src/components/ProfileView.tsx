@@ -457,6 +457,14 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                 </div>
               )}
 
+              {profileUser.phone2 && ((profileUser.phoneVisible !== false || isOwnProfile) ? (
+                <div className="flex items-center space-x-2 text-slate-300">
+                  <Phone className="w-4 h-4 text-emerald-450 shrink-0 opacity-80" />
+                  <span className="font-semibold text-slate-500">Утас 2:</span>
+                  <span className="select-all font-mono font-bold text-emerald-400 text-neon-emerald opacity-90">{profileUser.phone2}</span>
+                </div>
+              ) : null)}
+
               <div className="flex items-center space-x-2 text-slate-300">
                 <MapPin className="w-4 h-4 text-emerald-450 shrink-0" />
                 <span className="font-semibold text-slate-500">Хаяг:</span>
