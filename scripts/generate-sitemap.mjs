@@ -8,7 +8,7 @@
 import { readdirSync, statSync, writeFileSync } from 'fs';
 import { join, relative } from 'path';
 
-const BASE_URL = 'https://joloochmongolia.web.app';
+const BASE_URL = 'https://jolooch.net';
 const OUT_DIR = join(process.cwd(), 'out');
 
 // Auth шаардсан хуудсуудыг sitemap-аас хасна (Google-д ашиггүй)

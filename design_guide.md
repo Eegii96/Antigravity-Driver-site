@@ -10,7 +10,7 @@
 |---|---|
 | **Нэр** | Antigravity Driver Site |
 | **Тайлбар** | Хүнд машин, механизм & Газар шорооны ажлын сайт |
-| **Амьд URL** | [joloochmongolia.web.app](https://joloochmongolia.web.app) |
+| **Амьд URL** | [jolooch.net](https://jolooch.net) |
 | **GitHub** | [github.com/Eegii96/Antigravity-Driver-site](https://github.com/Eegii96/Antigravity-Driver-site) (`main` салбар) |
 | **Зорилго** | Үнэлгээ, ажлын түүхтэй системээр хариуцлагатай жолооч/оператор болон найдвартай ажил олгогчдыг холбох платформ |
 
