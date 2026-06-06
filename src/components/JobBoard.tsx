@@ -554,6 +554,10 @@ export default function JobBoard({
 
   return (
     <div id="job-board-root" className="flex-grow bg-slate-950 text-white font-sans flex flex-col relative overflow-x-hidden">
+      {/* Warning Banner */}
+      <div className="bg-amber-500 text-slate-950 px-4 py-2.5 text-center text-[10px] md:text-xs font-semibold flex items-center justify-center space-x-2 border-b border-amber-600 z-50">
+        <span>АНХААРУУЛГА: Ажлын хариуцлага алдаж шалтгаангүй ажил хаясан, техникт санаатай хохирол учруулсан, ажлын байранд архидан согтуурсан, цалин хөлс олгоогүй гэх мэт ноцтой зөрчил гаргасан тохиолдолд хэрэглэгчийн мэдээллийг хар дансанд бүртгэж, цаашид системийг ашиглах боломжгүй болох эрсдэлтэйг анхаарна уу.</span>
+      </div>
 
       {/* Nav bar */}
       <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-6 py-4 flex items-center justify-between">

@@ -41,11 +41,6 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col justify-between">
-        {/* Global Warning Banner */}
-        <div className="bg-amber-500 text-slate-950 px-4 py-2.5 text-center text-[10px] md:text-xs font-semibold flex items-center justify-center space-x-2 border-b border-amber-600 z-50">
-          <span>АНХААРУУЛГА: Ажлын хариуцлага алдаж шалтгаангүй ажил хаясан, техникт санаатай хохирол учруулсан, ажлын байранд архидан согтуурсан, цалин хөлс олгоогүй гэх мэт ноцтой зөрчил гаргасан тохиолдолд хэрэглэгчийн мэдээллийг хар дансанд бүртгэж, цаашид системийг ашиглах боломжгүй болох эрсдэлтэйг анхаарна уу.</span>
-        </div>
-        
         <div className="flex-grow flex flex-col">{children}</div>
         <Footer />
       </body>
