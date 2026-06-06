@@ -84,7 +84,7 @@ export default function ProfileDetailClient() {
   const isOwnProfile = currentUser.id === viewedUser.id;
 
   return (
-    <div className="bg-[#070a13] min-h-screen py-8">
+    <div className="bg-[#070a13] flex-grow py-8">
       <ProfileView
         user={viewedUser}
         isOwnProfile={isOwnProfile}

@@ -404,7 +404,7 @@ export default function Auth({ onSuccess }: AuthProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#070a13] relative overflow-hidden flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="flex-grow bg-[#070a13] relative overflow-hidden flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
       {/* Ambient background glow blobs */}
       <div className="glow-blob bg-emerald-500 w-[400px] h-[400px] -top-40 -left-40 opacity-10"></div>
       <div className="glow-blob bg-cyan-500 w-[500px] h-[500px] -bottom-60 -right-40 opacity-10" style={{ animationDelay: '-5s' }}></div>

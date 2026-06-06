@@ -52,7 +52,7 @@ function ApplicationsContent() {
 
 export default function ApplicationsClient() {
   return (
-    <div className="bg-[#070a13] min-h-screen py-8">
+    <div className="bg-[#070a13] flex-grow py-8">
       <Suspense fallback={
         <div className="min-h-screen bg-[#070a13] flex items-center justify-center text-white font-sans">
           <div className="flex flex-col items-center space-y-4">
