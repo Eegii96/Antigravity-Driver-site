@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Allow: /auth
+Allow: /jobs/
+Allow: /profile/
+Disallow: /settings
+Disallow: /applications
+Disallow: /board
+
+Sitemap: https://joloochmongolia.web.app/sitemap.xml

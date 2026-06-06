@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/generate-sitemap.mjs",
     "start": "next start",
     "lint": "eslint",
-    "deploy:firebase": "next build && npx --package firebase-tools firebase deploy"
+    "deploy:firebase": "next build && node scripts/generate-sitemap.mjs && npx --package firebase-tools firebase deploy"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
