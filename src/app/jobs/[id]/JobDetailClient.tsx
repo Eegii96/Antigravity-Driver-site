@@ -369,12 +369,6 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
           </div>
         )}
       </main>
-
-      {/* Footer */}
-      <footer className="bg-slate-950 py-6 border-t border-slate-900 text-center text-xs text-gray-500 font-sans">
-        <p className="font-semibold text-gray-400">Хүнд машин, механизм & Газар шорооны ажлын сайт</p>
-        <p className="mt-1 text-[10px]">© 2026 Antigravity. Бүх эрх хуулиар хамгаалагдсан.</p>
-      </footer>
     </div>
   );
 }
