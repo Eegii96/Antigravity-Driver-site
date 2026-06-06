@@ -27,6 +27,7 @@ export interface User {
   securityAnswer1?: string;
   securityQuestion2?: string;
   securityAnswer2?: string;
+  secondaryPhones?: string[];
 }
 
 export interface Review {
