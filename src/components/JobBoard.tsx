@@ -811,21 +811,16 @@ export default function JobBoard({
             </div>
           )}
 
-          {/* Dashboard Quick Stats */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
-              <span className="text-[10px] text-gray-500 uppercase block font-mono">Нийт зар</span>
+              <span className="text-[10px] text-gray-550 uppercase block font-mono font-semibold text-gray-400">Нийт зар</span>
               <span className="text-xl font-black text-white">{jobs.length} зар</span>
             </div>
             <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
-              <span className="text-[10px] text-gray-500 uppercase block font-mono">Бүртгэлтэй хэрэглэгч</span>
+              <span className="text-[10px] text-gray-550 uppercase block font-mono font-semibold text-gray-400">Бүртгэлтэй хэрэглэгч</span>
               <span className="text-xl font-black text-emerald-400">
                 {users.length > 0 ? users.length : '...'} хэрэглэгч
               </span>
-            </div>
-            <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
-              <span className="text-[10px] text-gray-500 uppercase block font-mono">Аюулгүй ажиллагаа</span>
-              <span className="text-xl font-black text-amber-400">99.4% сайн</span>
             </div>
           </div>
 
@@ -925,7 +920,7 @@ export default function JobBoard({
           {/* Job listings container */}
           <div className="space-y-4">
             <h3 className="text-xs font-bold text-gray-400 tracking-wider uppercase text-left">
-              Шороо замын нээлттэй зарууд ({filteredJobs.length})
+              Нийт зар ({filteredJobs.length})
             </h3>
 
             {filteredJobs.length === 0 ? (
