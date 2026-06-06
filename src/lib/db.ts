@@ -480,9 +480,17 @@ export async function saveJobHistory(history: JobHistoryItem[]): Promise<void> {
 // ----------------------------------------------------
 
 export function getCurrentUser(): User | null {
-  const userJson = localStorage.getItem('currentUser');
-  if (!userJson) return null;
-  return JSON.parse(userJson);
+  try {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return null;
+    }
+    const userJson = localStorage.getItem('currentUser');
+    if (!userJson) return null;
+    return JSON.parse(userJson);
+  } catch (err) {
+    console.warn('Error reading currentUser from localStorage:', err);
+    return null;
+  }
 }
 
 // Keep local session updated in localStorage for UX, but fetch fresh data from Firestore asynchronously when needed.
@@ -508,10 +516,17 @@ export async function getFreshCurrentUser(): Promise<User | null> {
 }
 
 export function setCurrentUser(user: User | null) {
-  if (user) {
-    localStorage.setItem('currentUser', JSON.stringify(user));
-  } else {
-    localStorage.removeItem('currentUser');
+  try {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return;
+    }
+    if (user) {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('currentUser');
+    }
+  } catch (err) {
+    console.warn('Error writing currentUser to localStorage:', err);
   }
 }
 

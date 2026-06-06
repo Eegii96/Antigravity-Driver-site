@@ -13,13 +13,20 @@ const isCompanyName = (name: string): boolean => {
 
 // Retrieve API key from environment variables or LocalStorage
 const getApiKey = (): string => {
-  const localKey = localStorage.getItem('VITE_GEMINI_API_KEY');
-  if (localKey && localKey.trim()) {
-    return localKey.trim();
+  try {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const localKey = localStorage.getItem('VITE_GEMINI_API_KEY');
+      if (localKey && localKey.trim()) {
+        return localKey.trim();
+      }
+    }
+  } catch (err) {
+    console.warn('Error reading VITE_GEMINI_API_KEY from localStorage:', err);
   }
-  // Next.js environment variables
+  
+  // Next.js environment variables (safely check window)
   const key = process.env.NEXT_PUBLIC_GEMINI_API_KEY || 
-              (window as any).GEMINI_API_KEY ||
+              (typeof window !== 'undefined' ? (window as any).GEMINI_API_KEY : '') ||
               '';
   return key;
 };
