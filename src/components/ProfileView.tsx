@@ -689,9 +689,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                     >
                       <div className="space-y-3">
                         <div className="flex justify-between items-start gap-1">
-                          <span className="font-mono text-[10px] text-emerald-400 bg-emerald-900/10 px-2 py-0.5 rounded border border-emerald-900/25">
-                            🚜 {job.machineryType}
-                          </span>
+                          <div></div>
                           <span className="text-[10px] text-gray-500 shrink-0 flex items-center space-x-1">
                             <MapPin className="w-3.5 h-3.5 text-slate-500" />
                             <span>{job.location.split(',')[0]}</span>
@@ -778,9 +776,6 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                               <span className="font-mono font-bold text-white">
                                 {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
                               </span>
-                              {job.salary > 0 && (
-                                <span className="text-[10px] text-gray-500"> / {job.salaryUnit}</span>
-                              )}
                             </div>
 
                             {job.isReviewedByOperator ? (
@@ -833,9 +828,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                     >
                       <div className="space-y-3">
                         <div className="flex justify-between items-start gap-1">
-                          <span className="font-mono text-[10px] text-emerald-400 bg-emerald-900/10 px-2 py-0.5 rounded border border-emerald-900/25">
-                            🚜 {job.machineryType}
-                          </span>
+                          <div></div>
                           <span className="text-[10px] text-gray-500 shrink-0 flex items-center space-x-1">
                             <MapPin className="w-3.5 h-3.5 text-slate-500" />
                             <span>{job.location.split(',')[0]}</span>
@@ -962,9 +955,6 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                               <span className="font-mono font-bold text-white">
                                 {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
                               </span>
-                              {job.salary > 0 && (
-                                <span className="text-[10px] text-slate-500"> / {job.salaryUnit}</span>
-                              )}
                             </div>
 
                             {job.isReviewedByEmployer ? (

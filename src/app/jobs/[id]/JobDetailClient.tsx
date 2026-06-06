@@ -223,9 +223,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
             {/* Header info */}
             <div className="border-b border-slate-800 pb-5 space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono text-xs text-emerald-400 bg-emerald-900/10 px-3 py-1 rounded border border-emerald-900/25">
-                  🚜 {job.machineryType}
-                </span>
+                <div></div>
                 <span className="text-xs text-gray-500 flex items-center space-x-1">
                   <MapPin className="w-3.5 h-3.5" />
                   <span>{job.location}</span>
@@ -267,9 +265,6 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 <span className="font-bold text-lg text-emerald-450 block font-mono mt-1">
                   {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString('mn-MN')} ₮`}
                 </span>
-                {job.salary > 0 && (
-                  <span className="text-[10px] text-gray-400"> / {job.salaryUnit} олгоно</span>
-                )}
               </div>
               <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-850">
                 <span className="text-[10px] text-gray-500 block font-mono">АЖЛЫН ХУГАЦАА</span>

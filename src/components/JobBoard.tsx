@@ -956,9 +956,7 @@ export default function JobBoard({
                   >
                     <div className="space-y-2">
                       <div className="flex justify-between items-start gap-1">
-                        <span className="font-mono text-[10px] text-emerald-400 bg-emerald-900/10 px-2 py-0.5 rounded border border-emerald-900/25">
-                          🚜 {job.machineryType}
-                        </span>
+                        <div></div>
                         <span className="text-[10px] text-gray-500 shrink-0 flex items-center space-x-1">
                           <MapPin className="w-3 h-3" />
                           <span>{job.location.split(',')[0]}</span>
@@ -980,9 +978,6 @@ export default function JobBoard({
                         <span className="font-mono font-bold text-white">
                           {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
                         </span>
-                        {job.salary > 0 && (
-                          <span className="text-[10px] text-gray-500"> / {job.salaryUnit}</span>
-                        )}
                       </div>
                       <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-950/20 px-2 py-0.5 rounded">
                         {job.status === 'open' ? 'Нээлттэй' : job.status === 'in_progress' ? 'Гэрээ байгуулсан' : 'Дууссан'}
@@ -1003,10 +998,7 @@ export default function JobBoard({
               
               {/* Header */}
               <div className="border-b border-slate-800 pb-4">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="font-mono text-[10px] text-emerald-400 bg-emerald-900/10 px-2.5 py-1 rounded">
-                    🚜 {selectedJob.machineryType}
-                  </span>
+                <div className="flex justify-end items-start mb-2">
                   <button
                     id="close-detail-panel"
                     onClick={() => setSelectedJob(null)}
@@ -1058,9 +1050,6 @@ export default function JobBoard({
                   <span className="font-bold text-emerald-400 block font-mono mt-0.5">
                     {selectedJob.salary === 0 ? 'Тохиролцоно' : `${selectedJob.salary.toLocaleString()} ₮`}
                   </span>
-                  {selectedJob.salary > 0 && (
-                    <span className="text-[10px] text-gray-500"> / {selectedJob.salaryUnit}</span>
-                  )}
                 </div>
                 <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
                   <span className="text-[10px] text-gray-500 block font-mono">Ажлын хугацаа:</span>

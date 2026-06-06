@@ -77,8 +77,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   
   // Format title like: "Дундговьд ажиллах Ковш оператор яаралтай авна - Цалин 3.5 сая"
   const title = job.salary === 0
-    ? `${locationFormatted} ажиллах ${job.machineryType} яаралтай авна - Цалин тохиролцоно | Жолооч Монголиа`
-    : `${locationFormatted} ажиллах ${job.machineryType} яаралтай авна - Цалин ${formattedSalary} (${job.salaryUnit}) | Жолооч Монголиа`;
+    ? `${job.title} - Цалин тохиролцоно | Жолооч Монголиа`
+    : `${job.title} - Цалин ${formattedSalary} | Жолооч Монголиа`;
   const description = `${job.employerName} захиалагчаас зарласан ажил: ${job.description.slice(0, 150)}... Шалгуур: ${job.requirements.join(', ')}`;
 
   return {
