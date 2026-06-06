@@ -11,8 +11,8 @@ import { join, relative } from 'path';
 const BASE_URL = 'https://jolooch.net';
 const OUT_DIR = join(process.cwd(), 'out');
 
-// Auth шаардсан хуудсуудыг sitemap-аас хасна (Google-д ашиггүй)
-const EXCLUDED_PATHS = ['/settings', '/applications', '/board', '/_not-found', '/404'];
+// Auth шаардсан болон туслах хуудсуудыг sitemap-аас хасна (Google-д ашиггүй)
+const EXCLUDED_PATHS = ['/settings', '/applications', '/board', '/_not-found', '/404', '/google'];
 
 function scanHtmlFiles(dir, fileList = []) {
   const entries = readdirSync(dir);
