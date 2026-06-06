@@ -49,6 +49,7 @@ export default function JobPostModal({
   const [type, setType] = useState<string>('operator_hiring');
   const [customType, setCustomType] = useState<string>('');
   const [salary, setSalary] = useState<number | ''>(150000);
+  const [isNegotiable, setIsNegotiable] = useState<boolean>(false);
   const [location, setLocation] = useState<string>('Улаанбаатар хот');
   const [customLocation, setCustomLocation] = useState<string>('');
   
@@ -66,7 +67,7 @@ export default function JobPostModal({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!title || salary === '' || salary <= 0) {
+    if (!title || (salary === '' && !isNegotiable) || (!isNegotiable && salary !== '' && salary <= 0)) {
       setError('Шаардлагатай бүх талбарыг бөглөнө үү.');
       return;
     }
@@ -205,18 +206,38 @@ export default function JobPostModal({
 
             {/* Salary */}
             <div>
-              <label className="block text-xs font-medium text-gray-300 mb-1" htmlFor="job-salary">
-                Үнэлгээ / Цалин (₮)
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-xs font-medium text-gray-300" htmlFor="job-salary">
+                  Үнэлгээ / Цалин (₮)
+                </label>
+                <label className="flex items-center space-x-1 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={isNegotiable}
+                    onChange={(e) => {
+                      setIsNegotiable(e.target.checked);
+                      if (e.target.checked) {
+                        setSalary(0);
+                      } else {
+                        setSalary(150000);
+                      }
+                    }}
+                    className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-850 text-emerald-500 focus:ring-0 cursor-pointer"
+                  />
+                  <span className="text-[10px] text-gray-400 font-sans">Тохиролцоно</span>
+                </label>
+              </div>
               <input
                 id="job-salary"
                 type="number"
-                required
-                min={100}
-                value={salary}
+                required={!isNegotiable}
+                disabled={isNegotiable}
+                min={isNegotiable ? undefined : 100}
+                value={isNegotiable ? '' : salary}
                 onChange={(e) => setSalary(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
                 onFocus={(e) => e.target.select()}
-                className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                placeholder={isNegotiable ? 'Тохиролцоно' : ''}
+                className={`block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none ${isNegotiable ? 'opacity-50 cursor-not-allowed font-sans' : ''}`}
               />
             </div>
           </div>

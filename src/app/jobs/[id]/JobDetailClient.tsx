@@ -265,9 +265,11 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
               <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-850">
                 <span className="text-[10px] text-gray-500 block font-mono">ТӨЛБӨРИЙН ХЭМЖЭЭ</span>
                 <span className="font-bold text-lg text-emerald-450 block font-mono mt-1">
-                  {job.salary.toLocaleString('mn-MN')} ₮
+                  {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString('mn-MN')} ₮`}
                 </span>
-                <span className="text-[10px] text-gray-400"> / {job.salaryUnit} олгоно</span>
+                {job.salary > 0 && (
+                  <span className="text-[10px] text-gray-400"> / {job.salaryUnit} олгоно</span>
+                )}
               </div>
               <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-850">
                 <span className="text-[10px] text-gray-500 block font-mono">АЖЛЫН ХУГАЦАА</span>

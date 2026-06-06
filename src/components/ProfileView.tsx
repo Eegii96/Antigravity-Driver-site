@@ -765,10 +765,14 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                           })()}
 
                           <div className="border-t border-slate-850/80 pt-3.5 flex items-center justify-between">
-                            <div className="flex items-center space-x-1 text-xs">
+                             <div className="flex items-center space-x-1 text-xs">
                               <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                              <span className="font-mono font-bold text-white">{job.salary.toLocaleString()} ₮</span>
-                              <span className="text-[10px] text-gray-500"> / {job.salaryUnit}</span>
+                              <span className="font-mono font-bold text-white">
+                                {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
+                              </span>
+                              {job.salary > 0 && (
+                                <span className="text-[10px] text-gray-500"> / {job.salaryUnit}</span>
+                              )}
                             </div>
 
                             {job.isReviewedByOperator ? (
@@ -945,10 +949,14 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                           })()}
 
                           <div className="border-t border-slate-850/80 pt-3.5 flex items-center justify-between">
-                            <div className="flex items-center space-x-1 text-xs">
-                              <DollarSign className="w-3.5 h-3.5 text-emerald-450" />
-                              <span className="font-mono font-bold text-white">{job.salary.toLocaleString()} ₮</span>
-                              <span className="text-[10px] text-slate-500"> / {job.salaryUnit}</span>
+                             <div className="flex items-center space-x-1 text-xs">
+                              <DollarSign className="w-3.5 h-3.5 text-emerald-455" />
+                              <span className="font-mono font-bold text-white">
+                                {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
+                              </span>
+                              {job.salary > 0 && (
+                                <span className="text-[10px] text-slate-500"> / {job.salaryUnit}</span>
+                              )}
                             </div>
 
                             {job.isReviewedByEmployer ? (

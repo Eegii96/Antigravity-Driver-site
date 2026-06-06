@@ -978,8 +978,12 @@ export default function JobBoard({
                     <div className="border-t border-slate-800/80 pt-3 flex items-center justify-between text-xs text-gray-400">
                       <div className="flex items-center space-x-1">
                         <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className="font-mono font-bold text-white">{job.salary.toLocaleString()} ₮</span>
-                        <span className="text-[10px] text-gray-500"> / {job.salaryUnit}</span>
+                        <span className="font-mono font-bold text-white">
+                          {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
+                        </span>
+                        {job.salary > 0 && (
+                          <span className="text-[10px] text-gray-500"> / {job.salaryUnit}</span>
+                        )}
                       </div>
                       <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-950/20 px-2 py-0.5 rounded">
                         {job.status === 'open' ? 'Нээлттэй' : job.status === 'in_progress' ? 'Гэрээ байгуулсан' : 'Дууссан'}
@@ -1052,8 +1056,12 @@ export default function JobBoard({
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
                   <span className="text-[10px] text-gray-500 block font-mono">Төлбөрийн хэмжээ:</span>
-                  <span className="font-bold text-emerald-400 block font-mono mt-0.5">{selectedJob.salary.toLocaleString()} ₮</span>
-                  <span className="text-[10px] text-gray-500"> / {selectedJob.salaryUnit}</span>
+                  <span className="font-bold text-emerald-400 block font-mono mt-0.5">
+                    {selectedJob.salary === 0 ? 'Тохиролцоно' : `${selectedJob.salary.toLocaleString()} ₮`}
+                  </span>
+                  {selectedJob.salary > 0 && (
+                    <span className="text-[10px] text-gray-500"> / {selectedJob.salaryUnit}</span>
+                  )}
                 </div>
                 <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
                   <span className="text-[10px] text-gray-500 block font-mono">Ажлын хугацаа:</span>

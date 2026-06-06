@@ -67,7 +67,7 @@ export async function generateJobDescription(params: {
   const prompt = `Үүрэг: Та хүнд машин механизмын оператор болон ажил олгогчийг холбодог зарын системийн ухаалаг туслах юм.
 Ажил олгогч дараах мэдээллийг оруулсан байна:
 - Техникийн төрөл: ${machineryType}
-- Цалин: ${salary.toLocaleString('mn-MN')} төгрөг (${salaryUnit})
+- Цалин: ${salary === 0 ? 'Тохиролцоно' : `${salary.toLocaleString('mn-MN')} төгрөг (${salaryUnit})`}
 - Байршил: ${location}
 - Хугацаа: ${duration}
 - Тавьж буй гол шаардлага:
@@ -239,7 +239,7 @@ function generateMockJobDescription(params: {
   requirements: string[];
 }): string {
   const { machineryType, salary, salaryUnit, location, duration, requirements } = params;
-  const salaryText = `${salary.toLocaleString('mn-MN')} ₮ (${salaryUnit})`;
+  const salaryText = salary === 0 ? 'Тохиролцоно' : `${salary.toLocaleString('mn-MN')} ₮ (${salaryUnit})`;
   
   let reqList = '';
   if (requirements.length > 0) {

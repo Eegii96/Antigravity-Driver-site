@@ -8,6 +8,9 @@ interface Props {
 
 // Format Mongolian salary to human-readable form (e.g. 3500000 -> 3.5 сая, 120000 -> 120 мянга)
 function formatMongolianSalary(salary: number): string {
+  if (salary === 0) {
+    return 'тохиролцоно';
+  }
   if (salary >= 1000000) {
     const millions = salary / 1000000;
     return `${Number(millions.toFixed(1))} сая`;
@@ -73,7 +76,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locationFormatted = formatMongolianLocation(job.location);
   
   // Format title like: "Дундговьд ажиллах Ковш оператор яаралтай авна - Цалин 3.5 сая"
-  const title = `${locationFormatted} ажиллах ${job.machineryType} яаралтай авна - Цалин ${formattedSalary} (${job.salaryUnit}) | Жолооч Монголиа`;
+  const title = job.salary === 0
+    ? `${locationFormatted} ажиллах ${job.machineryType} яаралтай авна - Цалин тохиролцоно | Жолооч Монголиа`
+    : `${locationFormatted} ажиллах ${job.machineryType} яаралтай авна - Цалин ${formattedSalary} (${job.salaryUnit}) | Жолооч Монголиа`;
   const description = `${job.employerName} захиалагчаас зарласан ажил: ${job.description.slice(0, 150)}... Шалгуур: ${job.requirements.join(', ')}`;
 
   return {
