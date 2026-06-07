@@ -328,7 +328,15 @@ export async function initializeDB(): Promise<void> {
 export async function getUsers(): Promise<User[]> {
   try {
     const snap = await getDocs(collection(db, 'users'));
-    return snap.docs.map(d => d.data() as User);
+    return snap.docs.map(d => {
+      const data = d.data() as User;
+      data.id = d.id;
+      if (!data.fullName) data.fullName = 'Хэрэглэгч';
+      if (!data.firstName) data.firstName = '';
+      if (!data.lastName) data.lastName = '';
+      if (!data.machineTypes) data.machineTypes = [];
+      return data;
+    });
   } catch (err) {
     console.error('Error fetching users from Firestore:', err);
     return [];
@@ -372,6 +380,10 @@ export async function getSingleUser(userId: string): Promise<User | null> {
     if (snap.exists()) {
       const u = snap.data() as User;
       u.id = userId;
+      if (!u.fullName) u.fullName = 'Хэрэглэгч';
+      if (!u.firstName) u.firstName = '';
+      if (!u.lastName) u.lastName = '';
+      if (!u.machineTypes) u.machineTypes = [];
       return u;
     }
   } catch (err) {
@@ -420,7 +432,16 @@ export async function saveReviews(reviews: Review[]): Promise<void> {
 export async function getJobs(): Promise<Job[]> {
   try {
     const snap = await getDocs(collection(db, 'jobs'));
-    return snap.docs.map(d => d.data() as Job);
+    return snap.docs.map(d => {
+      const data = d.data() as Job;
+      data.id = d.id;
+      if (!data.applicants) data.applicants = [];
+      if (!data.title) data.title = '';
+      if (!data.description) data.description = '';
+      if (!data.machineryType) data.machineryType = 'Бусад';
+      if (!data.location) data.location = 'Улаанбаатар';
+      return data;
+    });
   } catch (err) {
     console.error('Error fetching jobs from Firestore:', err);
     return [];
@@ -433,6 +454,11 @@ export async function getSingleJob(jobId: string): Promise<Job | null> {
     if (snap.exists()) {
       const j = snap.data() as Job;
       j.id = jobId;
+      if (!j.applicants) j.applicants = [];
+      if (!j.title) j.title = '';
+      if (!j.description) j.description = '';
+      if (!j.machineryType) j.machineryType = 'Бусад';
+      if (!j.location) j.location = 'Улаанбаатар';
       return j;
     }
   } catch (err) {
@@ -486,7 +512,14 @@ export function getCurrentUser(): User | null {
     }
     const userJson = localStorage.getItem('currentUser');
     if (!userJson) return null;
-    return JSON.parse(userJson);
+    const u = JSON.parse(userJson) as User;
+    if (u) {
+      if (!u.fullName) u.fullName = 'Хэрэглэгч';
+      if (!u.firstName) u.firstName = '';
+      if (!u.lastName) u.lastName = '';
+      if (!u.machineTypes) u.machineTypes = [];
+    }
+    return u;
   } catch (err) {
     console.warn('Error reading currentUser from localStorage:', err);
     return null;
@@ -502,10 +535,17 @@ export async function getFreshCurrentUser(): Promise<User | null> {
     if (auth.currentUser && auth.currentUser.uid && auth.currentUser.uid !== current.id) {
       targetUid = auth.currentUser.uid;
     }
+    if (!targetUid) {
+      return current;
+    }
     const freshDoc = await getDoc(doc(db, 'users', targetUid));
     if (freshDoc.exists()) {
       const freshUser = freshDoc.data() as User;
       freshUser.id = targetUid;
+      if (!freshUser.fullName) freshUser.fullName = 'Хэрэглэгч';
+      if (!freshUser.firstName) freshUser.firstName = '';
+      if (!freshUser.lastName) freshUser.lastName = '';
+      if (!freshUser.machineTypes) freshUser.machineTypes = [];
       setCurrentUser(freshUser);
       return freshUser;
     }
@@ -1081,7 +1121,97 @@ export async function getNotifications(userId: string): Promise<AppNotification[
     // Fetch only real notifications stored in Firestore for this user
     const q = query(collection(db, 'notifications'), where('userId', '==', userId));
     const snap = await getDocs(q);
-    return snap.docs.map(d => d.data() as AppNotification);
+    const filtered = snap.docs.map(d => d.data() as AppNotification);
+
+    // Auto-migration/seeding for existing/older users
+    const welcomeId = `notif_welcome_${userId}`;
+    const securityId = `notif_security_${userId}`;
+
+    let welcomeNotif = filtered.find(n => n.id === welcomeId || n.title.includes('тавтай') || n.title.includes('Welcome'));
+    let securityNotif = filtered.find(n => n.id === securityId || n.title.includes('Аюулгүй байдал') || n.title.includes('🔒') || n.message.includes('асуулт'));
+
+    const batch = writeBatch(db);
+    let needsCommit = false;
+
+    const targetWelcomeTitle = 'Платформд тавтай морилно уу! 🎉';
+    const targetWelcomeMsg = 'Хүнд машин механизм, газар шорооны ажлын нэгдсэн системд нэгдсэнд баярлалаа. Танд амжилт хүсье!';
+    const targetWelcomeType = 'success';
+
+    const targetSecurityTitle = '🔒 Аюулгүй байдлаа хангаж, профайлаа 100% болгоно уу';
+    const targetSecurityMsg = 'Миний профайл -> Засах цэс рүү орж аюулгүй байдлын 2 асуултыг заавал тохируулаарай. Ингэснээр та нууц кодоо мартсан үедээ найдвартай сэргээх боломжтой болохоос гадна профайлын мэдээлэл тань 100% баталгаажна.';
+    const targetSecurityType = 'warning';
+
+    // 1. Migrate Welcome Notification
+    if (!welcomeNotif) {
+      welcomeNotif = {
+        id: welcomeId,
+        userId: userId,
+        title: targetWelcomeTitle,
+        message: targetWelcomeMsg,
+        type: targetWelcomeType,
+        isRead: false,
+        createdAt: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString().slice(0, 5)
+      };
+      batch.set(doc(db, 'notifications', welcomeId), welcomeNotif);
+      filtered.push(welcomeNotif);
+      needsCommit = true;
+    } else {
+      if (
+        welcomeNotif.title !== targetWelcomeTitle ||
+        welcomeNotif.message !== targetWelcomeMsg ||
+        welcomeNotif.type !== targetWelcomeType
+      ) {
+        welcomeNotif.title = targetWelcomeTitle;
+        welcomeNotif.message = targetWelcomeMsg;
+        welcomeNotif.type = targetWelcomeType;
+
+        batch.update(doc(db, 'notifications', welcomeNotif.id), {
+          title: targetWelcomeTitle,
+          message: targetWelcomeMsg,
+          type: targetWelcomeType
+        });
+        needsCommit = true;
+      }
+    }
+
+    // 2. Migrate Security Notification
+    if (!securityNotif) {
+      securityNotif = {
+        id: securityId,
+        userId: userId,
+        title: targetSecurityTitle,
+        message: targetSecurityMsg,
+        type: targetSecurityType,
+        isRead: false,
+        createdAt: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString().slice(0, 5)
+      };
+      batch.set(doc(db, 'notifications', securityId), securityNotif);
+      filtered.push(securityNotif);
+      needsCommit = true;
+    } else {
+      if (
+        securityNotif.title !== targetSecurityTitle ||
+        securityNotif.message !== targetSecurityMsg ||
+        securityNotif.type !== targetSecurityType
+      ) {
+        securityNotif.title = targetSecurityTitle;
+        securityNotif.message = targetSecurityMsg;
+        securityNotif.type = targetSecurityType;
+
+        batch.update(doc(db, 'notifications', securityNotif.id), {
+          title: targetSecurityTitle,
+          message: targetSecurityMsg,
+          type: targetSecurityType
+        });
+        needsCommit = true;
+      }
+    }
+
+    if (needsCommit) {
+      await batch.commit();
+    }
+
+    return filtered;
   } catch (err) {
     console.error('Error fetching notifications from Firestore:', err);
     return [];
