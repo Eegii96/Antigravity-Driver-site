@@ -343,18 +343,19 @@ export default function JobBoard({
       await handleMarkAsRead(notif.id);
     }
     
-    // 2. Close notifications menu and remove from toasts
-    setShowNotificationsMenu(false);
-    setToasts(prev => prev.filter(t => t.id !== notif.id));
-    
-    // 3. Determine target navigation
+    // 2. Determine target navigation
     const title = notif.title.toLowerCase();
     const msg = notif.message.toLowerCase();
     
-    // Welcome notification - mark as read but do NOT navigate
+    // Welcome notification - mark as read but do NOT navigate and do NOT close menu
     if (title.includes('тавтай морил') || title.includes('тавтай морилно')) {
+      setToasts(prev => prev.filter(t => t.id !== notif.id));
       return;
     }
+    
+    // 3. Close notifications menu and remove from toasts for other notifications that navigate
+    setShowNotificationsMenu(false);
+    setToasts(prev => prev.filter(t => t.id !== notif.id));
     
     if (title.includes('үнэлгээ')) {
       setIsLoadingReview(true);
