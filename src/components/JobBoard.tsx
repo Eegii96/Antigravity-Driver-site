@@ -338,22 +338,24 @@ export default function JobBoard({
   };
 
   const handleNotificationClick = async (notif: AppNotification) => {
-    // 1. Mark as read if not already read (awaiting to prevent race conditions on navigation)
-    if (!notif.isRead) {
-      await handleMarkAsRead(notif.id);
-    }
-    
-    // 2. Determine target navigation
     const title = notif.title.toLowerCase();
     const msg = notif.message.toLowerCase();
     
     // Welcome notification - mark as read but do NOT navigate and do NOT close menu
     if (title.includes('тавтай морил') || title.includes('тавтай морилно')) {
+      if (!notif.isRead) {
+        handleMarkAsRead(notif.id); // Call without await!
+      }
       setToasts(prev => prev.filter(t => t.id !== notif.id));
       return;
     }
     
-    // 3. Close notifications menu and remove from toasts for other notifications that navigate
+    // 1. Mark other notifications as read if not already read (awaiting to prevent race conditions on navigation)
+    if (!notif.isRead) {
+      await handleMarkAsRead(notif.id);
+    }
+    
+    // 2. Close notifications menu and remove from toasts for other notifications that navigate
     setShowNotificationsMenu(false);
     setToasts(prev => prev.filter(t => t.id !== notif.id));
     

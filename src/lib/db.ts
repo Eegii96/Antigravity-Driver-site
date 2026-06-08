@@ -759,6 +759,32 @@ export async function registerUser(
     const tempId = `user_${Date.now()}`;
     const targetEmail = userData.email ? userData.email.trim().toLowerCase() : `${userData.phone.replace(/[^a-zA-Z0-9]/g, '')}@jolooj.mn`;
     let uid = tempId;
+
+    // Check if phone number already exists in Firestore (checking both formats: local and international)
+    if (onProgress) onProgress('Утасны дугаарыг шалгаж байна...');
+    const phoneClean = userData.phone.trim();
+    const q1 = query(collection(db, 'users'), where('phone', '==', phoneClean));
+    const snap1 = await getDocs(q1);
+    
+    let phoneExists = !snap1.empty;
+    
+    if (!phoneExists) {
+      if (phoneClean.startsWith('+976')) {
+        const local = phoneClean.replace('+976', '');
+        const q2 = query(collection(db, 'users'), where('phone', '==', local));
+        const snap2 = await getDocs(q2);
+        phoneExists = !snap2.empty;
+      } else {
+        const country = '+976' + phoneClean;
+        const q2 = query(collection(db, 'users'), where('phone', '==', country));
+        const snap2 = await getDocs(q2);
+        phoneExists = !snap2.empty;
+      }
+    }
+    
+    if (phoneExists) {
+      throw new Error('Энэхүү утасны дугаар системд бүртгэгдсэн байна. Та өөр дугаар ашиглах эсвэл нэвтэрч орно уу.');
+    }
     
     // 1. Create Auth user
     if (onProgress) onProgress('Шинэ бүртгэл үүсгэж байна...');
