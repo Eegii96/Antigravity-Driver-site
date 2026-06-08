@@ -129,6 +129,7 @@ export default function JobBoard({
   const [toasts, setToasts] = useState<AppNotification[]>([]);
 
   const [successMessage, setSuccessMessage] = useState<string>('');
+  const [lastClickPos, setLastClickPos] = useState<{ x: number; y: number } | null>(null);
   const [viewingReview, setViewingReview] = useState<Review | null>(null);
 
   const getEmployerDisplayName = (job: Job) => {
@@ -164,18 +165,38 @@ export default function JobBoard({
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const addErrorToast = (message: string) => {
-    const newErrNotif: AppNotification = {
+    const newErrNotif: AppNotification & { x?: number; y?: number } = {
       id: 'err_' + Date.now(),
       userId: currentUser.id,
       title: 'Алдаа',
       message,
       type: 'alert',
       isRead: false,
-      createdAt: new Date().toLocaleTimeString().slice(0, 5)
+      createdAt: new Date().toLocaleTimeString().slice(0, 5),
+      x: lastClickPos?.x,
+      y: lastClickPos?.y
     };
     setToasts(prev => [newErrNotif, ...prev]);
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== newErrNotif.id));
+    }, 4500);
+  };
+
+  const addSuccessToast = (title: string, message: string) => {
+    const newSuccessNotif: AppNotification & { x?: number; y?: number } = {
+      id: 'success_' + Date.now(),
+      userId: currentUser.id,
+      title,
+      message,
+      type: 'success',
+      isRead: false,
+      createdAt: new Date().toLocaleTimeString().slice(0, 5),
+      x: lastClickPos?.x,
+      y: lastClickPos?.y
+    };
+    setToasts(prev => [newSuccessNotif, ...prev]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== newSuccessNotif.id));
     }, 4500);
   };
 
@@ -223,6 +244,15 @@ export default function JobBoard({
       await Promise.all([refreshJobs(), refreshUsers(), refreshNotifications()]);
     };
     load();
+  }, []);
+
+  // Track the mouse coordinates of the last click to position toasts locally
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      setLastClickPos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
   }, []);
 
   // Keep notificationsRef updated
@@ -522,7 +552,9 @@ export default function JobBoard({
     try {
       const success = await applyForJob(jobId, currentUser.id);
       if (success) {
-        setSuccessMessage('🔒 Таны ажилд орох хүсэлт, ажлын түүх ба үнэлгээний хамт захиалагчид амжилттай илгээгдлээ.');
+        const msg = '🔒 Таны ажилд орох хүсэлт, ажлын түүх ба үнэлгээний хамт захиалагчид амжилттай илгээгдлээ.';
+        setSuccessMessage(msg);
+        addSuccessToast('Хүсэлт илгээгдлээ 🎉', msg);
         setTimeout(() => setSuccessMessage(''), 4500);
         await refreshJobs();
       }
@@ -536,7 +568,9 @@ export default function JobBoard({
     try {
       const success = await hireOperator(jobId, operatorId);
       if (success) {
-        setSuccessMessage('🤝 Жолоочийг ажилд амжилттай томиллоо. Хамтын ажиллагааны гэрээ батлагдсан тул хариуцлагатай ажиллана уу.');
+        const msg = '🤝 Жолоочийг ажилд амжилттай томиллоо. Хамтын ажиллагааны гэрээ батлагдсан тул хариуцлагатай ажиллана уу.';
+        setSuccessMessage(msg);
+        addSuccessToast('Ажилд сонгогдлоо 🎉', msg);
         setTimeout(() => setSuccessMessage(''), 4500);
         await refreshJobs();
       }
@@ -833,13 +867,7 @@ export default function JobBoard({
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-8 space-y-6">
         
-        {/* Success Message Banner */}
-        {successMessage && (
-          <div className="bg-emerald-500/10 border border-emerald-500 text-emerald-300 p-3.5 rounded-xl text-xs flex items-center space-x-2.5 animate-bounce">
-            <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
-            <span>{successMessage}</span>
-          </div>
-        )}
+        {/* Top Success Banner removed to prevent out-of-view notifications. Inline success alerts & floating mouse-anchored toasts are used instead. */}
 
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
@@ -969,7 +997,7 @@ export default function JobBoard({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredJobs.map((job) => {
                 const isExpanded = selectedJob?.id === job.id;
                 
@@ -977,8 +1005,8 @@ export default function JobBoard({
                   return (
                     <div
                       id={`job-card-expanded-${job.id}`}
-                      key={job.id}
-                      className="bg-slate-900 border-2 border-emerald-500 p-6 rounded-2xl text-left space-y-5 shadow-2xl transition-all duration-300"
+                      key={`expanded-${job.id}`}
+                      className="bg-slate-900 border-2 border-emerald-500 p-6 rounded-2xl text-left space-y-5 shadow-2xl transition-all duration-300 w-full self-start"
                     >
                       {/* Back arrow at top-left instead of close on right */}
                       <div className="flex items-center space-x-3 pb-3 border-b border-slate-800">
@@ -1088,12 +1116,21 @@ export default function JobBoard({
                           <>
                             {currentUser.type === 'operator' ? (
                               job.applicants.includes(currentUser.id) ? (
-                                <button
-                                  disabled
-                                  className="w-full bg-slate-800 text-gray-400 text-xs font-bold py-3 px-4 rounded-xl cursor-not-allowed border border-slate-700 text-center"
-                                >
-                                  Хүсэлт илгээсэн
-                                </button>
+                                <div className="space-y-2.5">
+                                  <button
+                                    disabled
+                                    className="w-full bg-slate-800 text-gray-400 text-xs font-bold py-3 px-4 rounded-xl cursor-not-allowed border border-slate-700 text-center"
+                                  >
+                                    Хүсэлт илгээсэн
+                                  </button>
+                                  {/* Local success message for applying */}
+                                  {successMessage && successMessage.includes('хүсэлт') && (
+                                    <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 p-3.5 rounded-xl text-xs flex items-start space-x-2 animate-fade-in text-left">
+                                      <CheckCircle className="w-4.5 h-4.5 text-emerald-400 shrink-0 mt-0.5" />
+                                      <span className="font-sans leading-normal text-[11px]">{successMessage}</span>
+                                    </div>
+                                  )}
+                                </div>
                               ) : (
                                 <button
                                   onClick={() => handleApply(job.id)}
@@ -1152,6 +1189,13 @@ export default function JobBoard({
                                 })()}
                               </span>
                             </div>
+                            {/* Local success message for hiring */}
+                            {successMessage && successMessage.includes('томиллоо') && (
+                              <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 p-3 rounded-xl text-[11px] flex items-start space-x-2 animate-fade-in text-left">
+                                <CheckCircle className="w-4.5 h-4.5 text-emerald-400 shrink-0 mt-0.5" />
+                                <span className="font-sans leading-normal">{successMessage}</span>
+                              </div>
+                            )}
                             
                             {/* Completion trigger reserved for the publisher */}
                             {currentUser.id === job.employerId && (
@@ -1216,9 +1260,9 @@ export default function JobBoard({
                   return (
                     <div
                       id={`job-card-collapsed-${job.id}`}
-                      key={job.id}
+                      key={`collapsed-${job.id}`}
                       onClick={() => setSelectedJob(job)}
-                      className="bg-slate-900/60 hover:bg-slate-900 transition-all border border-slate-800 hover:border-slate-700 p-5 rounded-2xl cursor-pointer flex flex-col justify-between space-y-4 text-left group shadow-lg"
+                      className="w-full bg-slate-900/60 hover:bg-slate-900 transition-all border border-slate-800 hover:border-slate-700 p-5 rounded-2xl cursor-pointer flex flex-col justify-between space-y-4 text-left group shadow-lg self-start"
                     >
                       <div className="space-y-3">
                         {/* Employer name and Date */}
@@ -1285,24 +1329,72 @@ export default function JobBoard({
       </main>
 
       {/* Floating Toast Notification Containers */}
-      <div id="toast-alerts-container" className="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 pointer-events-none">
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            onClick={() => handleNotificationClick(t)}
-            className="pointer-events-auto bg-slate-900/90 backdrop-blur-md border-l-4 border-emerald-500 text-white px-5 py-4 rounded-xl shadow-2xl border border-slate-800 flex items-start space-x-3 w-80 animate-slide-in relative cursor-pointer hover:bg-slate-850/30 transition-colors"
-          >
-            <div className="flex-1 text-left">
-              <div className="flex justify-between items-start">
-                <span className="text-xs font-bold text-emerald-400 font-mono">Шинэ мэдэгдэл 🔔</span>
-                <span className="text-[9px] text-slate-500 font-mono">{t.createdAt}</span>
+      {(() => {
+        const getToastStyle = (t: AppNotification & { x?: number; y?: number }) => {
+          if (t.x === undefined || t.y === undefined) {
+            return {
+              position: 'fixed' as const,
+              bottom: '1.5rem',
+              right: '1.5rem',
+              zIndex: 9999,
+            };
+          }
+
+          const toastWidth = 320; // w-80 is 320px
+          const toastHeight = 110; // approximate height
+          
+          let left = t.x - toastWidth / 2;
+          let top = t.y + 15; // slightly below the click
+          
+          // Boundary checks to make sure the toast is fully visible on screen
+          if (typeof window !== 'undefined') {
+            if (left < 16) left = 16;
+            if (left + toastWidth > window.innerWidth - 16) {
+              left = window.innerWidth - toastWidth - 16;
+            }
+            
+            if (top + toastHeight > window.innerHeight - 16) {
+              top = t.y - toastHeight - 15; // show above the click if bottom overflows
+            }
+            if (top < 16) top = 16;
+          }
+          
+          return {
+            position: 'fixed' as const,
+            left: `${left}px`,
+            top: `${top}px`,
+            zIndex: 9999,
+          };
+        };
+
+        return (
+          <div id="toast-alerts-container" className="fixed inset-0 pointer-events-none z-50">
+            {toasts.map((t) => (
+              <div
+                key={t.id}
+                onClick={() => handleNotificationClick(t)}
+                style={getToastStyle(t)}
+                className={`pointer-events-auto bg-slate-900/90 backdrop-blur-md border-l-4 ${
+                  t.type === 'alert' ? 'border-rose-500' : 'border-emerald-500'
+                } text-white px-5 py-4 rounded-xl shadow-2xl border border-slate-800 flex items-start space-x-3 w-80 animate-slide-in relative cursor-pointer hover:bg-slate-850/30 transition-colors`}
+              >
+                <div className="flex-1 text-left">
+                  <div className="flex justify-between items-start">
+                    <span className={`text-xs font-bold ${
+                      t.type === 'alert' ? 'text-rose-455' : 'text-emerald-400'
+                    } font-mono`}>
+                      {t.type === 'alert' ? 'Алдаа ⚠️' : 'Амжилттай 🎉'}
+                    </span>
+                    <span className="text-[9px] text-slate-550 font-mono">{t.createdAt}</span>
+                  </div>
+                  <h4 className="text-xs font-bold text-white mt-1 leading-snug">{t.title}</h4>
+                  <p className="text-[10px] text-slate-350 leading-relaxed mt-0.5">{t.message}</p>
+                </div>
               </div>
-              <h4 className="text-xs font-bold text-white mt-1 leading-snug">{t.title}</h4>
-              <p className="text-[10px] text-slate-350 leading-relaxed mt-0.5">{t.message}</p>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
+        );
+      })()}
 
       {/* Modals trigger definitions */}
       {showPostModal && (
@@ -1315,7 +1407,9 @@ export default function JobBoard({
             setShowPostModal(false);
             await refreshJobs();
             setSelectedJob(newJob);
-            setSuccessMessage('🎉 Ажлын зар амжилттай нийтлэгдэж, систем дэх нээлттэй жолооч нарын үзүүрт орлоо!');
+            const msg = '🎉 Ажлын зар амжилттай нийтлэгдэж, систем дэх нээлттэй жолооч нарын үзүүрт орлоо!';
+            setSuccessMessage(msg);
+            addSuccessToast('Амжилттай 🎉', msg);
             setTimeout(() => setSuccessMessage(''), 4500);
           }}
         />
@@ -1342,7 +1436,9 @@ export default function JobBoard({
           onSuccess={async (rev) => {
             setActiveReviewJob(null);
             await refreshJobs();
-            setSuccessMessage('🌟 Сэтгэгдэл, үнэлгээ амжилттай бүртгэгдэж тухайн хэрэглэгчийн албан ёсны ажлын түүхэнд шинэчлэгдэж заслаа. Хамтын оролцоонд баярлалаа.');
+            const msg = '🌟 Сэтгэгдэл, үнэлгээ амжилттай бүртгэгдэж тухайн хэрэглэгчийн албан ёсны ажлын түүхэнд шинэчлэгдэж заслаа. Хамтын оролцоонд баярлалаа.';
+            setSuccessMessage(msg);
+            addSuccessToast('Амжилттай 🎉', msg);
             setTimeout(() => setSuccessMessage(''), 4500);
           }}
         />

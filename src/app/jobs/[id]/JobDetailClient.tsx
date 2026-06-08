@@ -211,12 +211,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
           </div>
         )}
 
-        {successMessage && (
-          <div className="bg-emerald-500/10 border border-emerald-500 text-emerald-300 p-4 rounded-xl text-xs flex items-center space-x-2.5 mb-6 text-left animate-fade-in">
-            <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
-            <span>{successMessage}</span>
-          </div>
-        )}
+
 
         {job && (
           <div className="bg-slate-900/60 border border-slate-800 p-6 md:p-8 rounded-2xl space-y-6 shadow-2xl backdrop-blur-sm">
@@ -301,9 +296,17 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 /* Authenticated User Actions */
                 currentUser.type === 'operator' ? (
                   job.applicants.includes(currentUser.id) ? (
-                    <div className="bg-emerald-500/5 border border-emerald-500/20 p-4 rounded-xl text-center text-xs text-emerald-400 font-semibold flex items-center justify-center space-x-2">
-                      <CheckCircle className="w-5 h-5 text-emerald-550" />
-                      <span>Та энэ заранд орох хүсэлтээ амжилттай илгээсэн байна. Захиалагчийн хариуг хүлээж байна.</span>
+                    <div className="space-y-3">
+                      <div className="bg-emerald-500/5 border border-emerald-500/20 p-4 rounded-xl text-center text-xs text-emerald-400 font-semibold flex items-center justify-center space-x-2">
+                        <CheckCircle className="w-5 h-5 text-emerald-550" />
+                        <span>Та энэ заранд орох хүсэлтээ амжилттай илгээсэн байна. Захиалагчийн хариуг хүлээж байна.</span>
+                      </div>
+                      {successMessage && (
+                        <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 p-3.5 rounded-xl text-xs flex items-start space-x-2 animate-fade-in text-left">
+                          <CheckCircle className="w-4.5 h-4.5 text-emerald-400 shrink-0 mt-0.5" />
+                          <span className="font-sans leading-normal text-[11px]">{successMessage}</span>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <button
