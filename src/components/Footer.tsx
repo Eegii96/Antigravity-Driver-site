@@ -23,8 +23,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <div className="flex items-center space-x-2 text-white font-semibold mb-4 text-base">
-            <div className="w-8 h-8 rounded-lg bg-[#080c16] border border-[#caa03d]/30 flex items-center justify-center relative overflow-hidden shrink-0 shadow-md">
-              <img className="w-6 h-6 object-contain rounded-md" src="/logo.jpg" alt="Logo" />
+            <div className="w-8 h-8 rounded-lg bg-[#26282d] border border-[#caa03d]/30 flex items-center justify-center relative overflow-hidden shrink-0 shadow-md">
+              <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" />
             </div>
             <span className="tracking-tight font-sans text-neon-emerald">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>
           </div>

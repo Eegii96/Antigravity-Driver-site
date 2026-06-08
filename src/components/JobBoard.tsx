@@ -623,8 +623,8 @@ export default function JobBoard({
       {/* Nav bar */}
       <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-lg bg-[#080c16] border border-[#caa03d]/30 flex items-center justify-center relative overflow-hidden shrink-0 shadow-md">
-            <img className="w-8 h-8 object-contain rounded-md" src="/logo.jpg" alt="Logo" />
+          <div className="w-10 h-10 rounded-lg bg-[#26282d] border border-[#caa03d]/30 flex items-center justify-center relative overflow-hidden shrink-0 shadow-md">
+            <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" />
           </div>
           <div>
             <span className="font-bold tracking-tight text-white block text-sm font-sans md:text-base">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>

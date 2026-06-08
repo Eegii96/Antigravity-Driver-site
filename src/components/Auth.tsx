@@ -413,9 +413,8 @@ export default function Auth({ onSuccess }: AuthProps) {
       <div className="sm:mx-auto sm:w-full sm:max-w-xl relative z-10 text-center">
         {/* Premium Custom Excavator SVG Icon */}
         <div className="flex justify-center mb-3">
-          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#0c1328] to-[#080d1a] border-2 border-[#caa03d]/30 flex items-center justify-center relative overflow-hidden group hover:border-[#ebd382]/50 transition-all duration-500 shadow-2xl shadow-amber-950/20">
-            <div className="glow-blob bg-amber-500 w-[60px] h-[60px] opacity-10 -top-5 -right-5"></div>
-            <img className="w-20 h-20 object-contain rounded-2xl" src="/logo.jpg" alt="Logo" />
+          <div className="w-24 h-24 rounded-3xl bg-[#26282d] border-2 border-[#caa03d]/30 flex items-center justify-center relative overflow-hidden group hover:border-[#ebd382]/50 transition-all duration-500 shadow-2xl shadow-amber-950/20">
+            <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" />
           </div>
         </div>
 
