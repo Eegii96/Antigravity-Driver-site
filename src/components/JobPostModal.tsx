@@ -147,9 +147,6 @@ export default function JobPostModal({
               placeholder="Жишээ: Дундговьд дампны жолооч авна"
               className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none placeholder-gray-500 font-sans"
             />
-            <span className="text-[10px] text-gray-500 mt-1 block leading-normal font-sans">
-              Жишээ: Дундговьд гүүрэн замын барилгад дамп жолоодох жолооч хайж байна
-            </span>
           </div>
 
           {/* Job Type Options */}
@@ -161,10 +158,10 @@ export default function JobPostModal({
               onChange={(e) => setType(e.target.value)}
               className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
             >
-              <option value="operator_hiring">Жолооч, оператор хайж байна</option>
-              <option value="machinery_rental">Машин механизмын түрээс</option>
-              <option value="earthwork">Барилга, зам, газар шорооны ажил</option>
-              <option value="custom">✍️ Өөр төрөл нэмэх...</option>
+              <option value="operator_hiring" className="bg-slate-900 text-white">Жолооч, оператор хайж байна</option>
+              <option value="machinery_rental" className="bg-slate-900 text-white">Машин механизмын түрээс</option>
+              <option value="earthwork" className="bg-slate-900 text-white">Барилга, зам, газар шорооны ажил</option>
+              <option value="custom" className="bg-slate-900 text-white">✍️ Өөр төрөл нэмэх...</option>
             </select>
           </div>
 
@@ -197,7 +194,7 @@ export default function JobPostModal({
                 className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
               >
                 {AIMAGS.map((a, idx) => (
-                  <option key={idx} value={a}>
+                  <option key={idx} value={a} className="bg-slate-900 text-white">
                     {a === 'custom' ? '✍️ Гараар байршил оруулах...' : a}
                   </option>
                 ))}
@@ -296,7 +293,7 @@ export default function JobPostModal({
               disabled={isSubmitting}
               className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Нийтэлж байна...' : 'Зарыг Нийтэд цацах'}
+              {isSubmitting ? 'Нийтэлж байна...' : 'Зар нэмэх'}
             </button>
           </div>
 

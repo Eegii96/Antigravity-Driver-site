@@ -23,37 +23,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <div className="flex items-center space-x-2 text-white font-semibold mb-4 text-base">
-            <div className="w-8 h-8 rounded-lg bg-[#080d1a] border border-emerald-500/20 flex items-center justify-center relative overflow-hidden shrink-0 shadow-md">
-              <svg className="w-5 h-5 text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.3)]" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                {/* Caterpillar Track base */}
-                <rect x="6" y="46" width="36" height="8" rx="4" fill="currentColor" fillOpacity="0.1" />
-                <line x1="12" y1="50" x2="36" y2="50" strokeWidth="2" strokeDasharray="4 3" />
-                <circle cx="11" cy="50" r="2" fill="currentColor" />
-                <circle cx="24" cy="50" r="2" fill="currentColor" />
-                <circle cx="37" cy="50" r="2" fill="currentColor" />
-                
-                {/* Rotating Cabin base structure */}
-                <path d="M10 40h28v6H10z" fill="currentColor" fillOpacity="0.2" />
-                <path d="M14 26h18v14H14z" fill="currentColor" fillOpacity="0.1" />
-                <path d="M16 26h10l4 8H14l2-8z" />
-                
-                {/* Boom (Main arm) - extending up and right */}
-                <path d="M28 34 L44 14" strokeWidth="4.5" className="text-cyan-400" />
-                
-                {/* Dipper / Stick (Outer arm) - pivoting down from boom tip */}
-                <path d="M44 14 L52 30" strokeWidth="3.5" className="text-amber-400" />
-                
-                {/* Bucket / Scoop - pivoting at the end of the stick */}
-                <path d="M52 30 L46 36 L39 33 Z" fill="currentColor" fillOpacity="0.3" strokeWidth="2.5" className="text-amber-500" />
-                
-                {/* Joint Pins */}
-                <circle cx="28" cy="34" r="2" className="fill-white stroke-none" />
-                <circle cx="44" cy="14" r="2" className="fill-white stroke-none" />
-                <circle cx="52" cy="30" r="2" className="fill-white stroke-none" />
-                
-                {/* Hydraulic lines */}
-                <path d="M26 30 Q36 22 41 16" stroke="currentColor" strokeWidth="1" opacity="0.6" />
-              </svg>
+            <div className="w-8 h-8 rounded-lg bg-[#080c16] border border-[#caa03d]/30 flex items-center justify-center relative overflow-hidden shrink-0 shadow-md">
+              <img className="w-6 h-6 object-contain rounded-md" src="/logo.jpg" alt="Logo" />
             </div>
             <span className="tracking-tight font-sans text-neon-emerald">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>
           </div>

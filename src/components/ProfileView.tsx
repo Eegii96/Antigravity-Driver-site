@@ -703,7 +703,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                           <button
                             type="button"
                             onClick={() => {
-                              router.push(`/profile/${job.employerId}`);
+                              router.push(`/profile?id=${job.employerId}`);
                             }}
                             className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
                           >
@@ -853,7 +853,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                             <button
                               type="button"
                               onClick={() => {
-                                router.push(`/profile/${job.hiredOperatorId}`);
+                                router.push(`/profile?id=${job.hiredOperatorId}`);
                               }}
                               className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
                             >
@@ -879,7 +879,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                                     className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-850 flex items-center justify-between text-xs"
                                   >
                                     <div
-                                      onClick={() => router.push(`/profile/${op.id}`)}
+                                      onClick={() => router.push(`/profile?id=${op.id}`)}
                                       className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
                                     >
                                       <img

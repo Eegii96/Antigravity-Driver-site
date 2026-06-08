@@ -236,3 +236,10 @@ body {
     border-color: rgba(16, 185, 129, 1) !important;
   }
 }
+
+/* Fix option tags color clash on Chrome/Windows/Mobile */
+select option {
+  background-color: #0f172a !important; /* slate-900 */
+  color: #ffffff !important;
+}
+

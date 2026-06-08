@@ -413,38 +413,9 @@ export default function Auth({ onSuccess }: AuthProps) {
       <div className="sm:mx-auto sm:w-full sm:max-w-xl relative z-10 text-center">
         {/* Premium Custom Excavator SVG Icon */}
         <div className="flex justify-center mb-3">
-          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#0c1328] to-[#080d1a] border-2 border-emerald-500/30 flex items-center justify-center relative overflow-hidden group hover:border-emerald-400 transition-all duration-500 shadow-2xl shadow-emerald-950/20 neon-border-emerald">
-            <div className="glow-blob bg-emerald-500 w-[60px] h-[60px] opacity-20 -top-5 -right-5"></div>
-            <svg className="w-16 h-16 text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.35)]" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              {/* Caterpillar Track base */}
-              <rect x="6" y="46" width="36" height="8" rx="4" fill="currentColor" fillOpacity="0.1" />
-              <line x1="12" y1="50" x2="36" y2="50" strokeWidth="2" strokeDasharray="4 3" />
-              <circle cx="11" cy="50" r="2" fill="currentColor" />
-              <circle cx="24" cy="50" r="2" fill="currentColor" />
-              <circle cx="37" cy="50" r="2" fill="currentColor" />
-
-              {/* Rotating Cabin base structure */}
-              <path d="M10 40h28v6H10z" fill="currentColor" fillOpacity="0.2" />
-              <path d="M14 26h18v14H14z" fill="currentColor" fillOpacity="0.1" />
-              <path d="M16 26h10l4 8H14l2-8z" />
-
-              {/* Boom (Main arm) - extending up and right */}
-              <path d="M28 34 L44 14" strokeWidth="4.5" className="text-cyan-400" />
-
-              {/* Dipper / Stick (Outer arm) - pivoting down from boom tip */}
-              <path d="M44 14 L52 30" strokeWidth="3.5" className="text-amber-400" />
-
-              {/* Bucket / Scoop - pivoting at the end of the stick */}
-              <path d="M52 30 L46 36 L39 33 Z" fill="currentColor" fillOpacity="0.3" strokeWidth="2.5" className="text-amber-500" />
-
-              {/* Joint Pins */}
-              <circle cx="28" cy="34" r="2" className="fill-white stroke-none" />
-              <circle cx="44" cy="14" r="2" className="fill-white stroke-none" />
-              <circle cx="52" cy="30" r="2" className="fill-white stroke-none" />
-
-              {/* Hydraulic lines */}
-              <path d="M26 30 Q36 22 41 16" stroke="currentColor" strokeWidth="1" opacity="0.6" />
-            </svg>
+          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#0c1328] to-[#080d1a] border-2 border-[#caa03d]/30 flex items-center justify-center relative overflow-hidden group hover:border-[#ebd382]/50 transition-all duration-500 shadow-2xl shadow-amber-950/20">
+            <div className="glow-blob bg-amber-500 w-[60px] h-[60px] opacity-10 -top-5 -right-5"></div>
+            <img className="w-20 h-20 object-contain rounded-2xl" src="/logo.jpg" alt="Logo" />
           </div>
         </div>
 

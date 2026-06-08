@@ -236,7 +236,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
               {/* Employer Preview */}
               {employer && (
                 <div 
-                  onClick={() => router.push(`/profile/${employer.id}`)}
+                  onClick={() => router.push(`/profile?id=${employer.id}`)}
                   className="inline-flex items-center space-x-2 bg-slate-950/50 p-2.5 pr-4 rounded-xl border border-slate-850 hover:bg-slate-800/80 transition-colors text-left cursor-pointer mt-1"
                 >
                   <img 
@@ -332,7 +332,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                       <div className="space-y-3">
                         <p className="font-semibold text-white text-left">Таны оруулсан зар байна.</p>
                         <button 
-                          onClick={() => router.push(`/profile/${currentUser.id}`)}
+                          onClick={() => router.push(`/profile?id=${currentUser.id}`)}
                           className="w-full bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 py-2 px-4 rounded-xl text-xs cursor-pointer transition-colors"
                         >
                           Хүсэлт ирүүлсэн жолооч нарыг хянах
