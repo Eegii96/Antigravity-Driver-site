@@ -17,6 +17,7 @@ import {
   deleteNotification,
   deleteAllNotifications,
   addJob,
+  deleteJob,
   getReviews,
   getSingleReview,
   setCurrentUser
@@ -116,6 +117,7 @@ export default function JobBoard({
   // Modals & States
   const [showPostModal, setShowPostModal] = useState<boolean>(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
   
   // Custom Review triggers
   const [activeReviewJob, setActiveReviewJob] = useState<Job | null>(null);
@@ -1109,8 +1111,7 @@ export default function JobBoard({
                         <span>Байршил:</span>
                         <span className="font-semibold text-white">{job.location}</span>
                       </div>
-
-                      {/* Workflow Actions */}
+                  {/* Workflow Actions */}
                       <div className="border-t border-slate-800 pt-4 space-y-3" onClick={(e) => e.stopPropagation()}>
                         {job.status === 'open' && (
                           <>
@@ -1142,6 +1143,39 @@ export default function JobBoard({
                             ) : (
                               currentUser.id === job.employerId ? (
                                 <div className="space-y-3">
+                                  {/* Edit/Delete Options */}
+                                  <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-3">
+                                    <span className="text-[10px] text-slate-500 block uppercase font-mono tracking-wider">Зарын Тохиргоо:</span>
+                                    <div className="flex space-x-2.5">
+                                      <button
+                                        type="button"
+                                        onClick={() => setEditingJob(job)}
+                                        className="flex-1 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer text-center"
+                                      >
+                                        ✍️ Зар Засах
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={async () => {
+                                          if (window.confirm('Та энэ зарыг устгахдаа итгэлтэй байна уу? Устгасны дараа сэргээх боломжгүй.')) {
+                                            try {
+                                              await deleteJob(job.id);
+                                              setSelectedJob(null);
+                                              await refreshJobs();
+                                              addSuccessToast('Устгагдлаа', 'Зарыг амжилттай устгалаа.');
+                                            } catch (err) {
+                                              console.error(err);
+                                              addErrorToast('Зарыг устгахад алдаа гарлаа.');
+                                            }
+                                          }
+                                        }}
+                                        className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer text-center"
+                                      >
+                                        🗑️ Зар Устгах
+                                      </button>
+                                    </div>
+                                  </div>
+
                                   <div className="flex items-center justify-between text-xs border-b border-slate-850 pb-2">
                                     <span className="font-bold text-gray-300">Хүсэлт ирүүлсэн жолооч нар ({job.applicants.length})</span>
                                   </div>
@@ -1408,6 +1442,27 @@ export default function JobBoard({
             await refreshJobs();
             setSelectedJob(newJob);
             const msg = '🎉 Ажлын зар амжилттай нийтлэгдэж, систем дэх нээлттэй жолооч нарын үзүүрт орлоо!';
+            setSuccessMessage(msg);
+            addSuccessToast('Амжилттай 🎉', msg);
+            setTimeout(() => setSuccessMessage(''), 4500);
+          }}
+        />
+      )}
+
+      {editingJob && (
+        <JobPostModal
+          employerId={currentUser.id}
+          employerName={currentUser.fullName}
+          employerRating={currentUser.rating}
+          jobToEdit={editingJob}
+          onClose={() => setEditingJob(null)}
+          onSuccess={async (updatedJob) => {
+            setEditingJob(null);
+            await refreshJobs();
+            if (selectedJob?.id === updatedJob.id) {
+              setSelectedJob(updatedJob);
+            }
+            const msg = '🎉 Ажлын зар амжилттай засагдаж шинэчлэгдлээ!';
             setSuccessMessage(msg);
             addSuccessToast('Амжилттай 🎉', msg);
             setTimeout(() => setSuccessMessage(''), 4500);

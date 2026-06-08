@@ -1,14 +1,15 @@
 import { useState, FormEvent } from 'react';
 import { X, ShieldCheck } from 'lucide-react';
 import { Job } from '../types';
-import { addJob } from '../lib/db';
+import { addJob, updateJob } from '../lib/db';
 
 interface JobPostModalProps {
   employerId: string;
   employerName: string;
   employerRating: number;
   onClose: () => void;
-  onSuccess: (newJob: Job) => void;
+  onSuccess: (savedJob: Job) => void;
+  jobToEdit?: Job;
 }
 
 const AIMAGS = [
@@ -42,16 +43,42 @@ export default function JobPostModal({
   employerName,
   employerRating,
   onClose,
-  onSuccess
+  onSuccess,
+  jobToEdit
 }: JobPostModalProps) {
-  const [title, setTitle] = useState<string>('');
-  const [description, setDescription] = useState<string>('');
-  const [type, setType] = useState<string>('operator_hiring');
-  const [customType, setCustomType] = useState<string>('');
-  const [salary, setSalary] = useState<number | ''>(150000);
-  const [isNegotiable, setIsNegotiable] = useState<boolean>(false);
-  const [location, setLocation] = useState<string>('Улаанбаатар хот');
-  const [customLocation, setCustomLocation] = useState<string>('');
+  const isEditing = !!jobToEdit;
+
+  const [title, setTitle] = useState<string>(jobToEdit?.title || '');
+  const [description, setDescription] = useState<string>(jobToEdit?.description || '');
+  
+  // Determine initial type selection
+  const initialType = jobToEdit
+    ? (['operator_hiring', 'machinery_rental', 'earthwork'].includes(jobToEdit.type)
+        ? jobToEdit.type
+        : 'custom')
+    : 'operator_hiring';
+  const [type, setType] = useState<string>(initialType);
+  const [customType, setCustomType] = useState<string>(
+    jobToEdit && !['operator_hiring', 'machinery_rental', 'earthwork'].includes(jobToEdit.type)
+      ? jobToEdit.type
+      : ''
+  );
+
+  const [salary, setSalary] = useState<number | ''>(
+    jobToEdit ? (jobToEdit.salary === 0 ? '' : jobToEdit.salary) : 150000
+  );
+  const [isNegotiable, setIsNegotiable] = useState<boolean>(
+    jobToEdit ? jobToEdit.salary === 0 : false
+  );
+
+  // Determine initial location selection
+  const initialLocation = jobToEdit
+    ? (AIMAGS.includes(jobToEdit.location) ? jobToEdit.location : 'custom')
+    : 'Улаанбаатар хот';
+  const [location, setLocation] = useState<string>(initialLocation);
+  const [customLocation, setCustomLocation] = useState<string>(
+    jobToEdit && !AIMAGS.includes(jobToEdit.location) ? jobToEdit.location : ''
+  );
   
   // Default values for database schema, hidden from user form
   const [machineryType] = useState<string>('Бусад');
@@ -86,25 +113,43 @@ export default function JobPostModal({
     setError('');
 
     try {
-      const job = await addJob({
-        title,
-        description: description.trim() || 'Нэмэлт мэдээлэл оруулаагүй.',
-        employerId,
-        employerName,
-        employerRating,
-        type: type === 'custom' ? customType.trim() : type,
-        machineryType,
-        salary: Number(salary),
-        salaryUnit,
-        duration,
-        location: location === 'custom' ? customLocation.trim() : location,
-        requirements
-      });
+      const resolvedType = type === 'custom' ? customType.trim() : type;
+      const resolvedLocation = location === 'custom' ? customLocation.trim() : location;
+      const resolvedSalary = isNegotiable ? 0 : Number(salary);
 
-      onSuccess(job);
+      if (isEditing && jobToEdit) {
+        const updatedFields = {
+          title,
+          description: description.trim() || 'Нэмэлт мэдээлэл оруулаагүй.',
+          type: resolvedType,
+          salary: resolvedSalary,
+          location: resolvedLocation,
+        };
+        await updateJob(jobToEdit.id, updatedFields);
+        onSuccess({
+          ...jobToEdit,
+          ...updatedFields
+        });
+      } else {
+        const job = await addJob({
+          title,
+          description: description.trim() || 'Нэмэлт мэдээлэл оруулаагүй.',
+          employerId,
+          employerName,
+          employerRating,
+          type: resolvedType,
+          machineryType,
+          salary: resolvedSalary,
+          salaryUnit,
+          duration,
+          location: resolvedLocation,
+          requirements
+        });
+        onSuccess(job);
+      }
     } catch (err) {
       console.error(err);
-      setError(err instanceof Error ? err.message : 'Ажлын зар нэмэхэд алдаа гарлаа. Та дахин оролдоно уу.');
+      setError(err instanceof Error ? err.message : 'Ажлын зар хадгалахад алдаа гарлаа. Та дахин оролдоно уу.');
     } finally {
       setIsSubmitting(false);
     }
@@ -118,7 +163,9 @@ export default function JobPostModal({
         <div className="flex justify-between items-center border-b border-slate-800 px-6 py-4">
           <div className="flex items-center space-x-2">
             <ShieldCheck className="w-5 h-5 text-emerald-500" />
-            <h3 className="text-sm font-semibold text-white">Шинэ Ажлын Зар Бүртгүүлэх</h3>
+            <h3 className="text-sm font-semibold text-white">
+              {isEditing ? 'Ажлын Зар Засварлах' : 'Шинэ Ажлын Зар Бүртгүүлэх'}
+            </h3>
           </div>
           <button id="close-job-post-modal" onClick={onClose} className="text-gray-400 hover:text-white transition-colors cursor-pointer">
             <X className="w-5 h-5" />
@@ -293,7 +340,7 @@ export default function JobPostModal({
               disabled={isSubmitting}
               className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Нийтэлж байна...' : 'Зар нэмэх'}
+              {isSubmitting ? 'Хадгалж байна...' : (isEditing ? 'Хадгалах' : 'Зар нэмэх')}
             </button>
           </div>
 

@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, Review, JobHistoryItem, Job } from '../types';
-import { getReviews, getJobHistory, saveSingleUser, getSingleUser, getJobs, getUsers, hireOperator, completeJob } from '../lib/db';
+import { getReviews, getJobHistory, saveSingleUser, getSingleUser, getJobs, getUsers, hireOperator, completeJob, deleteJob } from '../lib/db';
 import { Star, ShieldAlert, Award, Phone, Mail, MapPin, Calendar, CheckCircle, Clock, DollarSign, Briefcase, Users, X } from 'lucide-react';
 import ProfileEditModal from './ProfileEditModal';
 import ReviewModal from './ReviewModal';
+import JobPostModal from './JobPostModal';
 
 interface ProfileViewProps {
   user: User; // User being viewed
@@ -32,6 +33,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
   const [activeTab, setActiveTab] = useState<'profile' | 'applications'>(defaultTab || 'profile');
   const [driverJobs, setDriverJobs] = useState<Job[]>([]);
   const [activeReviewJob, setActiveReviewJob] = useState<Job | null>(null);
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -847,6 +849,41 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                           </p>
                         </div>
 
+                        {isOwnProfile && (
+                          <div className="flex space-x-2.5 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => setEditingJob(job)}
+                              className="flex-1 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-[11px] py-1.5 px-3 rounded-lg transition-colors cursor-pointer text-center"
+                            >
+                              ✍️ Зар Засах
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (window.confirm('Та энэ зарыг устгахдаа итгэлтэй байна уу? Устгасны дараа сэргээх боломжгүй.')) {
+                                  try {
+                                    await deleteJob(job.id);
+                                    
+                                    const allJobs = await getJobs();
+                                    const filteredJobs = allJobs.filter(j => j.employerId === profileUser.id);
+                                    setDriverJobs(filteredJobs);
+                                    
+                                    setSuccess('Зарыг амжилттай устгалаа.');
+                                    setTimeout(() => setSuccess(''), 3000);
+                                  } catch (err) {
+                                    console.error(err);
+                                    alert('Зарыг устгахад алдаа гарлаа.');
+                                  }
+                                }
+                              }}
+                              className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] py-1.5 px-3 rounded-lg transition-colors cursor-pointer text-center"
+                            >
+                              🗑️ Зар Устгах
+                            </button>
+                          </div>
+                        )}
+
                         {job.hiredOperatorId && (
                           <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-850 flex justify-between items-center text-[10.5px] mt-2">
                             <span className="text-slate-500">Томилогдсон жолооч:</span>
@@ -1035,6 +1072,26 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
             setHistoryItems(histItems);
 
             setSuccess('Сэтгэгдэл, үнэлгээ амжилттай бүртгэгдлээ!');
+            setTimeout(() => setSuccess(''), 3000);
+          }}
+        />
+      )}
+
+      {editingJob && (
+        <JobPostModal
+          employerId={profileUser.id}
+          employerName={profileUser.companyName || profileUser.fullName}
+          employerRating={profileUser.rating}
+          jobToEdit={editingJob}
+          onClose={() => setEditingJob(null)}
+          onSuccess={async () => {
+            setEditingJob(null);
+            
+            const allJobs = await getJobs();
+            const filteredJobs = allJobs.filter(j => j.employerId === profileUser.id);
+            setDriverJobs(filteredJobs);
+            
+            setSuccess('🎉 Ажлын зар амжилттай засагдаж шинэчлэгдлээ!');
             setTimeout(() => setSuccess(''), 3000);
           }}
         />

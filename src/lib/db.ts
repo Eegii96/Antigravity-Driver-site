@@ -901,6 +901,43 @@ export async function addJob(jobData: Omit<Job, 'id' | 'status' | 'createdAt' | 
   }
 }
 
+export async function updateJob(jobId: string, updatedFields: Partial<Job>): Promise<void> {
+  try {
+    const jobRef = doc(db, 'jobs', jobId);
+    const cleanFields = Object.fromEntries(
+      Object.entries(updatedFields).filter(([_, v]) => v !== undefined)
+    ) as Partial<Job>;
+    await updateDoc(jobRef, cleanFields);
+  } catch (err) {
+    console.error('Error updating job in Firestore:', err);
+    throw err;
+  }
+}
+
+export async function deleteJob(jobId: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, 'jobs', jobId));
+    
+    const notifsQuery = query(collection(db, 'notifications'), where('relatedId', '==', jobId));
+    const notifsSnap = await getDocs(notifsQuery);
+    const batch = writeBatch(db);
+    notifsSnap.docs.forEach(d => {
+      batch.delete(d.ref);
+    });
+    
+    const historyQuery = query(collection(db, 'jobHistory'), where('jobId', '==', jobId));
+    const historySnap = await getDocs(historyQuery);
+    historySnap.docs.forEach(d => {
+      batch.delete(d.ref);
+    });
+    
+    await batch.commit();
+  } catch (err) {
+    console.error('Error deleting job in Firestore:', err);
+    throw err;
+  }
+}
+
 export async function applyForJob(jobId: string, operatorId: string): Promise<boolean> {
   try {
     const jobRef = doc(db, 'jobs', jobId);
