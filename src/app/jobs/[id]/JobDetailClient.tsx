@@ -267,11 +267,10 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 </span>
               </div>
               <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-850">
-                <span className="text-[10px] text-gray-500 block font-mono">АЖЛЫН ХУГАЦАА</span>
+                <span className="text-[10px] text-gray-550 block font-mono">АЖЛЫН ХУГАЦАА</span>
                 <span className="font-bold text-lg text-white block mt-1">
                   {job.duration}
                 </span>
-                <span className="text-[10px] text-emerald-500 flex items-center font-mono mt-0.5">✓ Хариуцлагын гэрээтэй</span>
               </div>
             </div>
 

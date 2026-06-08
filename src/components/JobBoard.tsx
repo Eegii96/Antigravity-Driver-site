@@ -1062,7 +1062,6 @@ export default function JobBoard({
                         <span className="font-bold text-emerald-400 block font-mono text-sm mt-1.5">
                           {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
                         </span>
-                        <span className="text-[10px] text-emerald-500 flex items-center font-mono mt-2">✓ Хариуцлагын гэрээтэй</span>
                       </div>
 
                       {/* Description */}
