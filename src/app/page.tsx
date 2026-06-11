@@ -1,27 +1,11 @@
-'use client';
+import { Metadata } from 'next';
+import HomeClient from './HomeClient';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { getCurrentUser } from '../lib/db';
+export const metadata: Metadata = {
+  title: 'Барилга, Механизмын Ажлын Нэгдсэн Систем | Жолооч Монголиа',
+  description: 'Барилга, замын газар шорооны ажил, хүнд машин механизм түрээс ба жолооч нарын үнэлгээ, түүх бүхий нэгдсэн зарын систем.',
+};
 
-export default function Home() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const user = getCurrentUser();
-    if (user) {
-      router.replace('/board');
-    } else {
-      router.replace('/auth');
-    }
-  }, [router]);
-
-  return (
-    <div className="min-h-screen bg-[#070a13] flex items-center justify-center text-white font-sans">
-      <div className="flex flex-col items-center space-y-4">
-        <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-slate-400 text-sm">Уншиж байна...</p>
-      </div>
-    </div>
-  );
+export default function HomePage() {
+  return <HomeClient />;
 }

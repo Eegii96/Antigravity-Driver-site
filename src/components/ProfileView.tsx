@@ -661,21 +661,28 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
                   if (isHired) {
                     if (job.status === 'in_progress') {
-                      statusText = 'Ажилд сонгогдсон • Ажил явагдаж байна';
-                      badgeClass = 'bg-emerald-950/20 text-emerald-400 border border-emerald-900/40';
+                      statusText = 'Идэвхтэй • Ажил явагдаж байна';
+                      badgeClass = 'bg-emerald-500/15 text-emerald-400 border-2 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.15)]';
                       statusDesc = '🤝 Баяр хүргэе! Захиалагч таныг ажилд сонгосон байна. Ажлын хариуцлагын гэрээ идэвхтэй байгаа тул хариуцлагатай ажиллана уу.';
                     } else if (job.status === 'completed') {
-                      statusText = 'Ажил амжилттай дууссан';
-                      badgeClass = 'bg-cyan-950/25 text-cyan-400 border border-cyan-800/40';
-                      statusDesc = '✓ Ажил дууссан. Захиалагч ажлын гүйцэтгэлийг баталгаажуулсан байна. Танд ажлын хөлс бүрэн олгогдсон эсэхийг шалгана уу.';
+                      const isReviewed = job.isReviewedByEmployer;
+                      if (isReviewed) {
+                        statusText = 'Үнэлгээ хийгдсэн • Хаагдсан ✓';
+                        badgeClass = 'bg-sky-500/15 text-sky-400 border-2 border-sky-500/40 shadow-[0_0_10px_rgba(14,165,233,0.15)]';
+                        statusDesc = '✓ Ажил дууссан. Захиалагч таны гүйцэтгэлийг үнэлж, ажил амжилттай хаагдсан байна.';
+                      } else {
+                        statusText = 'Ажил дууссан • Үнэлэх шаардлагатай ⚠️';
+                        badgeClass = 'bg-rose-500/15 text-rose-400 border-2 border-rose-500/40 shadow-[0_0_10px_rgba(244,63,94,0.15)] animate-pulse';
+                        statusDesc = '⏳ Ажил дууссан. Захиалагчаас ажлын гүйцэтгэлийн үнэлгээ болон баталгаажуулалтыг хүлээж байна.';
+                      }
                     }
                   } else if (isPending) {
                     statusText = 'Хүсэлт илгээсэн • Хүлээгдэж буй';
-                    badgeClass = 'bg-amber-950/20 text-amber-400 border border-amber-900/30';
+                    badgeClass = 'bg-amber-500/15 text-amber-400 border-2 border-amber-500/35 shadow-[0_0_10px_rgba(245,158,11,0.1)]';
                     statusDesc = '⏳ Таны ажилд орох хүсэлтийг захиалагч хянаж байна. Хэрэв та сонгогдвол системд шинэчлэгдэн харагдах болно.';
                   } else if (isRejected) {
                     statusText = 'Өөр жолооч сонгогдсон';
-                    badgeClass = 'bg-rose-950/25 text-rose-455 border border-rose-800/30';
+                    badgeClass = 'bg-slate-900/40 text-slate-500 border border-slate-800';
                     statusDesc = '❌ Захиалагч энэ заранд өөр жолооч сонгон ажилласан байна. Та дараагийн зар руу хүсэлтээ илгээнэ үү.';
                   }
 
@@ -805,17 +812,24 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                   let statusDesc = '';
 
                   if (job.status === 'open') {
-                    statusText = 'Нээлттэй • Жолооч хайж буй';
-                    badgeClass = 'bg-amber-950/20 text-amber-400 border border-amber-900/30';
+                    statusText = 'Идэвхтэй • Жолооч хайж буй';
+                    badgeClass = 'bg-emerald-500/15 text-emerald-400 border-2 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.15)]';
                     statusDesc = `⏳ Хүсэлт ирүүлсэн жолооч нарын тоо: ${job.applicants.length}. Жолооч сонгох буюу ажилд томилох боломжтой.`;
                   } else if (job.status === 'in_progress') {
-                    statusText = 'Ажил явагдаж байна';
-                    badgeClass = 'bg-emerald-950/20 text-emerald-400 border border-emerald-900/40';
+                    statusText = 'Идэвхтэй • Ажил явагдаж байна';
+                    badgeClass = 'bg-amber-500/15 text-amber-400 border-2 border-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.15)]';
                     statusDesc = `🤝 Томилогдсон жолооч: ${job.hiredOperatorName || 'Оператор'}. Ажил дууссаны дараа гүйцэтгэлийг баталгаажуулж үнэлнэ үү.`;
                   } else if (job.status === 'completed') {
-                    statusText = 'Ажил дууссан';
-                    badgeClass = 'bg-slate-950 text-slate-400 border border-slate-800';
-                    statusDesc = `✓ Ажил амжилттай дууссан. Томилогдож ажилласан жолооч: ${job.hiredOperatorName || 'Оператор'}.`;
+                    const isReviewed = job.isReviewedByEmployer;
+                    if (isReviewed) {
+                      statusText = 'Үнэлгээ хийгдсэн • Хаагдсан ✓';
+                      badgeClass = 'bg-sky-500/15 text-sky-400 border-2 border-sky-500/40 shadow-[0_0_10px_rgba(14,165,233,0.15)]';
+                      statusDesc = `✓ Ажил амжилттай дууссан. Та жолоочийг үнэлж, ажил амжилттай хаагдсан байна.`;
+                    } else {
+                      statusText = 'Ажил дууссан • Үнэлэх шаардлагатай ⚠️';
+                      badgeClass = 'bg-rose-500/15 text-rose-400 border-2 border-rose-500/45 shadow-[0_0_10px_rgba(244,63,94,0.15)] animate-pulse';
+                      statusDesc = `✓ Ажил дууссан. Та өөрийн томилсон жолоочийг үнэлж ажлыг хаана уу.`;
+                    }
                   }
 
                   return (
@@ -854,9 +868,9 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                             <button
                               type="button"
                               onClick={() => setEditingJob(job)}
-                              className="flex-1 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-[11px] py-1.5 px-3 rounded-lg transition-colors cursor-pointer text-center"
+                              className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
                             >
-                              ✍️ Зар Засах
+                              Засах
                             </button>
                             <button
                               type="button"
@@ -877,9 +891,9 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                                   }
                                 }
                               }}
-                              className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] py-1.5 px-3 rounded-lg transition-colors cursor-pointer text-center"
+                              className="flex-1 border border-rose-955/40 hover:border-rose-900 bg-slate-950 hover:bg-rose-955/20 text-rose-400 hover:text-rose-350 font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
                             >
-                              🗑️ Зар Устгах
+                              Устгах
                             </button>
                           </div>
                         )}

@@ -1030,20 +1030,39 @@ export default function JobBoard({
                           </div>
                           <h3 className="text-sm font-bold text-white leading-snug mt-1">{job.title}</h3>
                         </div>
-                        <span className={`inline-flex items-center text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border shrink-0 ${
-                          job.status === 'open' 
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.1)]' 
-                            : job.status === 'in_progress' 
-                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-[0_0_12px_rgba(245,158,11,0.1)]' 
-                              : 'bg-slate-900/40 text-slate-500 border-slate-800'
-                        }`}>
-                          {(job.status === 'open' || job.status === 'in_progress') && (
-                            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse ${
-                              job.status === 'open' ? 'bg-emerald-400' : 'bg-amber-400'
-                            }`} />
-                          )}
-                          <span>{job.status === 'open' ? 'Нээлттэй' : job.status === 'in_progress' ? 'Гэрээт ажил' : 'Дууссан'}</span>
-                        </span>
+                        {(() => {
+                          if (job.status === 'open') {
+                            return (
+                              <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3.5 py-1 rounded-full border-2 border-emerald-500/40 bg-emerald-500/15 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)] shrink-0">
+                                <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-emerald-400 animate-pulse" />
+                                <span>Нээлттэй (Идэвхтэй)</span>
+                              </span>
+                            );
+                          } else if (job.status === 'in_progress') {
+                            return (
+                              <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3.5 py-1 rounded-full border-2 border-amber-500/40 bg-amber-500/15 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.2)] shrink-0">
+                                <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-amber-400 animate-pulse" />
+                                <span>Гэрээт ажил (Идэвхтэй)</span>
+                              </span>
+                            );
+                          } else {
+                            const isReviewed = job.isReviewedByEmployer;
+                            if (isReviewed) {
+                              return (
+                                <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3.5 py-1 rounded-full border-2 border-sky-500/40 bg-sky-500/15 text-sky-400 shadow-[0_0_15px_rgba(14,165,233,0.15)] shrink-0">
+                                  <span>Үнэлэгдсэн • Хаагдсан ✓</span>
+                                </span>
+                              );
+                            } else {
+                              return (
+                                <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3.5 py-1 rounded-full border-2 border-rose-500/45 bg-rose-500/15 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.15)] animate-pulse shrink-0">
+                                  <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-rose-500" />
+                                  <span>Ажил дууссан • Үнэлэх шаардлагатай ⚠️</span>
+                                </span>
+                              );
+                            }
+                          }
+                        })()}
                       </div>
 
                       {/* Share & Phone Action */}
@@ -1150,9 +1169,9 @@ export default function JobBoard({
                                       <button
                                         type="button"
                                         onClick={() => setEditingJob(job)}
-                                        className="flex-1 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer text-center"
+                                        className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
                                       >
-                                        ✍️ Зар Засах
+                                        Засах
                                       </button>
                                       <button
                                         type="button"
@@ -1169,9 +1188,9 @@ export default function JobBoard({
                                             }
                                           }
                                         }}
-                                        className="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer text-center"
+                                        className="flex-1 border border-rose-955/40 hover:border-rose-900 bg-slate-950 hover:bg-rose-955/20 text-rose-400 hover:text-rose-350 font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
                                       >
-                                        🗑️ Зар Устгах
+                                        Устгах
                                       </button>
                                     </div>
                                   </div>
@@ -1336,20 +1355,39 @@ export default function JobBoard({
                             <span className="font-mono text-xs">{job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}</span>
                           </span>
                           
-                          <span className={`inline-flex items-center text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
-                            job.status === 'open' 
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.1)]' 
-                              : job.status === 'in_progress' 
-                                ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-[0_0_12px_rgba(245,158,11,0.1)]' 
-                                : 'bg-slate-900/40 text-slate-500 border-slate-800'
-                          }`}>
-                            {(job.status === 'open' || job.status === 'in_progress') && (
-                              <span className={`w-1.5 h-1.5 rounded-full mr-1.5 animate-pulse ${
-                                job.status === 'open' ? 'bg-emerald-400' : 'bg-amber-400'
-                              }`} />
-                            )}
-                            <span>{job.status === 'open' ? 'Нээлттэй' : job.status === 'in_progress' ? 'Гэрээт' : 'Дууссан'}</span>
-                          </span>
+                          {(() => {
+                            if (job.status === 'open') {
+                              return (
+                                <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border border-emerald-500/40 bg-emerald-500/15 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.15)]">
+                                  <span className="w-1 h-1 rounded-full mr-1 bg-emerald-400 animate-pulse" />
+                                  <span>Нээлттэй</span>
+                                </span>
+                              );
+                            } else if (job.status === 'in_progress') {
+                              return (
+                                <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border border-amber-500/40 bg-amber-500/15 text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.15)]">
+                                  <span className="w-1 h-1 rounded-full mr-1 bg-amber-400 animate-pulse" />
+                                  <span>Гэрээт</span>
+                                </span>
+                              );
+                            } else {
+                              const isReviewed = job.isReviewedByEmployer;
+                              if (isReviewed) {
+                                return (
+                                  <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border border-sky-500/40 bg-sky-500/15 text-sky-400 shadow-[0_0_10px_rgba(14,165,233,0.1)]">
+                                    <span>Хаагдсан ✓</span>
+                                  </span>
+                                );
+                              } else {
+                                return (
+                                  <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border border-rose-500/45 bg-rose-500/15 text-rose-405 shadow-[0_0_10px_rgba(244,63,94,0.1)] animate-pulse">
+                                    <span className="w-1 h-1 rounded-full mr-1 bg-rose-500" />
+                                    <span>Ажил дууссан ⚠️</span>
+                                  </span>
+                                );
+                              }
+                            }
+                          })()}
                         </div>
                       </div>
                     </div>
