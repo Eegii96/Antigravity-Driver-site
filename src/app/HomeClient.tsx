@@ -251,12 +251,12 @@ export default function HomeClient() {
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             {/* Left Content */}
-            <div className="lg:col-span-7 text-left space-y-6 md:space-y-8 lg:pr-16">
-              <h1 className="text-sm md:text-base lg:text-[17px] font-medium text-slate-300 leading-relaxed max-w-xl font-sans">
-                Хүнд машин механизм, газар шороо, барилга угсралт болон түрээсийн салбарын жолооч, оператор, ажил олгогчдыг <span className="text-emerald-400 font-semibold">ажлын түүх</span> болон <span className="text-cyan-400 font-semibold">тоон үнэлгээгээр</span> холбох нэгдсэн систем. Бид салбарын хэмжээнд хариуцлагагүй байдлыг арилгаж, итгэлцэлд суурилсан хамтын ажиллагааны аюулгүй орчныг бүрдүүлэх зорилготой.
+            <div className="lg:col-span-7 text-center flex flex-col items-center justify-center space-y-6 md:space-y-8">
+              <h1 className="text-sm md:text-base lg:text-[17px] font-medium text-slate-300 leading-relaxed max-w-xl font-sans text-center mx-auto">
+                Хүнд машин механизм, газар шорооны ажил, түрээсийн салбарт ажиллаж буй жолооч, оператор болон ажил олгогчдыг <span className="text-emerald-400 font-semibold">ажлын түүх</span>, <span className="text-cyan-400 font-semibold">үнэлгээний системээр</span> хариуцлагатай орчныг бүрдүүлнэ.
               </h1>
               
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2 justify-center w-full">
                 <a 
                   href="#jobs"
                   className="glow-btn-emerald bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-6 py-3 rounded-xl transition-all shadow-lg shadow-emerald-950/30 flex items-center justify-center gap-2 cursor-pointer"
@@ -274,16 +274,16 @@ export default function HomeClient() {
               </div>
 
               {/* Stats Counters */}
-              <div className="grid grid-cols-3 gap-4 md:gap-8 pt-8 border-t border-slate-800/80 max-w-md font-sans">
-                <div>
+              <div className="grid grid-cols-3 gap-4 md:gap-8 pt-8 border-t border-slate-800/80 max-w-md w-full font-sans justify-items-center">
+                <div className="text-center">
                   <h3 className="text-xl md:text-2xl font-extrabold text-white">500+</h3>
                   <p className="text-[10px] md:text-xs text-slate-500 font-medium mt-1">Идэвхтэй оператор</p>
                 </div>
-                <div>
+                <div className="text-center">
                   <h3 className="text-xl md:text-2xl font-extrabold text-white">1,200+</h3>
                   <p className="text-[10px] md:text-xs text-slate-500 font-medium mt-1">Хамтарсан захиалга</p>
                 </div>
-                <div>
+                <div className="text-center">
                   <h3 className="text-xl md:text-2xl font-extrabold text-white">98%</h3>
                   <p className="text-[10px] md:text-xs text-slate-500 font-medium mt-1">Сэтгэл ханамж</p>
                 </div>
