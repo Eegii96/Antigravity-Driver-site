@@ -149,10 +149,7 @@ export default function HomeClient() {
       {/* Main Container */}
       <div className="flex-grow flex flex-col">
         
-        {/* Warning Banner */}
-        <div className="bg-amber-500 text-slate-950 px-4 py-2 text-center text-[10px] md:text-xs font-semibold border-b border-amber-600 z-50">
-          <span>АНХААРУУЛГА: Ажлын хариуцлага алдаж шалтгаангүй ажил хаясан, согтуугаар техник барьсан эсвэл цалин олгоогүй тохиолдлуудад системд хар жагсаалтанд бүртгэгдэж, цаашид үйлчилгээ авах боломжгүй болохыг анхаарна уу.</span>
-        </div>
+
 
         {/* Navbar */}
         <nav className="glass-panel sticky top-0 z-40 px-6 py-4 transition-all duration-300">
@@ -259,12 +256,9 @@ export default function HomeClient() {
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Жолооч оператор, Ажил олгогчийг холбох платформ</span>
               </div>
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight font-sans">
-                Барилга, Механизмын Ажлын <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Нэгдсэн Систем</span>
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-white tracking-tight leading-relaxed max-w-2xl font-sans">
+                Хүнд машин, механизм, газар шороо, барилга угсралт болон түрээсийн салбарт ажиллаж буй хариуцлагатай жолооч, оператор болон найдвартай ажил олгогчдыг нэгтгэсэн <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">ажлын түүх, тоон үнэлгээний систем</span>. Бид салбарын хэмжээнд залилан болон хариуцлагагүй байдлыг арилгаж, итгэлцэл дээр суурилсан хамтын ажиллагааны орчныг бүрдүүлэх зорилготой.
               </h1>
-              <p className="text-slate-400 text-sm md:text-base leading-relaxed max-w-xl font-sans">
-                Хүнд машин механизм, газар шорооны ажлын салбарт ажиллаж буй үнэлгээ, ажлын түүхээр баталгаажсан хариуцлагатай жолооч, оператор болон найдвартай ажил олгогчдыг хурдан хугацаанд холбох гүүр.
-              </p>
               
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <a 
