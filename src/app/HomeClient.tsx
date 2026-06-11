@@ -251,26 +251,22 @@ export default function HomeClient() {
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             {/* Left Content */}
-            <div className="lg:col-span-7 text-left space-y-6 md:space-y-8">
-              <div className="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-1.5 rounded-full text-emerald-400 text-[10px] md:text-xs font-bold tracking-wide uppercase animate-pulse-soft">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Жолооч оператор, Ажил олгогчийг холбох платформ</span>
-              </div>
-              <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-white tracking-tight leading-relaxed max-w-2xl font-sans">
-                Хүнд машин, механизм, газар шороо, барилга угсралт болон түрээсийн салбарт ажиллаж буй хариуцлагатай жолооч, оператор болон найдвартай ажил олгогчдыг нэгтгэсэн <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">ажлын түүх, тоон үнэлгээний систем</span>. Бид салбарын хэмжээнд залилан болон хариуцлагагүй байдлыг арилгаж, итгэлцэл дээр суурилсан хамтын ажиллагааны орчныг бүрдүүлэх зорилготой.
+            <div className="lg:col-span-7 text-left space-y-6 md:space-y-8 lg:pr-16">
+              <h1 className="text-sm md:text-base lg:text-[17px] font-medium text-slate-300 leading-relaxed max-w-xl font-sans">
+                Хүнд машин механизм, газар шороо, барилга угсралт болон түрээсийн салбарын жолооч, оператор, ажил олгогчдыг <span className="text-emerald-400 font-semibold">ажлын түүх</span> болон <span className="text-cyan-400 font-semibold">тоон үнэлгээгээр</span> холбох нэгдсэн систем. Бид салбарын хэмжээнд хариуцлагагүй байдлыг арилгаж, итгэлцэлд суурилсан хамтын ажиллагааны аюулгүй орчныг бүрдүүлэх зорилготой.
               </h1>
               
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <a 
                   href="#jobs"
-                  className="glow-btn-emerald bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs md:text-sm px-7 py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-950/30 flex items-center justify-center gap-2 cursor-pointer"
+                  className="glow-btn-emerald bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-6 py-3 rounded-xl transition-all shadow-lg shadow-emerald-950/30 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Briefcase className="w-4 h-4" />
                   <span>Ажлын зар харах</span>
                 </a>
                 <button 
                   onClick={() => handleNavToAuth('register')}
-                  className="px-7 py-3.5 border border-slate-700 hover:border-slate-500 rounded-xl text-xs md:text-sm font-bold text-white transition-all hover:bg-slate-800/50 flex items-center justify-center gap-2 cursor-pointer"
+                  className="px-6 py-3 border border-slate-700 hover:border-slate-500 rounded-xl text-xs font-bold text-white transition-all hover:bg-slate-800/50 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>Ажилд орох / Зар тавих</span>
                   <ChevronRight className="w-4 h-4 text-slate-500" />
@@ -278,17 +274,17 @@ export default function HomeClient() {
               </div>
 
               {/* Stats Counters */}
-              <div className="grid grid-cols-3 gap-4 md:gap-8 pt-8 border-t border-slate-800/80 max-w-lg font-sans">
+              <div className="grid grid-cols-3 gap-4 md:gap-8 pt-8 border-t border-slate-800/80 max-w-md font-sans">
                 <div>
-                  <h3 className="text-xl md:text-3xl font-extrabold text-white">500+</h3>
+                  <h3 className="text-xl md:text-2xl font-extrabold text-white">500+</h3>
                   <p className="text-[10px] md:text-xs text-slate-500 font-medium mt-1">Идэвхтэй оператор</p>
                 </div>
                 <div>
-                  <h3 className="text-xl md:text-3xl font-extrabold text-white">1,200+</h3>
+                  <h3 className="text-xl md:text-2xl font-extrabold text-white">1,200+</h3>
                   <p className="text-[10px] md:text-xs text-slate-500 font-medium mt-1">Хамтарсан захиалга</p>
                 </div>
                 <div>
-                  <h3 className="text-xl md:text-3xl font-extrabold text-white">98%</h3>
+                  <h3 className="text-xl md:text-2xl font-extrabold text-white">98%</h3>
                   <p className="text-[10px] md:text-xs text-slate-500 font-medium mt-1">Сэтгэл ханамж</p>
                 </div>
               </div>
