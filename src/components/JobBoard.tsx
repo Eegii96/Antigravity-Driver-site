@@ -124,6 +124,7 @@ export default function JobBoard({
 
   // Dropdown hover state emulator
   const [showProfileMenu, setShowProfileMenu] = useState<boolean>(false);
+  const [showBlurWarningModal, setShowBlurWarningModal] = useState<boolean>(false);
 
   // Notifications States
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -145,6 +146,20 @@ export default function JobBoard({
   const getEmployerPhone = (job: Job) => {
     const emp = users.find(u => u.id === job.employerId);
     return emp ? emp.phone : '';
+  };
+
+  const getMockEmployerName = (jobId: string) => {
+    const mockNames = ['Бат-Эрдэнэ', 'Лхагвасүрэн', 'Энхбат', 'Ганзориг', 'Мөнх-Эрдэнэ', 'Болдбаатар', 'Төмөрхүү', 'Алтанхуяг'];
+    const charCodeSum = jobId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    return mockNames[charCodeSum % mockNames.length];
+  };
+
+  const getMockEmployerPhone = (jobId: string) => {
+    const prefixes = ['9911', '8811', '9909', '8010', '9511', '9400', '8515', '9922'];
+    const charCodeSum = jobId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    const prefix = prefixes[charCodeSum % prefixes.length];
+    const lastFour = (charCodeSum * 17) % 9000 + 1000;
+    return `${prefix}${lastFour}`;
   };
 
   const formatDate = (isoString?: string) => {
@@ -896,6 +911,13 @@ export default function JobBoard({
         
         {/* Top Success Banner removed to prevent out-of-view notifications. Inline success alerts & floating mouse-anchored toasts are used instead. */}
 
+        {/* Description Banner */}
+        <div className="bg-gradient-to-r from-slate-900/80 to-slate-950/80 border border-slate-800/85 p-4.5 rounded-2xl text-center shadow-lg">
+          <p className="text-xs md:text-[13px] text-slate-300 leading-relaxed font-sans font-medium">
+            Үнэлгээ өгөх, ажлын түүх үүсгэх системээр хариуцлагатай жолооч, оператор болон найдвартай ажил олгогчдыг үүсгэх платформ
+          </p>
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-slate-900/40 p-3.5 border border-slate-800 rounded-xl">
             <span className="text-[10px] text-gray-550 uppercase block font-mono font-semibold text-gray-400">Нийт зар</span>
@@ -1049,7 +1071,20 @@ export default function JobBoard({
                         </button>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2.5 text-[10px] text-gray-400">
-                            <span className="font-semibold text-emerald-400">{getEmployerDisplayName(job)}</span>
+                            {!currentUser ? (
+                              <span 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowBlurWarningModal(true);
+                                }}
+                                className="font-semibold text-emerald-400 filter blur-[5px] select-none cursor-pointer"
+                                title="Дэлгэрэнгүйг нэвтэрч харна уу"
+                              >
+                                {getMockEmployerName(job.id)}
+                              </span>
+                            ) : (
+                              <span className="font-semibold text-emerald-400">{getEmployerDisplayName(job)}</span>
+                            )}
                             <span>•</span>
                             <span className="font-mono">{formatDate(job.createdAt)}</span>
                           </div>
@@ -1103,9 +1138,19 @@ export default function JobBoard({
                           <span>🔗 Хуваалцах</span>
                         </button>
                         
-                        <div className="flex items-center space-x-1.5 text-xs text-gray-400">
+                        <div 
+                          onClick={(e) => {
+                            if (!currentUser) {
+                              e.stopPropagation();
+                              setShowBlurWarningModal(true);
+                            }
+                          }}
+                          className={`flex items-center space-x-1.5 text-xs text-gray-400 ${!currentUser ? 'cursor-pointer' : ''}`}
+                        >
                           <Phone className="w-3.5 h-3.5 text-gray-500" />
-                          <span className="font-mono text-gray-300 font-bold">{getEmployerPhone(job) || 'Утас байхгүй'}</span>
+                          <span className={`font-mono text-gray-300 font-bold ${!currentUser ? 'filter blur-[5px] select-none' : ''}`}>
+                            {!currentUser ? getMockEmployerPhone(job.id) : (getEmployerPhone(job) || 'Утас байхгүй')}
+                          </span>
                         </div>
                       </div>
 
@@ -1114,6 +1159,10 @@ export default function JobBoard({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (!currentUser) {
+                            setShowBlurWarningModal(true);
+                            return;
+                          }
                           const employerUser = users.find(u => u.id === job.employerId);
                            if (employerUser) {
                              router.push(`/profile?id=${employerUser.id}`);
@@ -1123,8 +1172,8 @@ export default function JobBoard({
                       >
                         <div className="flex items-center space-x-2">
                           <UserIcon className="w-4 h-4 text-emerald-400" />
-                          <span className="text-xs text-gray-300 font-medium hover:underline">
-                            {getEmployerDisplayName(job)}
+                          <span className={`text-xs font-medium ${!currentUser ? 'text-gray-300 filter blur-[5px] select-none cursor-pointer' : 'text-gray-300 hover:underline'}`}>
+                            {!currentUser ? getMockEmployerName(job.id) : getEmployerDisplayName(job)}
                           </span>
                         </div>
                         <div className="flex items-center space-x-1 font-mono text-xs text-amber-400">
@@ -1369,9 +1418,22 @@ export default function JobBoard({
                       <div className="space-y-3">
                         {/* Employer name and Date */}
                         <div className="flex justify-between items-center text-[11px] text-gray-400">
-                          <span className="font-semibold text-emerald-400 font-sans">
-                            {getEmployerDisplayName(job)}
-                          </span>
+                          {!currentUser ? (
+                            <span 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowBlurWarningModal(true);
+                              }}
+                              className="font-semibold text-emerald-400 font-sans filter blur-[5px] select-none cursor-pointer"
+                              title="Дэлгэрэнгүйг нэвтэрч харна уу"
+                            >
+                              {getMockEmployerName(job.id)}
+                            </span>
+                          ) : (
+                            <span className="font-semibold text-emerald-400 font-sans">
+                              {getEmployerDisplayName(job)}
+                            </span>
+                          )}
                           <span className="font-mono text-gray-500">
                             {formatDate(job.createdAt)}
                           </span>
@@ -1390,10 +1452,18 @@ export default function JobBoard({
 
                       <div className="border-t border-slate-800/80 pt-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
                         {/* Phone Number */}
-                        <div className="flex items-center space-x-1.5 text-gray-400">
+                        <div 
+                          onClick={(e) => {
+                            if (!currentUser) {
+                              e.stopPropagation();
+                              setShowBlurWarningModal(true);
+                            }
+                          }}
+                          className={`flex items-center space-x-1.5 text-gray-400 ${!currentUser ? 'cursor-pointer' : ''}`}
+                        >
                           <Phone className="w-3.5 h-3.5 text-gray-500" />
-                          <span className="font-mono font-medium text-gray-300">
-                            {getEmployerPhone(job) || 'Утасгүй'}
+                          <span className={`font-mono font-medium text-gray-300 ${!currentUser ? 'filter blur-[5px] select-none' : ''}`}>
+                            {!currentUser ? getMockEmployerPhone(job.id) : (getEmployerPhone(job) || 'Утасгүй')}
                           </span>
                         </div>
 
@@ -1691,6 +1761,68 @@ export default function JobBoard({
           <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow-2xl flex flex-col items-center space-y-3">
             <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
             <span className="text-xs text-slate-305 font-mono">Үнэлгээг ачаалж байна...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Guest Blur Warning Modal */}
+      {showBlurWarningModal && (
+        <div 
+          id="blur-warning-modal-backdrop" 
+          onClick={() => setShowBlurWarningModal(false)}
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in"
+        >
+          <div 
+            id="blur-warning-modal-container" 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#0b1329] border border-slate-800 max-w-sm w-full rounded-2xl overflow-hidden shadow-2xl relative p-6 space-y-4"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+            
+            {/* Header */}
+            <div className="flex justify-between items-center pb-2 border-b border-slate-850">
+              <div className="flex items-center space-x-2">
+                <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <h3 className="text-sm font-semibold text-white tracking-wide">Дэлгэрэнгүй харах</h3>
+              </div>
+              <button 
+                onClick={() => setShowBlurWarningModal(false)} 
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1 rounded-lg hover:bg-slate-850"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-3 text-left">
+              <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                Ажлын зар байршуулсан хэрэглэгч болон утасны дугаар зэрэг дэлгэрэнгүй мэдээлэл нь зөвхөн системд нэвтэрсэн хэрэглэгчдэд харагдах боломжтой.
+              </p>
+              <p className="text-xs text-slate-450 leading-relaxed font-sans">
+                Та системд нэвтэрч орсны дараа зар бүтнээр харагдах болно.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col space-y-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowBlurWarningModal(false);
+                  router.push('/auth?tab=login');
+                }}
+                className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold rounded-xl transition-all shadow-lg shadow-emerald-950/25 cursor-pointer font-sans text-center"
+              >
+                Нэвтрэх хэсэг рүү очих
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowBlurWarningModal(false)}
+                className="w-full py-2.5 border border-slate-800 text-slate-350 hover:text-white text-xs font-medium rounded-xl hover:bg-slate-850/40 transition-colors cursor-pointer font-sans"
+              >
+                Хаах
+              </button>
+            </div>
           </div>
         </div>
       )}
