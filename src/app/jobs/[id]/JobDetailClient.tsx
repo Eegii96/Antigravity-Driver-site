@@ -8,8 +8,9 @@ import {
 } from 'lucide-react';
 import { getCurrentUser, setCurrentUser, getSingleJob, getSingleUser, saveSingleUser } from '../../../lib/db';
 import { Job, User } from '../../../types';
-import { db } from '../../../lib/firebase';
+import { db, auth } from '../../../lib/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 
 interface JobDetailClientProps {
   jobId: string;
@@ -185,7 +186,12 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                   </button>
                   <div className="border-t border-slate-800 my-1"></div>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
+                      try {
+                        await signOut(auth);
+                      } catch (err) {
+                        console.error('Error signing out:', err);
+                      }
                       setCurrentUser(null);
                       setLocalCurrentUser(null);
                       router.push('/auth');

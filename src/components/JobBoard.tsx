@@ -50,6 +50,8 @@ import {
 } from 'lucide-react';
 import JobPostModal from './JobPostModal';
 import ReviewModal from './ReviewModal';
+import { auth } from '../lib/firebase';
+import { signOut } from 'firebase/auth';
 
 interface JobBoardProps {
   currentUser: User | null;
@@ -872,7 +874,12 @@ export default function JobBoard({
 
                       <button
                         id="menu-logout"
-                        onClick={() => {
+                        onClick={async () => {
+                          try {
+                            await signOut(auth);
+                          } catch (err) {
+                            console.error('Error signing out:', err);
+                          }
                           setCurrentUser(null);
                           router.push('/auth');
                           setShowProfileMenu(false);
