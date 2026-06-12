@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, MapPin, DollarSign, Briefcase, Clock, 
-  CheckCircle, Star, Users, User as UserIcon, Loader2, AlertCircle, ChevronDown, LogOut, Settings as SettingsIcon
+  CheckCircle, Star, Users, User as UserIcon, Loader2, AlertCircle, ChevronDown, LogOut, Settings as SettingsIcon, X
 } from 'lucide-react';
 import { getCurrentUser, setCurrentUser, getSingleJob, getSingleUser, saveSingleUser } from '../../../lib/db';
 import { Job, User } from '../../../types';
@@ -25,6 +25,13 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [isApplying, setIsApplying] = useState<boolean>(false);
   const [showProfileMenu, setShowProfileMenu] = useState<boolean>(false);
+  const [showBlurWarningModal, setShowBlurWarningModal] = useState<boolean>(false);
+
+  const getMockEmployerName = (jobId: string) => {
+    const mockNames = ['Бат-Эрдэнэ', 'Лхагвасүрэн', 'Энхбат', 'Ганзориг', 'Мөнх-Эрдэнэ', 'Болдбаатар', 'Төмөрхүү', 'Алтанхуяг'];
+    const charCodeSum = jobId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    return mockNames[charCodeSum % mockNames.length];
+  };
 
   useEffect(() => {
     // 1. Get current user session if it exists (Optional for viewing, required for actions)
@@ -231,18 +238,25 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
               {/* Employer Preview */}
               {employer && (
                 <div 
-                  onClick={() => router.push(`/profile?id=${employer.id}`)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!currentUser) {
+                      setShowBlurWarningModal(true);
+                      return;
+                    }
+                    router.push(`/profile?id=${employer.id}`);
+                  }}
                   className="inline-flex items-center space-x-2 bg-slate-950/50 p-2.5 pr-4 rounded-xl border border-slate-850 hover:bg-slate-800/80 transition-colors text-left cursor-pointer mt-1"
                 >
                   <img 
                     src={employer.profileImage} 
                     alt={employer.fullName} 
-                    className="w-7 h-7 rounded-full object-cover border border-slate-700"
+                    className={`w-7 h-7 rounded-full object-cover border border-slate-700 ${!currentUser ? 'filter blur-[3px] select-none' : ''}`}
                     onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=E&background=334155&color=fff'; }}
                   />
                   <div>
-                    <span className="text-xs text-emerald-400 font-bold hover:underline block leading-tight">
-                      {employer.companyName || employer.fullName}
+                    <span className={`text-xs font-bold block leading-tight ${!currentUser ? 'text-emerald-400 filter blur-[5px] select-none cursor-pointer' : 'text-emerald-400 hover:underline'}`}>
+                      {!currentUser ? getMockEmployerName(job.id) : (employer.companyName || employer.fullName)}
                     </span>
                     <div className="flex items-center space-x-1 font-mono text-[9px] text-amber-400">
                       <Star className="w-3 h-3 fill-amber-400 text-amber-500" />
@@ -366,6 +380,68 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
           </div>
         )}
       </main>
+      {/* Guest Blur Warning Modal */}
+      {showBlurWarningModal && (
+        <div 
+          id="blur-warning-modal-backdrop" 
+          onClick={() => setShowBlurWarningModal(false)}
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in"
+        >
+          <div 
+            id="blur-warning-modal-container" 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#0b1329] border border-slate-800 max-w-sm w-full rounded-2xl overflow-hidden shadow-2xl relative p-6 space-y-4"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+            
+            {/* Header */}
+            <div className="flex justify-between items-center pb-2 border-b border-slate-850">
+              <div className="flex items-center space-x-2">
+                <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <h3 className="text-sm font-semibold text-white tracking-wide">Дэлгэрэнгүй харах</h3>
+              </div>
+              <button 
+                onClick={() => setShowBlurWarningModal(false)} 
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1 rounded-lg hover:bg-slate-850"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-3 text-left font-sans">
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Ажлын зар байршуулсан хэрэглэгч болон утасны дугаар зэрэг дэлгэрэнгүй мэдээлэл нь зөвхөн системд нэвтэрсэн хэрэглэгчдэд харагдах боломжтой.
+              </p>
+              <p className="text-xs text-slate-450 leading-relaxed">
+                Та системд нэвтэрч орсны дараа зар бүтнээр харагдах болно.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col space-y-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowBlurWarningModal(false);
+                  router.push('/auth?tab=login');
+                }}
+                className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold rounded-xl transition-all shadow-lg shadow-emerald-950/25 cursor-pointer font-sans text-center"
+              >
+                Нэвтрэх хэсэг рүү очих
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowBlurWarningModal(false)}
+                className="w-full py-2.5 border border-slate-800 text-slate-350 hover:text-white text-xs font-medium rounded-xl hover:bg-slate-850/40 transition-colors cursor-pointer font-sans"
+              >
+                Хаах
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
