@@ -135,7 +135,7 @@ export default function SettingsView() {
         </div>
         <button
           id="back-to-jobs-from-settings"
-          onClick={() => router.push('/board')}
+          onClick={() => router.push('/')}
           className="text-xs bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 px-3 py-1.5 rounded transition-colors cursor-pointer"
         >
           Зарын хэсэг рүү буцах

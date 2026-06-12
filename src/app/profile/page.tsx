@@ -115,7 +115,7 @@ function ProfileContent() {
       <div className="min-h-screen bg-[#070a13] flex flex-col items-center justify-center text-white font-sans p-4">
         <p className="text-red-400 font-bold mb-4">{error || 'Алдаа гарлаа'}</p>
         <button
-          onClick={() => router.push('/board')}
+          onClick={() => router.push('/')}
           className="bg-slate-900 border border-slate-700 hover:bg-slate-800 text-emerald-400 px-6 py-2.5 rounded-xl transition-all font-semibold cursor-pointer"
         >
           Нүүр хуудас руу буцах

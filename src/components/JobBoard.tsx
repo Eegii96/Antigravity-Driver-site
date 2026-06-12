@@ -52,7 +52,7 @@ import JobPostModal from './JobPostModal';
 import ReviewModal from './ReviewModal';
 
 interface JobBoardProps {
-  currentUser: User;
+  currentUser: User | null;
   onLogout?: () => void;
   onNavigateToProfile?: () => void;
   onNavigateToSettings?: () => void;
@@ -169,7 +169,7 @@ export default function JobBoard({
   const addErrorToast = (message: string) => {
     const newErrNotif: AppNotification & { x?: number; y?: number } = {
       id: 'err_' + Date.now(),
-      userId: currentUser.id,
+      userId: currentUser?.id || 'guest',
       title: 'Алдаа',
       message,
       type: 'alert',
@@ -187,7 +187,7 @@ export default function JobBoard({
   const addSuccessToast = (title: string, message: string) => {
     const newSuccessNotif: AppNotification & { x?: number; y?: number } = {
       id: 'success_' + Date.now(),
-      userId: currentUser.id,
+      userId: currentUser?.id || 'guest',
       title,
       message,
       type: 'success',
@@ -218,6 +218,7 @@ export default function JobBoard({
 
   // Function to load notifications and sync unread count
   const refreshNotifications = async () => {
+    if (!currentUser) return;
     const freshNotifs = await getNotifications(currentUser.id);
     
     // Check if there are any new unread notifications that aren't already in the local state,
@@ -303,24 +304,26 @@ export default function JobBoard({
   useEffect(() => {
     const timer = setInterval(async () => {
       try {
-        // Sync in background
-        const freshNotifs = await getNotifications(currentUser.id);
-        const freshUnreads = freshNotifs.filter(n => !n.isRead);
-        const prevUnreadIds = notificationsRef.current.filter(n => !n.isRead).map(n => n.id);
-        
-        let hasNew = false;
-        freshUnreads.forEach(newNotif => {
-          if (!prevUnreadIds.includes(newNotif.id)) {
-            hasNew = true;
-            setToasts(prev => [newNotif, ...prev]);
-            setTimeout(() => {
-              setToasts(prev => prev.filter(t => t.id !== newNotif.id));
-            }, 4500);
+        if (currentUser) {
+          // Sync in background
+          const freshNotifs = await getNotifications(currentUser.id);
+          const freshUnreads = freshNotifs.filter(n => !n.isRead);
+          const prevUnreadIds = notificationsRef.current.filter(n => !n.isRead).map(n => n.id);
+          
+          let hasNew = false;
+          freshUnreads.forEach(newNotif => {
+            if (!prevUnreadIds.includes(newNotif.id)) {
+              hasNew = true;
+              setToasts(prev => [newNotif, ...prev]);
+              setTimeout(() => {
+                setToasts(prev => prev.filter(t => t.id !== newNotif.id));
+              }, 4500);
+            }
+          });
+          
+          if (hasNew || freshNotifs.length !== notificationsRef.current.length) {
+            setNotifications(freshNotifs);
           }
-        });
-        
-        if (hasNew || freshNotifs.length !== notificationsRef.current.length) {
-          setNotifications(freshNotifs);
         }
 
         // Sync jobs & users in background
@@ -334,7 +337,7 @@ export default function JobBoard({
     }, 4000);
 
     return () => clearInterval(timer);
-  }, [currentUser.id]);
+  }, [currentUser?.id]);
 
   const toggleNotificationsMenu = () => {
     setShowNotificationsMenu(prev => {
@@ -354,6 +357,7 @@ export default function JobBoard({
 
   // Actions with optimistic UI updates for instantaneous responsiveness
   const handleMarkAsRead = async (id: string) => {
+    if (!currentUser) return;
     // Optimistically mark as read in local state
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
     try {
@@ -370,6 +374,7 @@ export default function JobBoard({
   };
 
   const handleNotificationClick = async (notif: AppNotification) => {
+    if (!currentUser) return;
     const title = notif.title.toLowerCase();
     const msg = notif.message.toLowerCase();
     
@@ -501,6 +506,7 @@ export default function JobBoard({
   };
 
   const handleMarkAllAsRead = async () => {
+    if (!currentUser) return;
     // Optimistically mark all as read in local state
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     try {
@@ -517,6 +523,7 @@ export default function JobBoard({
   };
 
   const handleDeleteNotification = async (id: string) => {
+    if (!currentUser) return;
     // Optimistically remove from local state
     setNotifications(prev => prev.filter(n => n.id !== id));
     try {
@@ -533,6 +540,7 @@ export default function JobBoard({
   };
 
   const handleDeleteAllNotifications = async () => {
+    if (!currentUser) return;
     // Optimistically clear all in local state
     setNotifications([]);
     try {
@@ -551,6 +559,7 @@ export default function JobBoard({
 
 
   const handleApply = async (jobId: string) => {
+    if (!currentUser) return;
     try {
       const success = await applyForJob(jobId, currentUser.id);
       if (success) {
@@ -671,198 +680,214 @@ export default function JobBoard({
 
         {/* Profile and Notifications triggers */}
         <div className="flex items-center space-x-3.5">
-          
-
-
-          {currentUser.type === 'employer' && (
-            <button
-              id="header-post-job-btn"
-              onClick={() => setShowPostModal(true)}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-3.5 py-2 rounded-lg flex items-center space-x-1.5 transition-all cursor-pointer shadow-md shadow-emerald-950/20"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Зар нэмэх</span>
-            </button>
-          )}
-
-          {/* Notifications Bell Dropdown */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={toggleNotificationsMenu}
-              className="relative p-2 bg-slate-800 hover:bg-slate-700/80 active:scale-95 border border-slate-700 hover:border-slate-600 rounded-full transition-all duration-200 cursor-pointer text-slate-350 hover:text-white shadow-inner focus:outline-none"
-            >
-              <Bell className="w-4 h-4" />
-              {unreadNotifs.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rose-500 text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-slate-900 animate-bounce">
-                  {unreadNotifs.length}
-                </span>
+          {currentUser ? (
+            <>
+              {currentUser.type === 'employer' && (
+                <button
+                  id="header-post-job-btn"
+                  onClick={() => setShowPostModal(true)}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-3.5 py-2 rounded-lg flex items-center space-x-1.5 transition-all cursor-pointer shadow-md shadow-emerald-950/20"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>Зар нэмэх</span>
+                </button>
               )}
-            </button>
 
-            {showNotificationsMenu && (
-              <div
-                id="notifications-dropdown-menu"
-                ref={notificationsMenuRef}
-                className="absolute right-0 mt-2.5 w-[360px] bg-slate-900/95 backdrop-blur-md border border-slate-700/70 rounded-2xl shadow-2xl z-50 py-2 animate-fade-in"
-              >
-                <div className="px-4 py-2.5 border-b border-slate-800 flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-300 tracking-wide uppercase font-sans">Системийн мэдэгдлүүд</span>
+              {/* Notifications Bell Dropdown */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={toggleNotificationsMenu}
+                  className="relative p-2 bg-slate-800 hover:bg-slate-700/80 active:scale-95 border border-slate-700 hover:border-slate-600 rounded-full transition-all duration-200 cursor-pointer text-slate-350 hover:text-white shadow-inner focus:outline-none"
+                >
+                  <Bell className="w-4 h-4" />
                   {unreadNotifs.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={handleMarkAllAsRead}
-                      className="text-[10px] bg-emerald-950/40 hover:bg-emerald-900/50 text-emerald-400 border border-emerald-850/40 px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer"
-                    >
-                      Бүгдийг уншсанаар тэмдэглэх
-                    </button>
+                    <span className="absolute -top-1 -right-1 bg-rose-500 text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-slate-900 animate-bounce">
+                      {unreadNotifs.length}
+                    </span>
                   )}
-                </div>
+                </button>
 
-                <div className="max-h-80 overflow-y-auto divide-y divide-slate-800/60 scrollbar-thin">
-                  {notifications.length === 0 ? (
-                    <div className="py-10 px-4 text-center flex flex-col items-center justify-center space-y-2">
-                      <CheckCircle className="w-8 h-8 text-slate-600 animate-pulse-soft" />
-                      <p className="text-xs text-slate-500 italic">Мэдэгдэл одоогоор байхгүй байна.</p>
+                {showNotificationsMenu && (
+                  <div
+                    id="notifications-dropdown-menu"
+                    ref={notificationsMenuRef}
+                    className="absolute right-0 mt-2.5 w-[360px] bg-slate-900/95 backdrop-blur-md border border-slate-700/70 rounded-2xl shadow-2xl z-50 py-2 animate-fade-in"
+                  >
+                    <div className="px-4 py-2.5 border-b border-slate-800 flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-300 tracking-wide uppercase font-sans">Системийн мэдэгдлүүд</span>
+                      {unreadNotifs.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleMarkAllAsRead}
+                          className="text-[10px] bg-emerald-950/40 hover:bg-emerald-900/50 text-emerald-400 border border-emerald-850/40 px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer"
+                        >
+                          Бүгдийг уншсанаар тэмдэглэх
+                        </button>
+                      )}
                     </div>
-                  ) : (
-                    notifications.map((notif) => (
-                      <div
-                        key={notif.id}
-                        onClick={() => handleNotificationClick(notif)}
-                        className={`p-3.5 text-left transition-all duration-300 relative flex items-start space-x-3 hover:bg-slate-850/20 cursor-pointer ${
-                          notif.isRead ? 'bg-transparent opacity-70 hover:opacity-100' : 'bg-slate-850/40 border-l-3 border-emerald-500'
-                        }`}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-start gap-1">
-                            <h5 className="text-xs font-bold text-white leading-tight font-sans">{notif.title}</h5>
-                            <span className="text-[8px] text-slate-500 font-mono shrink-0">{notif.createdAt}</span>
-                          </div>
-                          <p className="text-[11px] text-slate-300 leading-relaxed mt-1 font-sans">{notif.message}</p>
-                          
-                          <div className="flex items-center space-x-2 mt-2.5">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteNotification(notif.id);
-                              }}
-                              className="bg-rose-950/30 hover:bg-rose-900/50 active:scale-95 text-rose-455 border border-rose-800/30 px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center space-x-1 cursor-pointer"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                              <span>Устгах</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
 
-                {notifications.length > 0 && (
-                  <div className="px-4 py-2 border-t border-slate-800 text-center">
-                    <button
-                      type="button"
-                      onClick={handleDeleteAllNotifications}
-                      className="w-full bg-rose-950/20 hover:bg-rose-900/40 active:scale-98 border border-rose-800/30 hover:border-rose-700/50 text-rose-400 hover:text-white py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer font-sans"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>БҮХ МЭДЭГДЛИЙГ УСТГАХ</span>
-                    </button>
+                    <div className="max-h-80 overflow-y-auto divide-y divide-slate-800/60 scrollbar-thin">
+                      {notifications.length === 0 ? (
+                        <div className="py-10 px-4 text-center flex flex-col items-center justify-center space-y-2">
+                          <CheckCircle className="w-8 h-8 text-slate-600 animate-pulse-soft" />
+                          <p className="text-xs text-slate-500 italic">Мэдэгдэл одоогоор байхгүй байна.</p>
+                        </div>
+                      ) : (
+                        notifications.map((notif) => (
+                          <div
+                            key={notif.id}
+                            onClick={() => handleNotificationClick(notif)}
+                            className={`p-3.5 text-left transition-all duration-300 relative flex items-start space-x-3 hover:bg-slate-850/20 cursor-pointer ${
+                              notif.isRead ? 'bg-transparent opacity-70 hover:opacity-100' : 'bg-slate-850/40 border-l-3 border-emerald-500'
+                            }`}
+                          >
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-start gap-1">
+                                <h5 className="text-xs font-bold text-white leading-tight font-sans">{notif.title}</h5>
+                                <span className="text-[8px] text-slate-500 font-mono shrink-0">{notif.createdAt}</span>
+                              </div>
+                              <p className="text-[11px] text-slate-300 leading-relaxed mt-1 font-sans">{notif.message}</p>
+                              
+                              <div className="flex items-center space-x-2 mt-2.5">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteNotification(notif.id);
+                                  }}
+                                  className="bg-rose-955/30 hover:bg-rose-900/50 active:scale-95 text-rose-455 border border-rose-800/30 px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>Устгах</span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {notifications.length > 0 && (
+                      <div className="px-4 py-2 border-t border-slate-800 text-center">
+                        <button
+                          type="button"
+                          onClick={handleDeleteAllNotifications}
+                          className="w-full bg-rose-955/20 hover:bg-rose-900/40 active:scale-98 border border-rose-800/30 hover:border-rose-700/50 text-rose-400 hover:text-white py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer font-sans"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>БҮХ МЭДЭГДЛИЙГ УСТГАХ</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
-          </div>
 
-          {/* User Profile hover container */}
-          <div
-            id="profile-hover-trigger"
-            className="relative"
-            onMouseEnter={() => { setShowProfileMenu(true); setShowNotificationsMenu(false); }}
-            onMouseLeave={() => setShowProfileMenu(false)}
-          >
-            <button
-              id="profile-dropdown-btn"
-              onClick={toggleProfileMenu}
-              className="flex items-center space-x-2 bg-slate-800 p-1.5 pl-3 rounded-full hover:bg-slate-700 transition-colors border border-slate-700 text-left cursor-pointer"
-            >
-              <div className="hidden md:block">
-                <p className="text-xs font-semibold text-white leading-none">{getFirstName(currentUser)}</p>
-                <span className="text-[9px] text-emerald-400 font-mono">
-                  {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} • {currentUser.rating}⭐
-                </span>
-              </div>
-              <img
-                src={currentUser.profileImage}
-                alt="user avatar"
-                className="w-8 h-8 rounded-full object-cover border-2 border-emerald-500"
-                referrerPolicy="no-referrer"
-                onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }}
-              />
-              <ChevronDown className="w-3.5 h-3.5 text-gray-405" />
-            </button>
-
-            {/* Hover Floating Menus WITH tight border logic */}
-            {showProfileMenu && (
+              {/* User Profile hover container */}
               <div
-                id="profile-hover-menu"
-                ref={profileMenuRef}
-                className="absolute right-0 top-full pt-1.5 w-48 z-50 animate-fade-in"
-                onMouseEnter={() => setShowProfileMenu(true)}
+                id="profile-hover-trigger"
+                className="relative"
+                onMouseEnter={() => { setShowProfileMenu(true); setShowNotificationsMenu(false); }}
                 onMouseLeave={() => setShowProfileMenu(false)}
               >
-                <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-2">
-                  <div className="px-3.5 py-2 border-b border-slate-800 text-[11px] text-gray-500 font-semibold font-mono">
-                    Сонголтууд
+                <button
+                  id="profile-dropdown-btn"
+                  onClick={toggleProfileMenu}
+                  className="flex items-center space-x-2 bg-slate-800 p-1.5 pl-3 rounded-full hover:bg-slate-700 transition-colors border border-slate-700 text-left cursor-pointer"
+                >
+                  <div className="hidden md:block">
+                    <p className="text-xs font-semibold text-white leading-none">{getFirstName(currentUser)}</p>
+                    <span className="text-[9px] text-emerald-400 font-mono">
+                      {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} • {currentUser.rating}⭐
+                    </span>
                   </div>
-                  
-                  <button
-                    id="menu-goto-profile"
-                    onClick={() => { router.push('/profile'); setShowProfileMenu(false); }}
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
-                  >
-                    <UserIcon className="w-4 h-4 text-emerald-400" />
-                    <span>Миний профайл</span>
-                  </button>
+                  <img
+                    src={currentUser.profileImage}
+                    alt="user avatar"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-emerald-500"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }}
+                  />
+                  <ChevronDown className="w-3.5 h-3.5 text-gray-405" />
+                </button>
 
-                  <button
-                    id="menu-goto-applications"
-                    onClick={() => { router.push('/applications'); setShowProfileMenu(false); }}
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
+                {/* Hover Floating Menus WITH tight border logic */}
+                {showProfileMenu && (
+                  <div
+                    id="profile-hover-menu"
+                    ref={profileMenuRef}
+                    className="absolute right-0 top-full pt-1.5 w-48 z-50 animate-fade-in"
+                    onMouseEnter={() => setShowProfileMenu(true)}
+                    onMouseLeave={() => setShowProfileMenu(false)}
                   >
-                    <Briefcase className="w-4 h-4 text-emerald-455" />
-                    <span>{currentUser.type === 'operator' ? 'Миний хүсэлтүүд' : 'Миний байршуулсан зарууд'}</span>
-                  </button>
-                  
-                  <button
-                    id="menu-goto-settings"
-                    onClick={() => { router.push('/settings'); setShowProfileMenu(false); }}
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
-                  >
-                    <SettingsIcon className="w-4 h-4 text-emerald-400" />
-                    <span>Тохиргооны хэсэг</span>
-                  </button>
+                    <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-2">
+                      <div className="px-3.5 py-2 border-b border-slate-800 text-[11px] text-gray-550 font-semibold font-mono">
+                        Сонголтууд
+                      </div>
+                      
+                      <button
+                        id="menu-goto-profile"
+                        onClick={() => { router.push('/profile'); setShowProfileMenu(false); }}
+                        className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
+                      >
+                        <UserIcon className="w-4 h-4 text-emerald-400" />
+                        <span>Миний профайл</span>
+                      </button>
 
-                  <div className="border-t border-slate-800 my-1"></div>
+                      <button
+                        id="menu-goto-applications"
+                        onClick={() => { router.push('/applications'); setShowProfileMenu(false); }}
+                        className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
+                      >
+                        <Briefcase className="w-4 h-4 text-emerald-455" />
+                        <span>{currentUser.type === 'operator' ? 'Миний хүсэлтүүд' : 'Миний байршуулсан зарууд'}</span>
+                      </button>
+                      
+                      <button
+                        id="menu-goto-settings"
+                        onClick={() => { router.push('/settings'); setShowProfileMenu(false); }}
+                        className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
+                      >
+                        <SettingsIcon className="w-4 h-4 text-emerald-400" />
+                        <span>Тохиргооны хэсэг</span>
+                      </button>
 
-                  <button
-                    id="menu-logout"
-                    onClick={() => {
-                      setCurrentUser(null);
-                      router.push('/auth');
-                      setShowProfileMenu(false);
-                    }}
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-rose-400 hover:text-rose-400 flex items-center space-x-2.5 transition-colors cursor-pointer"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Системээс гарах</span>
-                  </button>
-                </div>
+                      <div className="border-t border-slate-800 my-1"></div>
+
+                      <button
+                        id="menu-logout"
+                        onClick={() => {
+                          setCurrentUser(null);
+                          router.push('/auth');
+                          setShowProfileMenu(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-rose-455 hover:text-rose-450 flex items-center space-x-2.5 transition-colors cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Системээс гарах</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => router.push('/auth?tab=login')}
+                className="text-xs text-slate-300 hover:text-white font-semibold px-3.5 py-2 transition-all cursor-pointer hover:bg-slate-800 rounded-lg"
+              >
+                Нэвтрэх
+              </button>
+              <button
+                onClick={() => router.push('/auth?tab=register')}
+                className="bg-emerald-600 hover:bg-emerald-555 text-white font-semibold text-xs px-3.5 py-2 rounded-lg transition-all cursor-pointer shadow-md shadow-emerald-950/20"
+              >
+                Бүртгүүлэх
+              </button>
+            </div>
+          )}
 
         </div>
       </header>
@@ -1132,179 +1157,203 @@ export default function JobBoard({
                       </div>
                   {/* Workflow Actions */}
                       <div className="border-t border-slate-800 pt-4 space-y-3" onClick={(e) => e.stopPropagation()}>
-                        {job.status === 'open' && (
+                        {!currentUser ? (
+                          <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-center space-y-3">
+                            <p className="text-xs text-gray-400 font-sans">
+                              Та энэхүү заранд хүсэлт илгээх эсвэл зар тавихын тулд системд нэвтэрсэн байх шаардлагатай.
+                            </p>
+                            <div className="flex justify-center space-x-3">
+                              <button
+                                onClick={() => router.push('/auth?tab=login')}
+                                className="bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors cursor-pointer"
+                              >
+                                Нэвтрэх
+                              </button>
+                              <button
+                                onClick={() => router.push('/auth?tab=register')}
+                                className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors cursor-pointer"
+                              >
+                                Бүртгүүлэх
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
                           <>
-                            {currentUser.type === 'operator' ? (
-                              job.applicants.includes(currentUser.id) ? (
-                                <div className="space-y-2.5">
-                                  <button
-                                    disabled
-                                    className="w-full bg-slate-800 text-gray-400 text-xs font-bold py-3 px-4 rounded-xl cursor-not-allowed border border-slate-700 text-center"
-                                  >
-                                    Хүсэлт илгээсэн
-                                  </button>
-                                  {/* Local success message for applying */}
-                                  {successMessage && successMessage.includes('хүсэлт') && (
-                                    <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 p-3.5 rounded-xl text-xs flex items-start space-x-2 animate-fade-in text-left">
-                                      <CheckCircle className="w-4.5 h-4.5 text-emerald-400 shrink-0 mt-0.5" />
-                                      <span className="font-sans leading-normal text-[11px]">{successMessage}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              ) : (
-                                <button
-                                  onClick={() => handleApply(job.id)}
-                                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold py-3 px-4 rounded-xl transition-all shadow-md shadow-emerald-500/10 cursor-pointer text-center"
-                                >
-                                  Ажилд орох хүсэлт илгээх
-                                </button>
-                              )
-                            ) : (
-                              currentUser.id === job.employerId ? (
-                                <div className="space-y-3">
-                                  {/* Edit/Delete Options */}
-                                  <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-3">
-                                    <span className="text-[10px] text-slate-500 block uppercase font-mono tracking-wider">Зарын Тохиргоо:</span>
-                                    <div className="flex space-x-2.5">
+                            {job.status === 'open' && (
+                              <>
+                                {currentUser.type === 'operator' ? (
+                                  job.applicants.includes(currentUser.id) ? (
+                                    <div className="space-y-2.5">
                                       <button
-                                        type="button"
-                                        onClick={() => setEditingJob(job)}
-                                        className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
+                                        disabled
+                                        className="w-full bg-slate-800 text-gray-400 text-xs font-bold py-3 px-4 rounded-xl cursor-not-allowed border border-slate-700 text-center"
                                       >
-                                        Засах
+                                        Хүсэлт илгээсэн
                                       </button>
-                                      <button
-                                        type="button"
-                                        onClick={async () => {
-                                          if (window.confirm('Та энэ зарыг устгахдаа итгэлтэй байна уу? Устгасны дараа сэргээх боломжгүй.')) {
-                                            try {
-                                              await deleteJob(job.id);
-                                              setSelectedJob(null);
-                                              await refreshJobs();
-                                              addSuccessToast('Устгагдлаа', 'Зарыг амжилттай устгалаа.');
-                                            } catch (err) {
-                                              console.error(err);
-                                              addErrorToast('Зарыг устгахад алдаа гарлаа.');
-                                            }
-                                          }
-                                        }}
-                                        className="flex-1 border border-rose-955/40 hover:border-rose-900 bg-slate-950 hover:bg-rose-955/20 text-rose-400 hover:text-rose-350 font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
-                                      >
-                                        Устгах
-                                      </button>
+                                      {/* Local success message for applying */}
+                                      {successMessage && successMessage.includes('хүсэлт') && (
+                                        <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 p-3.5 rounded-xl text-xs flex items-start space-x-2 animate-fade-in text-left">
+                                          <CheckCircle className="w-4.5 h-4.5 text-emerald-400 shrink-0 mt-0.5" />
+                                          <span className="font-sans leading-normal text-[11px]">{successMessage}</span>
+                                        </div>
+                                      )}
                                     </div>
-                                  </div>
-
-                                  <div className="flex items-center justify-between text-xs border-b border-slate-850 pb-2">
-                                    <span className="font-bold text-gray-300">Хүсэлт ирүүлсэн жолооч нар ({job.applicants.length})</span>
-                                  </div>
-                                  {job.applicants.length === 0 ? (
-                                    <p className="text-[11px] text-gray-500 text-center py-2">Ирүүлсэн хүсэлт байхгүй байна.</p>
                                   ) : (
-                                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                                      {job.applicants.map((opId) => {
-                                        const op = users.find(u => u.id === opId);
-                                        if (!op) return null;
-                                        return (
-                                          <div key={opId} className="flex items-center justify-between bg-slate-950 p-2.5 rounded-lg border border-slate-800">
-                                            <button
-                                              type="button"
-                                               onClick={() => router.push(`/profile?id=${op.id}`)}
-                                              className="text-xs text-white font-medium hover:underline hover:text-emerald-400 text-left focus:outline-none"
-                                            >
-                                              {op.fullName} ({op.experienceYears || 0} жил)
-                                            </button>
-                                            <button
-                                              onClick={() => handleHire(job.id, op.id)}
-                                              className="bg-emerald-500 hover:bg-emerald-450 text-slate-950 text-[10px] font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-                                            >
-                                              Сонгох
-                                            </button>
-                                          </div>
-                                        );
-                                      })}
+                                    <button
+                                      onClick={() => handleApply(job.id)}
+                                      className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold py-3 px-4 rounded-xl transition-all shadow-md shadow-emerald-500/10 cursor-pointer text-center"
+                                    >
+                                      Ажилд орох хүсэлт илгээх
+                                    </button>
+                                  )
+                                ) : (
+                                  currentUser.id === job.employerId ? (
+                                    <div className="space-y-3">
+                                      {/* Edit/Delete Options */}
+                                      <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-3">
+                                        <span className="text-[10px] text-slate-500 block uppercase font-mono tracking-wider">Зарын Тохиргоо:</span>
+                                        <div className="flex space-x-2.5">
+                                          <button
+                                            type="button"
+                                            onClick={() => setEditingJob(job)}
+                                            className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
+                                          >
+                                            Засах
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={async () => {
+                                              if (window.confirm('Та энэ зарыг устгахдаа итгэлтэй байна уу? Устгасны дараа сэргээх боломжгүй.')) {
+                                                try {
+                                                  await deleteJob(job.id);
+                                                  setSelectedJob(null);
+                                                  await refreshJobs();
+                                                  addSuccessToast('Устгагдлаа', 'Зарыг амжилттай устгалаа.');
+                                                } catch (err) {
+                                                  console.error(err);
+                                                  addErrorToast('Зарыг устгахад алдаа гарлаа.');
+                                                }
+                                              }
+                                            }}
+                                            className="flex-1 border border-rose-955/40 hover:border-rose-900 bg-slate-950 hover:bg-rose-955/20 text-rose-400 hover:text-rose-350 font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
+                                          >
+                                            Устгах
+                                          </button>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center justify-between text-xs border-b border-slate-855 pb-2">
+                                        <span className="font-bold text-gray-300">Хүсэлт ирүүлсэн жолооч нар ({job.applicants.length})</span>
+                                      </div>
+                                      {job.applicants.length === 0 ? (
+                                        <p className="text-[11px] text-gray-500 text-center py-2">Ирүүлсэн хүсэлт байхгүй байна.</p>
+                                      ) : (
+                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                                          {job.applicants.map((opId) => {
+                                            const op = users.find(u => u.id === opId);
+                                            if (!op) return null;
+                                            return (
+                                              <div key={opId} className="flex items-center justify-between bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                                                <button
+                                                  type="button"
+                                                   onClick={() => router.push(`/profile?id=${op.id}`)}
+                                                  className="text-xs text-white font-medium hover:underline hover:text-emerald-400 text-left focus:outline-none"
+                                                >
+                                                  {op.fullName} ({op.experienceYears || 0} жил)
+                                                </button>
+                                                <button
+                                                  onClick={() => handleHire(job.id, op.id)}
+                                                  className="bg-emerald-500 hover:bg-emerald-450 text-slate-950 text-[10px] font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                                                >
+                                                  Сонгох
+                                                </button>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
                                     </div>
-                                  )}
+                                  ) : null
+                                )}
+                              </>
+                            )}
+
+                            {job.status === 'in_progress' && (
+                              <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-3">
+                                <div className="text-xs text-gray-400 flex items-center justify-between">
+                                  <span>Хамтран ажиллаж буй оператор:</span>
+                                  <span className="font-bold text-white">
+                                    {(() => {
+                                      const op = users.find(u => u.id === job.hiredOperatorId);
+                                      return op ? getFirstName(op) : getFirstName(job.hiredOperatorName);
+                                    })()}
+                                  </span>
                                 </div>
-                              ) : null
+                                {/* Local success message for hiring */}
+                                {successMessage && successMessage.includes('томиллоо') && (
+                                  <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 p-3 rounded-xl text-[11px] flex items-start space-x-2 animate-fade-in text-left">
+                                    <CheckCircle className="w-4.5 h-4.5 text-emerald-400 shrink-0 mt-0.5" />
+                                    <span className="font-sans leading-normal">{successMessage}</span>
+                                  </div>
+                                )}
+                                
+                                {/* Completion trigger reserved for the publisher */}
+                                {currentUser.id === job.employerId && (
+                                  <button
+                                    id="employer-complete-job-btn"
+                                    onClick={() => handleCompleteAndReviewTrigger(job)}
+                                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer text-center"
+                                  >
+                                    ✓ Ажил дууссаныг баталгаажуулж үнэлэх
+                                  </button>
+                                )}
+
+                                {currentUser.id !== job.employerId && (
+                                  <p className="text-[10px] text-slate-500">
+                                    Ажил олгогч ажлыг дууссаныг тэмдэглэсний дараа та үнэлгээ өгөх боломжтой болно.
+                                  </p>
+                                )}
+                              </div>
+                            )}
+
+                            {job.status === 'completed' && (
+                              <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl space-y-3">
+                                <div className="flex items-center space-x-1.5 text-xs text-emerald-400 font-bold">
+                                  <CheckCircle className="w-4 h-4" />
+                                  <span>ЭНЭХҮҮ АЖИЛ АМЖИЛТТАЙ ГҮЙЦЭТГЭГДЭЖ ДУУССАН</span>
+                                </div>
+
+                                {/* Review option for Operator */}
+                                {currentUser.type === 'operator' && job.hiredOperatorId === currentUser.id && !job.isReviewedByOperator && (
+                                  <button
+                                    id="op-review-employer-btn"
+                                    onClick={() => setActiveReviewJob(job)}
+                                    className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 py-1.5 px-3 rounded-lg text-xs font-bold cursor-pointer transition-colors"
+                                  >
+                                    Захиалагчийг Үнэлэх (Цалингийн мурилт эсвэл харилцаа)
+                                  </button>
+                                )}
+
+                                {/* Review option for Employer */}
+                                {currentUser.type === 'employer' && job.employerId === currentUser.id && !job.isReviewedByEmployer && (
+                                  <button
+                                    id="emp-review-operator-btn"
+                                    onClick={() => setActiveReviewJob(job)}
+                                    className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 py-1.5 px-3 rounded-lg text-xs font-bold cursor-pointer transition-colors"
+                                  >
+                                    Жолоочийг Үнэлэх (Согтууруулах ундаа, Ажилдаа эзэн болсон байдал)
+                                  </button>
+                                )}
+
+                                {((currentUser.type === 'operator' && job.isReviewedByOperator) || 
+                                  (currentUser.type === 'employer' && job.isReviewedByEmployer)) && (
+                                  <div className="text-[11px] text-gray-500 text-center italic">
+                                    Таны үнэлгээ системд хэдийн бүртгэгдсэн байна. Таны хариуцлагатай оролцоонд баярлалаа!
+                                  </div>
+                                )}
+                              </div>
                             )}
                           </>
-                        )}
-
-                        {job.status === 'in_progress' && (
-                          <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-3">
-                            <div className="text-xs text-gray-400 flex items-center justify-between">
-                              <span>Хамтран ажиллаж буй оператор:</span>
-                              <span className="font-bold text-white">
-                                {(() => {
-                                  const op = users.find(u => u.id === job.hiredOperatorId);
-                                  return op ? getFirstName(op) : getFirstName(job.hiredOperatorName);
-                                })()}
-                              </span>
-                            </div>
-                            {/* Local success message for hiring */}
-                            {successMessage && successMessage.includes('томиллоо') && (
-                              <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 p-3 rounded-xl text-[11px] flex items-start space-x-2 animate-fade-in text-left">
-                                <CheckCircle className="w-4.5 h-4.5 text-emerald-400 shrink-0 mt-0.5" />
-                                <span className="font-sans leading-normal">{successMessage}</span>
-                              </div>
-                            )}
-                            
-                            {/* Completion trigger reserved for the publisher */}
-                            {currentUser.id === job.employerId && (
-                              <button
-                                id="employer-complete-job-btn"
-                                onClick={() => handleCompleteAndReviewTrigger(job)}
-                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer text-center"
-                              >
-                                ✓ Ажил дууссаныг баталгаажуулж үнэлэх
-                              </button>
-                            )}
-
-                            {currentUser.id !== job.employerId && (
-                              <p className="text-[10px] text-slate-500">
-                                Ажил олгогч ажлыг дууссаныг тэмдэглэсний дараа та үнэлгээ өгөх боломжтой болно.
-                              </p>
-                            )}
-                          </div>
-                        )}
-
-                        {job.status === 'completed' && (
-                          <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl space-y-3">
-                            <div className="flex items-center space-x-1.5 text-xs text-emerald-400 font-bold">
-                              <CheckCircle className="w-4 h-4" />
-                              <span>ЭНЭХҮҮ АЖИЛ АМЖИЛТТАЙ ГҮЙЦЭТГЭГДЭЖ ДУУССАН</span>
-                            </div>
-
-                            {/* Review option for Operator */}
-                            {currentUser.type === 'operator' && job.hiredOperatorId === currentUser.id && !job.isReviewedByOperator && (
-                              <button
-                                id="op-review-employer-btn"
-                                onClick={() => setActiveReviewJob(job)}
-                                className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 py-1.5 px-3 rounded-lg text-xs font-bold cursor-pointer transition-colors"
-                              >
-                                Захиалагчийг Үнэлэх (Цалингийн мурилт эсвэл харилцаа)
-                              </button>
-                            )}
-
-                            {/* Review option for Employer */}
-                            {currentUser.type === 'employer' && job.employerId === currentUser.id && !job.isReviewedByEmployer && (
-                              <button
-                                id="emp-review-operator-btn"
-                                onClick={() => setActiveReviewJob(job)}
-                                className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 py-1.5 px-3 rounded-lg text-xs font-bold cursor-pointer transition-colors"
-                              >
-                                Жолоочийг Үнэлэх (Согтууруулах ундаа, Ажилдаа эзэн болсон байдал)
-                              </button>
-                            )}
-
-                            {((currentUser.type === 'operator' && job.isReviewedByOperator) || 
-                              (currentUser.type === 'employer' && job.isReviewedByEmployer)) && (
-                              <div className="text-[11px] text-gray-500 text-center italic">
-                                Таны үнэлгээ системд хэдийн бүртгэгдсэн байна. Таны хариуцлагатай оролцоонд баярлалаа!
-                              </div>
-                            )}
-                          </div>
                         )}
                       </div>
                     </div>
@@ -1469,7 +1518,7 @@ export default function JobBoard({
       })()}
 
       {/* Modals trigger definitions */}
-      {showPostModal && (
+      {showPostModal && currentUser && (
         <JobPostModal
           employerId={currentUser.id}
           employerName={currentUser.fullName}
@@ -1487,7 +1536,7 @@ export default function JobBoard({
         />
       )}
 
-      {editingJob && (
+      {editingJob && currentUser && (
         <JobPostModal
           employerId={currentUser.id}
           employerName={currentUser.fullName}
@@ -1508,7 +1557,7 @@ export default function JobBoard({
         />
       )}
 
-      {activeReviewJob && (
+      {activeReviewJob && currentUser && (
         <ReviewModal
           jobId={activeReviewJob.id}
           jobTitle={activeReviewJob.title}

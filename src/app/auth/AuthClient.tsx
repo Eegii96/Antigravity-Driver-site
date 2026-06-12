@@ -1,25 +1,27 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Auth from '../../components/Auth';
 import { getCurrentUser } from '../../lib/db';
 
 export default function AuthClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab'); // 'login' or 'register'
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const user = getCurrentUser();
     if (user) {
-      router.replace('/board');
+      router.replace('/');
     } else {
       setLoading(false);
     }
   }, [router]);
 
   const handleAuthSuccess = () => {
-    router.replace('/board');
+    router.replace('/');
   };
 
   if (loading) {
@@ -33,5 +35,7 @@ export default function AuthClient() {
     );
   }
 
-  return <Auth onSuccess={handleAuthSuccess} />;
+  const defaultIsLogin = tabParam === 'register' ? false : (tabParam === 'login' ? true : undefined);
+
+  return <Auth onSuccess={handleAuthSuccess} defaultIsLogin={defaultIsLogin} />;
 }

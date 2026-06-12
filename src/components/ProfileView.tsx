@@ -249,7 +249,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
         </h2>
         <button
           id="back-to-board-btn"
-          onClick={() => router.push('/board')}
+          onClick={() => router.push('/')}
           className="text-xs bg-slate-900/60 hover:bg-slate-800 text-emerald-450 border border-slate-800/80 px-4 py-2 rounded-xl transition-all cursor-pointer shadow-md"
         >
           Жагсаалт руу буцах

@@ -1,27 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import JobBoard from '../../components/JobBoard';
 import { getCurrentUser } from '../../lib/db';
 import { User } from '../../types';
 
 export default function BoardClient() {
-  const router = useRouter();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const user = getCurrentUser();
-    if (!user) {
-      router.push('/auth');
-    } else {
-      setCurrentUser(user);
-    }
+    setCurrentUser(user);
     setLoading(false);
-  }, [router]);
+  }, []);
 
-  if (loading || !currentUser) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>

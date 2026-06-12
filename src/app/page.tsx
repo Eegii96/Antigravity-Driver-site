@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import HomeClient from './HomeClient';
+import BoardClient from './board/BoardClient';
 
 export const metadata: Metadata = {
   title: 'Барилга, Механизмын Ажлын Нэгдсэн Систем | Жолооч Монголиа',
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  return <HomeClient />;
+  return <BoardClient />;
 }

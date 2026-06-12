@@ -117,7 +117,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
       <header className="sticky top-0 z-40 bg-[#070a13]/85 backdrop-blur-md border-b border-slate-900 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <button 
-            onClick={() => router.push('/board')}
+            onClick={() => router.push('/')}
             className="p-2 bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 text-emerald-400" />

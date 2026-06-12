@@ -1,4 +1,7 @@
-import { useState, FormEvent, ChangeEvent } from 'react';
+'use client';
+
+import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { User as UserIcon, Phone, Mail, MapPin, Truck, Check, Wrench, Key, AlertCircle, ArrowLeft, Sparkles, X, Eye, EyeOff, FileText, Lock } from 'lucide-react';
 import { loginUser, registerUser, saveSingleUser } from '../lib/db';
 import { User, UserType } from '../types';
@@ -8,10 +11,9 @@ import { db, auth } from '../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
-
-
 interface AuthProps {
   onSuccess: (user: User) => void;
+  defaultIsLogin?: boolean;
 }
 
 const AVATAR_PRESETS = [
@@ -31,8 +33,15 @@ const MACHINE_OPTIONS = [
   'Трейлэр'
 ];
 
-export default function Auth({ onSuccess }: AuthProps) {
-  const [isLogin, setIsLogin] = useState<boolean>(true);
+export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
+  const router = useRouter();
+  const [isLogin, setIsLogin] = useState<boolean>(defaultIsLogin ?? true);
+
+  useEffect(() => {
+    if (defaultIsLogin !== undefined) {
+      setIsLogin(defaultIsLogin);
+    }
+  }, [defaultIsLogin]);
   const [userType, setUserType] = useState<UserType>('operator');
   const [email, setEmail] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
@@ -405,6 +414,17 @@ export default function Auth({ onSuccess }: AuthProps) {
 
   return (
     <div className="flex-grow bg-[#070a13] relative overflow-hidden flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
+      {/* Back to Homepage Button */}
+      <div className="absolute top-6 left-6 right-6 flex justify-between items-center z-20">
+        <button
+          onClick={() => router.push('/')}
+          className="text-slate-400 hover:text-white text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer bg-slate-900/60 backdrop-blur border border-slate-800 px-3.5 py-2 rounded-xl"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Нүүр хуудас</span>
+        </button>
+      </div>
+
       {/* Ambient background glow blobs */}
       <div className="glow-blob bg-emerald-500 w-[400px] h-[400px] -top-40 -left-40 opacity-10"></div>
       <div className="glow-blob bg-cyan-500 w-[500px] h-[500px] -bottom-60 -right-40 opacity-10" style={{ animationDelay: '-5s' }}></div>
