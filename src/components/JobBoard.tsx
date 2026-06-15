@@ -185,6 +185,25 @@ export default function JobBoard({
       return isoString || '';
     }
   };
+
+  const formatNotificationDate = (isoString?: string) => {
+    if (!isoString) return '';
+    try {
+      if (isoString.includes('/') || (isoString.includes('.') && isoString.includes(':') && !isoString.includes('T'))) {
+        return isoString;
+      }
+      const d = new Date(isoString);
+      if (isNaN(d.getTime())) return isoString;
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${year}.${month}.${day} ${hours}:${minutes}`;
+    } catch (e) {
+      return isoString || '';
+    }
+  };
   const [isLoadingReview, setIsLoadingReview] = useState<boolean>(false);
 
   const notificationsRef = useRef<AppNotification[]>([]);
@@ -777,7 +796,7 @@ export default function JobBoard({
                             <div className="flex-1 min-w-0">
                               <div className="flex justify-between items-start gap-1">
                                 <h5 className="text-xs font-bold text-white leading-tight font-sans">{notif.title}</h5>
-                                <span className="text-[8px] text-slate-500 font-mono shrink-0">{notif.createdAt}</span>
+                                <span className="text-[8px] text-slate-550 font-mono shrink-0">{formatNotificationDate(notif.createdAt)}</span>
                               </div>
                               <p className="text-[11px] text-slate-300 leading-relaxed mt-1 font-sans">{notif.message}</p>
                               
@@ -1675,7 +1694,7 @@ export default function JobBoard({
                 } font-mono`}>
                   {t.type === 'alert' ? 'Алдаа ⚠️' : 'Амжилттай 🎉'}
                 </span>
-                <span className="text-[9px] text-slate-550 font-mono mr-2">{t.createdAt}</span>
+                <span className="text-[9px] text-slate-550 font-mono mr-2">{formatNotificationDate(t.createdAt)}</span>
               </div>
               <h4 className="text-xs font-bold text-white mt-1 leading-snug">{t.title}</h4>
               <p className="text-[10px] text-slate-355 leading-relaxed mt-0.5">{t.message}</p>

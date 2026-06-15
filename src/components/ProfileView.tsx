@@ -747,7 +747,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                       className={`glass-card p-5 rounded-2xl transition-all flex flex-col justify-between space-y-4 text-left ${
                         activeHighlightJobId === job.id
                           ? 'highlighted-job-card'
-                          : 'border-slate-800/80 hover:border-slate-700/80'
+                          : 'border border-slate-800/80 hover:border-slate-700/80'
                       }`}
                     >
                       <div className="space-y-3">
@@ -763,7 +763,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
                         {/* Job Image Thumbnail */}
                         {((job.imageUrls && job.imageUrls.length > 0) || job.imageUrl) && (
-                          <div className="w-full h-36 rounded-xl overflow-hidden bg-slate-955/40 border border-slate-800/80 relative shrink-0">
+                          <div className="w-full h-36 rounded-xl overflow-hidden bg-slate-950/40 border border-slate-800/80 relative shrink-0">
                             <img
                               src={job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl}
                               alt={job.title}
@@ -923,7 +923,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                       className={`glass-card p-5 rounded-2xl transition-all flex flex-col justify-between space-y-4 text-left ${
                         activeHighlightJobId === job.id
                           ? 'highlighted-job-card'
-                          : 'border-slate-800/80 hover:border-slate-700/80'
+                          : 'border border-slate-800/80 hover:border-slate-700/80'
                       }`}
                     >
                       <div className="space-y-3">
@@ -939,7 +939,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
                         {/* Job Image Thumbnail */}
                         {((job.imageUrls && job.imageUrls.length > 0) || job.imageUrl) && (
-                          <div className="w-full h-36 rounded-xl overflow-hidden bg-slate-955/40 border border-slate-800/80 relative shrink-0">
+                          <div className="w-full h-36 rounded-xl overflow-hidden bg-slate-950/40 border border-slate-800/80 relative shrink-0">
                             <img
                               src={job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl}
                               alt={job.title}
