@@ -761,6 +761,17 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
                         <h4 className="text-xs font-bold text-white leading-snug">{job.title}</h4>
 
+                        {/* Job Image Thumbnail */}
+                        {((job.imageUrls && job.imageUrls.length > 0) || job.imageUrl) && (
+                          <div className="w-full h-36 rounded-xl overflow-hidden bg-slate-955/40 border border-slate-800/80 relative shrink-0">
+                            <img
+                              src={job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl}
+                              alt={job.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+
                         {/* Description */}
                         {job.description && (
                           <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed font-sans">
@@ -925,6 +936,17 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                         </div>
 
                         <h4 className="text-xs font-bold text-white leading-snug">{job.title}</h4>
+
+                        {/* Job Image Thumbnail */}
+                        {((job.imageUrls && job.imageUrls.length > 0) || job.imageUrl) && (
+                          <div className="w-full h-36 rounded-xl overflow-hidden bg-slate-955/40 border border-slate-800/80 relative shrink-0">
+                            <img
+                              src={job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl}
+                              alt={job.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
 
                         {/* Description */}
                         {job.description && (

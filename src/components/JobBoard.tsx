@@ -1572,6 +1572,17 @@ export default function JobBoard({
                           {job.title}
                         </h4>
 
+                        {/* Job Image Thumbnail */}
+                        {((job.imageUrls && job.imageUrls.length > 0) || job.imageUrl) && (
+                          <div className="w-full h-36 rounded-xl overflow-hidden bg-slate-950/40 border border-slate-800/80 relative shrink-0">
+                            <img
+                              src={job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl}
+                              alt={job.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+
                         {/* Short description preview */}
                         <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed">
                           {job.description}
