@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { X, ShieldCheck } from 'lucide-react';
+import { X, ShieldCheck, Camera, Trash2, Image as ImageIcon } from 'lucide-react';
 import { Job } from '../types';
 import { addJob, updateJob } from '../lib/db';
 
@@ -11,6 +11,50 @@ interface JobPostModalProps {
   onSuccess: (savedJob: Job) => void;
   jobToEdit?: Job;
 }
+
+const compressImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+          resolve(dataUrl);
+        } else {
+          reject(new Error('Canvas context not available'));
+        }
+      };
+      img.onerror = () => reject(new Error('Image load error'));
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error('FileReader error'));
+    reader.readAsDataURL(file);
+  });
+};
+
 
 const AIMAGS = [
   'custom',
@@ -50,6 +94,8 @@ export default function JobPostModal({
 
   const [title, setTitle] = useState<string>(jobToEdit?.title || '');
   const [description, setDescription] = useState<string>(jobToEdit?.description || '');
+  const [imageUrls, setImageUrls] = useState<string[]>(jobToEdit?.imageUrls || (jobToEdit?.imageUrl ? [jobToEdit.imageUrl] : []));
+  const [isImageUploading, setIsImageUploading] = useState<boolean>(false);
   
   // Determine initial type selection
   const initialType = jobToEdit
@@ -124,6 +170,8 @@ export default function JobPostModal({
           type: resolvedType,
           salary: resolvedSalary,
           location: resolvedLocation,
+          imageUrl: imageUrls[0] || '',
+          imageUrls: imageUrls,
         };
         await updateJob(jobToEdit.id, updatedFields);
         onSuccess({
@@ -143,7 +191,9 @@ export default function JobPostModal({
           salaryUnit,
           duration,
           location: resolvedLocation,
-          requirements
+          requirements,
+          imageUrl: imageUrls[0] || undefined,
+          imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
         });
         onSuccess(job);
       }
@@ -319,6 +369,71 @@ export default function JobPostModal({
             />
           </div>
 
+          {/* Job Image Attachment */}
+          <div>
+            <label className="block text-xs font-medium text-gray-300 mb-1 flex justify-between">
+              <span>Зургийн хавсралт (Сонгох)</span>
+              <span className="text-[10px] text-gray-550 font-sans">({imageUrls.length}/4 зураг оруулах боломжтой)</span>
+            </label>
+            <div className="flex flex-wrap gap-3 mt-1.5">
+              {/* Render uploaded image thumbnails */}
+              {imageUrls.map((url, idx) => (
+                <div key={idx} className="relative w-20 h-20 rounded-lg border border-slate-700 bg-slate-950 overflow-hidden shrink-0">
+                  <img
+                    src={url}
+                    alt={`Preview ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setImageUrls(prev => prev.filter((_, i) => i !== idx))}
+                    className="absolute top-1 right-1 bg-rose-600/90 hover:bg-rose-500 text-white rounded-full p-0.5 shadow-md transition-colors cursor-pointer"
+                    title="Устгах"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Render dashed upload button if less than 4 images */}
+              {imageUrls.length < 4 && (
+                <label className="flex flex-col items-center justify-center w-20 h-20 border border-slate-700 border-dashed rounded-lg cursor-pointer bg-slate-850 hover:bg-slate-805 transition-all text-center">
+                  {isImageUploading ? (
+                    <span className="text-[8px] text-gray-400 font-medium px-1 leading-tight">Шахаж байна...</span>
+                  ) : (
+                    <>
+                      <Camera className="w-4 h-4 text-emerald-450 mb-0.5" />
+                      <span className="text-[10px] text-emerald-450 font-bold">Нэмэх</span>
+                      <span className="text-[8px] text-gray-500 font-sans mt-0.5">{imageUrls.length}/4</span>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={isImageUploading}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setIsImageUploading(true);
+                        try {
+                          const compressed = await compressImage(file);
+                          setImageUrls(prev => [...prev, compressed]);
+                        } catch (err) {
+                          console.error(err);
+                          alert('Зураг боловсруулахад алдаа гарлаа.');
+                        } finally {
+                          setIsImageUploading(false);
+                        }
+                      }
+                      e.target.value = ''; // Reset input to allow selecting same file again
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+
           <div className="bg-slate-950/40 p-3.5 rounded-lg border border-slate-800/60 flex items-center space-x-2 text-[10px] text-gray-400">
             <span className="text-emerald-500">🛡️</span>
             <span>Санамж: Ажил олгогчоор бүртгүүлсэн таны нэр, өнөөгийн үнэлгээ ({employerRating}⭐) энэхүү заранд хамт байршиж, жолооч нарт харагдана.</span>
@@ -337,7 +452,7 @@ export default function JobPostModal({
             <button
               id="submit-job-post-btn"
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isImageUploading}
               className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Хадгалж байна...' : (isEditing ? 'Хадгалах' : 'Зар нэмэх')}

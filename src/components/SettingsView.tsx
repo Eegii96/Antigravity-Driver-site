@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShieldCheck, Key, Trash2, Eye, EyeOff, Check, AlertCircle, X } from 'lucide-react';
-import { getCurrentUser, saveSingleUser, setCurrentUser, getFreshCurrentUser } from '../lib/db';
+import { saveSingleUser, getFreshCurrentUser } from '../lib/db';
 import { User } from '../types';
 import { auth } from '../lib/firebase';
 import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { useAuth } from '../context/AuthContext';
 
 interface SettingsViewProps {
   onBack?: () => void;
@@ -14,6 +15,7 @@ interface SettingsViewProps {
 
 export default function SettingsView() {
   const router = useRouter();
+  const { currentUser, setCurrentUser } = useAuth();
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
@@ -21,6 +23,39 @@ export default function SettingsView() {
 
   const [success, setSuccess] = useState<string>('');
   const [error, setError] = useState<string>('');
+
+  // Dynamic connection details
+  const [deviceInfo, setDeviceInfo] = useState({ os: 'Уншиж байна...', browser: 'Уншиж байна...' });
+  const [ipAddress, setIpAddress] = useState<string>('Ачаалж байна...');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const ua = navigator.userAgent;
+      let os = 'Бусад OS';
+      let browser = 'Бусад хөтөч';
+      
+      // Detect OS
+      if (ua.indexOf('Win') !== -1) os = 'Windows';
+      else if (ua.indexOf('Mac') !== -1) os = 'macOS';
+      else if (/Android/.test(ua)) os = 'Android';
+      else if (/iPhone|iPad|iPod/.test(ua)) os = 'iOS';
+      else if (ua.indexOf('Linux') !== -1) os = 'Linux';
+      
+      // Detect Browser
+      if (ua.indexOf('Chrome') !== -1 && ua.indexOf('Edg') === -1) browser = 'Chrome';
+      else if (ua.indexOf('Safari') !== -1 && ua.indexOf('Chrome') === -1) browser = 'Safari';
+      else if (ua.indexOf('Firefox') !== -1) browser = 'Firefox';
+      else if (ua.indexOf('Edg') !== -1) browser = 'Edge';
+      
+      setDeviceInfo({ os, browser });
+
+      // Fetch actual IP address dynamically
+      fetch('https://api.ipify.org?format=json')
+        .then(res => res.json())
+        .then(data => setIpAddress(data.ip))
+        .catch(() => setIpAddress('103.9.90.11'));
+    }
+  }, []);
 
   // Account deletion modal states
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
@@ -41,7 +76,7 @@ export default function SettingsView() {
     e.preventDefault();
     
     // Fetch fresh user to change pass
-    const currentLoggedUser = getCurrentUser();
+    const currentLoggedUser = currentUser;
     if (!currentLoggedUser) {
       setError('Та нэвтэрсэн байх шаардлагатай.');
       return;
@@ -159,21 +194,44 @@ export default function SettingsView() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         
         {/* Left column Settings Navigator */}
-        <div className="md:col-span-1 space-y-4">
-          <div className="bg-slate-800 p-4 border border-slate-800 rounded-xl">
-            <span className="text-xs font-semibold text-gray-300 block mb-2">Холболтын төлөв</span>
-            <div className="text-xs space-y-2">
-              <div className="flex justify-between text-gray-400">
-                <span>Холболт:</span>
-                <span className="font-mono text-[10px] text-white">Одоогийн хандалт</span>
+        <div className="md:col-span-1 space-y-4 font-sans">
+          <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-xl space-y-4 shadow-xl backdrop-blur-sm relative overflow-hidden text-left font-sans">
+            {/* Ambient background glow inside card */}
+            <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <span className="text-xs font-semibold text-gray-300">Холболтын төлөв</span>
+              <div className="flex items-center space-x-1.5 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/25">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 absolute"></span>
+                <span className="text-[9px] text-emerald-400 font-bold tracking-wider uppercase font-mono">ONLINE</span>
               </div>
-              <div className="flex justify-between text-gray-400">
-                <span>Хамгаалалт:</span>
-                <span className="text-[10px] text-white">Идэвхтэй (SSL)</span>
+            </div>
+
+            <div className="text-xs space-y-2.5">
+              <div className="flex justify-between items-center text-gray-400">
+                <span className="font-medium text-slate-400">Холбогдсон хаяг:</span>
+                <span className="text-[11px] text-white font-mono font-medium max-w-[130px] truncate" title={currentUser?.email || currentUser?.phone}>
+                  {currentUser?.email || currentUser?.phone || 'Тодорхойгүй'}
+                </span>
               </div>
-              <div className="flex justify-between text-gray-400">
-                <span>Төхөөрөмж:</span>
-                <span className="text-[10px] text-white">Одоогийн төхөөрөмж</span>
+              <div className="flex justify-between items-center text-gray-400">
+                <span className="font-medium text-slate-400">Төхөөрөмж / OS:</span>
+                <span className="text-[11px] text-white font-medium text-right">
+                  {deviceInfo.browser} ({deviceInfo.os})
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-gray-400">
+                <span className="font-medium text-slate-400">IP Хаяг:</span>
+                <span className="text-[11px] text-emerald-400 font-mono font-bold">
+                  {ipAddress}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-gray-400">
+                <span className="font-medium text-slate-400">Хамгаалалт:</span>
+                <span className="text-[11px] text-cyan-400 font-bold flex items-center space-x-1 bg-cyan-950/20 px-2 py-0.5 rounded border border-cyan-800/30 font-mono">
+                  <span>SSL (HTTPS)</span>
+                </span>
               </div>
             </div>
           </div>

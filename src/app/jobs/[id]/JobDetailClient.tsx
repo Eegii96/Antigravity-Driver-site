@@ -6,11 +6,9 @@ import {
   ArrowLeft, MapPin, DollarSign, Briefcase, Clock, 
   CheckCircle, Star, Users, User as UserIcon, Loader2, AlertCircle, ChevronDown, LogOut, Settings as SettingsIcon, X
 } from 'lucide-react';
-import { getCurrentUser, setCurrentUser, getSingleJob, getSingleUser, saveSingleUser } from '../../../lib/db';
+import { getSingleJob, getSingleUser, saveSingleUser, applyForJob } from '../../../lib/db';
 import { Job, User } from '../../../types';
-import { db, auth } from '../../../lib/firebase';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { signOut } from 'firebase/auth';
+import { useAuth } from '../../../context/AuthContext';
 
 interface JobDetailClientProps {
   jobId: string;
@@ -18,7 +16,7 @@ interface JobDetailClientProps {
 
 export default function JobDetailClient({ jobId }: JobDetailClientProps) {
   const router = useRouter();
-  const [currentUser, setLocalCurrentUser] = useState<User | null>(null);
+  const { currentUser, logout } = useAuth();
   const [job, setJob] = useState<Job | null>(null);
   const [employer, setEmployer] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -35,13 +33,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
   };
 
   useEffect(() => {
-    // 1. Get current user session if it exists (Optional for viewing, required for actions)
-    const user = getCurrentUser();
-    if (user) {
-      setLocalCurrentUser(user);
-    }
-
-    // 2. Fetch job details
+    // Fetch job details
     const fetchJobData = async () => {
       try {
         const jobData = await getSingleJob(jobId);
@@ -75,16 +67,16 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
 
     setIsApplying(true);
     try {
-      const jobRef = doc(db, 'jobs', job.id);
-      await updateDoc(jobRef, {
-        applicants: arrayUnion(currentUser.id)
-      });
-
-      // Update local state
-      const updatedJob = { ...job, applicants: [...job.applicants, currentUser.id] };
-      setJob(updatedJob);
-      setSuccessMessage('Ажилд орох хүсэлт амжилттай илгээгдлээ! Захиалагч хянах болно. 🎉');
-      setTimeout(() => setSuccessMessage(''), 5000);
+      const success = await applyForJob(job.id, currentUser.id);
+      if (success) {
+        // Update local state
+        const updatedJob = { ...job, applicants: [...job.applicants, currentUser.id] };
+        setJob(updatedJob);
+        setSuccessMessage('Ажилд орох хүсэлт амжилттай илгээгдлээ! Захиалагч хянах болно. 🎉');
+        setTimeout(() => setSuccessMessage(''), 5000);
+      } else {
+        setError('Хүсэлт илгээх боломжгүй байна (магадгүй зар хаагдсан эсвэл та өөрийн заранд хүсэлт илгээхийг оролдлоо).');
+      }
     } catch (err) {
       console.error(err);
       setError('Хүсэлт илгээхэд алдаа гарлаа.');
@@ -187,13 +179,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                   <div className="border-t border-slate-800 my-1"></div>
                   <button
                     onClick={async () => {
-                      try {
-                        await signOut(auth);
-                      } catch (err) {
-                        console.error('Error signing out:', err);
-                      }
-                      setCurrentUser(null);
-                      setLocalCurrentUser(null);
+                      await logout();
                       router.push('/auth');
                     }}
                     className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-rose-400 flex items-center space-x-2.5 cursor-pointer"
@@ -272,6 +258,39 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 </div>
               )}
             </div>
+
+            {/* Job Image Banner */}
+            {job.imageUrls && job.imageUrls.length > 0 ? (
+              <div className="w-full space-y-1">
+                <div className="flex overflow-x-auto gap-2.5 snap-x snap-mandatory scrollbar-none py-1">
+                  {job.imageUrls.map((url, idx) => (
+                    <div key={idx} className="shrink-0 w-full snap-center h-64 md:h-96 overflow-hidden rounded-xl border border-slate-800 bg-slate-950/40 flex items-center justify-center relative">
+                      <img
+                        src={url}
+                        alt={`Slide ${idx + 1}`}
+                        className="w-full h-full object-contain"
+                      />
+                      <div className="absolute bottom-2.5 right-2.5 bg-slate-950/70 backdrop-blur-md text-white text-[9.5px] font-bold px-2 py-0.5 rounded-full border border-slate-800/60 font-sans">
+                        {idx + 1} / {job.imageUrls?.length}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {job.imageUrls.length > 1 && (
+                  <p className="text-[10px] text-gray-500 text-center font-sans select-none">
+                    ↔️ Хажуу тийш гүйлгэж үзнэ үү
+                  </p>
+                )}
+              </div>
+            ) : (job.imageUrl && (
+              <div className="w-full max-h-96 overflow-hidden rounded-xl border border-slate-800 bg-slate-950/40 flex items-center justify-center">
+                <img
+                  src={job.imageUrl}
+                  alt={job.title}
+                  className="w-full max-h-96 object-contain rounded-xl"
+                />
+              </div>
+            ))}
 
             {/* Quick Details Card Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-left">

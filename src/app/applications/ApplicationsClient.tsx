@@ -2,29 +2,23 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getCurrentUser, setCurrentUser } from '@/lib/db';
 import { User } from '@/types';
 import ProfileView from '@/components/ProfileView';
+import { useAuth } from '@/context/AuthContext';
 
 function ApplicationsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const jobId = searchParams.get('jobId') || undefined;
-  const [currentUser, setLocalCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { currentUser, setCurrentUser, loading } = useAuth();
 
   useEffect(() => {
-    const user = getCurrentUser();
-    if (!user) {
+    if (!loading && !currentUser) {
       router.replace('/auth');
-    } else {
-      setLocalCurrentUser(user);
-      setLoading(false);
     }
-  }, [router]);
+  }, [currentUser, loading, router]);
 
   const handleUserUpdatedProfile = (updated: User) => {
-    setLocalCurrentUser(updated);
     setCurrentUser(updated);
   };
 

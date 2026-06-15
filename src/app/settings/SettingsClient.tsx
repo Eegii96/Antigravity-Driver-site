@@ -1,25 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import SettingsView from '../../components/SettingsView';
-import { getCurrentUser } from '../../lib/db';
-import { User } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 
 export default function SettingsClient() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { currentUser, loading } = useAuth();
 
   useEffect(() => {
-    const user = getCurrentUser();
-    if (!user) {
+    if (!loading && !currentUser) {
       router.push('/auth');
-    } else {
-      setCurrentUser(user);
     }
-    setLoading(false);
-  }, [router]);
+  }, [currentUser, loading, router]);
 
   if (loading || !currentUser) {
     return (
@@ -31,3 +25,4 @@ export default function SettingsClient() {
 
   return <SettingsView />;
 }
+

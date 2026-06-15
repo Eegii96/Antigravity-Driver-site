@@ -10,6 +10,10 @@
       {
         "source": "/profile/:id",
         "destination": "/profile.html"
+      },
+      {
+        "source": "/jobs/:id",
+        "destination": "/index.html"
       }
     ],
     "headers": [

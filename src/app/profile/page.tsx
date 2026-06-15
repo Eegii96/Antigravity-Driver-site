@@ -2,10 +2,10 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getCurrentUser, getSingleUser, setCurrentUser } from '@/lib/db';
-import { auth } from '@/lib/firebase';
+import { getSingleUser } from '@/lib/db';
 import { User } from '@/types';
 import ProfileView from '@/components/ProfileView';
+import { useAuth } from '@/context/AuthContext';
 
 function ProfileContent() {
   const router = useRouter();
@@ -15,18 +15,18 @@ function ProfileContent() {
   // Safely read pathname on the client side
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
 
-  const [currentUser, setLocalCurrentUser] = useState<User | null>(null);
+  const { currentUser, setCurrentUser, loading: authLoading } = useAuth();
   const [viewedUser, setViewedUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const user = getCurrentUser();
-    if (!user) {
+    if (authLoading) return;
+
+    if (!currentUser) {
       router.replace('/auth');
       return;
     }
-    setLocalCurrentUser(user);
 
     const loadUser = async () => {
       try {
@@ -41,7 +41,7 @@ function ProfileContent() {
         }
         
         if (!rawId) {
-          rawId = user.id;
+          rawId = currentUser.id;
         }
 
         // Clean up accidental file extensions
@@ -50,24 +50,23 @@ function ProfileContent() {
         // Keep URL clean and consistent
         if (queryId && rawId !== id) {
           router.replace(`/profile?id=${id}`);
-        } else if (!queryId && id !== user.id) {
+        } else if (!queryId && id !== currentUser.id) {
           router.replace(`/profile?id=${id}`);
         }
 
         // Determine if this is the logged-in user's own profile
-        const isOwnProfile = id === user.id || (auth.currentUser && auth.currentUser.uid === id);
+        const isOwnProfile = id === currentUser.id;
 
         if (isOwnProfile) {
           // Instant UX: load from local storage session first
-          setViewedUser(user);
-          setLoading(false);
+          setViewedUser(currentUser);
+          setProfileLoading(false);
 
           // Asynchronously sync with Firestore in the background
           try {
             const fetched = await getSingleUser(id);
             if (fetched) {
               setViewedUser(fetched);
-              setLocalCurrentUser(fetched);
               setCurrentUser(fetched);
             }
           } catch (syncErr) {
@@ -81,23 +80,24 @@ function ProfileContent() {
           } else {
             setError('Хэрэглэгч олдсонгүй.');
           }
-          setLoading(false);
+          setProfileLoading(false);
         }
       } catch (err) {
         console.error(err);
         setError('Мэдээлэл авахад алдаа гарлаа.');
-        setLoading(false);
+        setProfileLoading(false);
       }
     };
 
     loadUser();
-  }, [queryId, pathname, router]);
+  }, [queryId, pathname, router, currentUser, authLoading, setCurrentUser]);
 
   const handleUserUpdatedProfile = (updated: User) => {
-    setLocalCurrentUser(updated);
     setCurrentUser(updated);
     setViewedUser(updated);
   };
+
+  const loading = authLoading || profileLoading;
 
   if (loading) {
     return (
@@ -138,6 +138,12 @@ function ProfileContent() {
   );
 }
 
+function ProfileContentWrapper() {
+  const searchParams = useSearchParams();
+  const key = searchParams.toString() || 'own';
+  return <ProfileContent key={key} />;
+}
+
 export default function ProfilePage() {
   return (
     <Suspense fallback={
@@ -148,7 +154,8 @@ export default function ProfilePage() {
         </div>
       </div>
     }>
-      <ProfileContent />
+      <ProfileContentWrapper />
     </Suspense>
   );
 }
+

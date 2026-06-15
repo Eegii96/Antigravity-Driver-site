@@ -11,7 +11,8 @@ import {
   query, 
   where, 
   writeBatch,
-  orderBy
+  orderBy,
+  deleteField
 } from 'firebase/firestore';
 import { 
   createUserWithEmailAndPassword, 
@@ -816,62 +817,70 @@ export async function registerUser(
       createdAt: new Date().toISOString().split('T')[0]
     };
 
-    // Clean up any undefined properties to prevent Firestore "Unsupported field value: undefined" error
-    const cleanUser = Object.fromEntries(
-      Object.entries(newUser).filter(([_, v]) => v !== undefined)
-    ) as User;
-    
-    // Create a 12-second timeout for Firestore write
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Холболт амжилтгүй боллоо. Та сүлжээгээ шалгаад дахин оролдоно уу.')), 12000)
-    );
-    
-    const writePromise = setDoc(doc(db, 'users', uid), cleanUser);
-    
-    // Race setDoc against timeout
-    await Promise.race([writePromise, timeoutPromise]);
-    
-    // Create actual real notifications for the newly registered user in Firestore
-    try {
-      const welcomeId = `notif_welcome_${uid}`;
-      const securityId = `notif_security_${uid}`;
-      
-      const batch = writeBatch(db);
-      
-      const welcomeNotif: AppNotification = {
-        id: welcomeId,
-        userId: uid,
-        title: 'Платформд тавтай морилно уу! 🎉',
-        message: 'Хүнд машин механизм, газар шорооны ажлын нэгдсэн системд нэгдсэнд баярлалаа. Танд амжилт хүсье!',
-        type: 'success',
-        isRead: false,
-        createdAt: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString().slice(0, 5)
-      };
-      
-      const securityNotif: AppNotification = {
-        id: securityId,
-        userId: uid,
-        title: '🔒 Аюулгүй байдлаа хангаж, профайлаа 100% болгоно уу',
-        message: 'Миний профайл -> Засах цэс рүү орж аюулгүй байдлын 2 асуултыг заавал тохируулаарай. Ингэснээр та нууц кодоо мартсан үедээ найдвартай сэргээх боломжтой болохоос гадна профайлын мэдээлэл тань 100% баталгаажна.',
-        type: 'warning',
-        isRead: false,
-        createdAt: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString().slice(0, 5)
-      };
-      
-      batch.set(doc(db, 'notifications', welcomeId), welcomeNotif);
-      batch.set(doc(db, 'notifications', securityId), securityNotif);
-      await batch.commit();
-    } catch (notifErr) {
-      console.error('Error creating welcome notifications:', notifErr);
-    }
-
-    // Security: Remove password from the session user before setting local state
+    // Store user session in localStorage early to prevent race conditions with onAuthStateChanged observer
     const sessionUser = { ...newUser };
     if ('password' in sessionUser) {
       delete sessionUser.password;
     }
     setCurrentUser(sessionUser);
-    return sessionUser;
+
+    try {
+      // Clean up any undefined properties to prevent Firestore "Unsupported field value: undefined" error
+      const cleanUser = Object.fromEntries(
+        Object.entries(newUser).filter(([_, v]) => v !== undefined)
+      ) as User;
+      
+      // Create a 12-second timeout for Firestore write
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Холболт амжилтгүй боллоо. Та сүлжээгээ шалгаад дахин оролдоно уу.')), 12000)
+      );
+      
+      const writePromise = setDoc(doc(db, 'users', uid), cleanUser);
+      
+      // Race setDoc against timeout
+      await Promise.race([writePromise, timeoutPromise]);
+      
+      // Create actual real notifications for the newly registered user in Firestore
+      try {
+        const welcomeId = `notif_welcome_${uid}`;
+        const securityId = `notif_security_${uid}`;
+        
+        const batch = writeBatch(db);
+        
+        const welcomeNotif: AppNotification = {
+          id: welcomeId,
+          userId: uid,
+          title: 'Платформд тавтай морилно уу! 🎉',
+          message: 'Хүнд машин механизм, газар шорооны ажлын нэгдсэн системд нэгдсэнд баярлалаа. Танд амжилт хүсье!',
+          type: 'success',
+          isRead: false,
+          createdAt: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString().slice(0, 5)
+        };
+        
+        const securityNotif: AppNotification = {
+          id: securityId,
+          userId: uid,
+          title: '🔒 Аюулгүй байдлаа хангаж, профайлаа 100% болгоно уу',
+          message: 'Миний профайл -> Засах цэс рүү орж аюулгүй байдлын 2 асуултыг заавал тохируулаарай. Ингэснээр та нууц кодоо мартсан үедээ найдвартай сэргээх боломжтой болохоос гадна профайлын мэдээлэл тань 100% баталгаажна.',
+          type: 'warning',
+          isRead: false,
+          createdAt: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString().slice(0, 5)
+        };
+        
+        batch.set(doc(db, 'notifications', welcomeId), welcomeNotif);
+        batch.set(doc(db, 'notifications', securityId), securityNotif);
+        await batch.commit();
+      } catch (notifErr) {
+        console.error('Error creating welcome notifications:', notifErr);
+      }
+
+      return sessionUser;
+    } catch (err) {
+      // Clear the local session on database write failures so subsequent actions aren't run as logged in
+      setCurrentUser(null);
+      console.error('Error registering user:', err);
+      throw err;
+    }
   } catch (err) {
     console.error('Error registering user:', err);
     throw err;
@@ -995,7 +1004,7 @@ export async function hireOperator(jobId: string, operatorId: string): Promise<b
     
     // Update Job Document in Firestore
     await updateDoc(jobRef, {
-      status: 'in_progress',
+      status: 'completed',
       hiredOperatorId: operatorId,
       hiredOperatorName: operator.fullName
     });
@@ -1010,8 +1019,8 @@ export async function hireOperator(jobId: string, operatorId: string): Promise<b
       title: job.title,
       partnerName: job.employerName,
       role: 'operator',
-      status: 'in_progress',
-      dateRange: `${new Date().toLocaleDateString('mn-MN')} - Одоо`
+      status: 'completed',
+      dateRange: new Date().toLocaleDateString('mn-MN')
     });
     
     await setDoc(doc(db, 'jobHistory', histId2), {
@@ -1020,8 +1029,8 @@ export async function hireOperator(jobId: string, operatorId: string): Promise<b
       title: job.title,
       partnerName: operator.fullName,
       role: 'employer',
-      status: 'in_progress',
-      dateRange: `${new Date().toLocaleDateString('mn-MN')} - Одоо`
+      status: 'completed',
+      dateRange: new Date().toLocaleDateString('mn-MN')
     });
     
     // Create notification for operator
@@ -1036,6 +1045,37 @@ export async function hireOperator(jobId: string, operatorId: string): Promise<b
     return true;
   } catch (err) {
     console.error('Error hiring operator in Firestore:', err);
+    return false;
+  }
+}
+
+export async function cancelHiring(jobId: string): Promise<boolean> {
+  try {
+    const jobRef = doc(db, 'jobs', jobId);
+    const jobDoc = await getDoc(jobRef);
+    if (!jobDoc.exists()) return false;
+
+    // Update Job Document in Firestore: change status to open and clear hiredOperatorId & Name
+    await updateDoc(jobRef, {
+      status: 'open',
+      hiredOperatorId: deleteField(),
+      hiredOperatorName: deleteField()
+    });
+
+    // Delete Job History records in Firestore
+    const histSnap = await getDocs(collection(db, 'jobHistory'));
+    const batch = writeBatch(db);
+    histSnap.docs.forEach(d => {
+      const h = d.data() as JobHistoryItem;
+      if (h.jobId === jobId) {
+        batch.delete(doc(db, 'jobHistory', h.id));
+      }
+    });
+    await batch.commit();
+
+    return true;
+  } catch (err) {
+    console.error('Error canceling hiring in Firestore:', err);
     return false;
   }
 }

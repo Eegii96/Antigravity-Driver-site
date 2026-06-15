@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, Review, JobHistoryItem, Job } from '../types';
-import { getReviews, getJobHistory, saveSingleUser, getSingleUser, getJobs, getUsers, hireOperator, completeJob, deleteJob } from '../lib/db';
+import { getReviews, getJobHistory, saveSingleUser, getSingleUser, getJobs, getUsers, hireOperator, completeJob, deleteJob, cancelHiring } from '../lib/db';
 import { Star, ShieldAlert, Award, Phone, Mail, MapPin, Calendar, CheckCircle, Clock, DollarSign, Briefcase, Users, X } from 'lucide-react';
 import ProfileEditModal from './ProfileEditModal';
 import ReviewModal from './ReviewModal';
@@ -36,6 +36,28 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [activeHighlightJobId, setActiveHighlightJobId] = useState<string | undefined>(highlightJobId);
+
+  useEffect(() => {
+    setActiveHighlightJobId(highlightJobId);
+  }, [highlightJobId]);
+
+  useEffect(() => {
+    if (!activeHighlightJobId) return;
+
+    const handleGlobalClick = () => {
+      setActiveHighlightJobId(undefined);
+    };
+
+    const timer = setTimeout(() => {
+      document.addEventListener('click', handleGlobalClick);
+    }, 150);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('click', handleGlobalClick);
+    };
+  }, [activeHighlightJobId]);
 
   useEffect(() => {
     setProfileUser(user);
@@ -117,16 +139,16 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
   }, [profileUser.id]);
 
   useEffect(() => {
-    if (highlightJobId && activeTab === 'applications' && driverJobs.length > 0) {
+    if (activeHighlightJobId && activeTab === 'applications' && driverJobs.length > 0) {
       const timer = setTimeout(() => {
-        const element = document.getElementById(`job-card-${highlightJobId}`);
+        const element = document.getElementById(`job-card-${activeHighlightJobId}`);
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [highlightJobId, activeTab, driverJobs]);
+  }, [activeHighlightJobId, activeTab, driverJobs]);
 
   const handleHireOperator = async (jobId: string, operatorId: string) => {
     try {
@@ -148,6 +170,46 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
       }
     } catch (err) {
       console.error('Error hiring operator:', err);
+      alert('Алдаа гарлаа. Дахин оролдоно уу.');
+    }
+  };
+
+  const formatDate = (isoString?: string) => {
+    if (!isoString) return '';
+    try {
+      const d = new Date(isoString);
+      if (isNaN(d.getTime())) return isoString;
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}.${month}.${day}`;
+    } catch (e) {
+      return isoString || '';
+    }
+  };
+
+  const handleCancelHiring = async (jobId: string) => {
+    try {
+      if (window.confirm('Та сонгосон жолоочийг цуцалж, зарыг буцааж нээлттэй болгохдоо итгэлтэй байна уу?')) {
+        const success = await cancelHiring(jobId);
+        if (success) {
+          setSuccess('Зарын сонгосон жолоочийг амжилттай цуцаллаа. Зар буцаж нээлттэй төлөвт шилжлээ.');
+          setTimeout(() => setSuccess(''), 4500);
+
+          // Refresh data
+          const allJobs = await getJobs();
+          const filteredJobs = allJobs.filter(j => {
+            if (profileUser.type === 'operator') {
+              return j.applicants.includes(profileUser.id) || j.hiredOperatorId === profileUser.id;
+            } else {
+              return j.employerId === profileUser.id;
+            }
+          });
+          setDriverJobs(filteredJobs);
+        }
+      }
+    } catch (err) {
+      console.error('Error canceling hiring:', err);
       alert('Алдаа гарлаа. Дахин оролдоно уу.');
     }
   };
@@ -691,7 +753,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                       key={job.id}
                       id={`job-card-${job.id}`}
                       className={`glass-card p-5 rounded-2xl transition-all flex flex-col justify-between space-y-4 ${
-                        highlightJobId === job.id
+                        activeHighlightJobId === job.id
                           ? 'highlighted-job-card'
                           : 'border-slate-800/80 hover:border-slate-700/80'
                       }`}
@@ -824,7 +886,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                     if (isReviewed) {
                       statusText = 'Үнэлгээ хийгдсэн • Хаагдсан ✓';
                       badgeClass = 'bg-sky-500/15 text-sky-400 border-2 border-sky-500/40 shadow-[0_0_10px_rgba(14,165,233,0.15)]';
-                      statusDesc = `✓ Ажил амжилттай дууссан. Та жолоочийг үнэлж, ажил амжилттай хаагдсан байна.`;
+                      statusDesc = `Та жолоочийг үнэлж, ажил амжилттай хаагдсан байна.`;
                     } else {
                       statusText = 'Ажил дууссан • Үнэлэх шаардлагатай ⚠️';
                       badgeClass = 'bg-rose-500/15 text-rose-400 border-2 border-rose-500/45 shadow-[0_0_10px_rgba(244,63,94,0.15)] animate-pulse';
@@ -837,21 +899,35 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                       key={job.id}
                       id={`job-card-${job.id}`}
                       className={`glass-card p-5 rounded-2xl transition-all flex flex-col justify-between space-y-4 text-left ${
-                        highlightJobId === job.id
+                        activeHighlightJobId === job.id
                           ? 'highlighted-job-card'
                           : 'border-slate-800/80 hover:border-slate-700/80'
                       }`}
                     >
                       <div className="space-y-3">
                         <div className="flex justify-between items-start gap-1">
-                          <div></div>
-                          <span className="text-[10px] text-gray-500 shrink-0 flex items-center space-x-1">
+                          <span className="font-mono text-[10px] text-slate-500">{formatDate(job.createdAt)}</span>
+                          <span className="text-[10px] text-gray-550 shrink-0 flex items-center space-x-1">
                             <MapPin className="w-3.5 h-3.5 text-slate-500" />
                             <span>{job.location.split(',')[0]}</span>
                           </span>
                         </div>
 
                         <h4 className="text-xs font-bold text-white leading-snug">{job.title}</h4>
+
+                        {/* Description */}
+                        {job.description && (
+                          <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed font-sans">
+                            {job.description}
+                          </p>
+                        )}
+
+                        {/* Additional info */}
+                        {job.additionalInfo && (
+                          <p className="text-[10.5px] text-slate-500 leading-relaxed italic font-sans bg-[#080d1a]/20 p-2.5 rounded-lg border border-slate-850/50">
+                            Нэмэлт: {job.additionalInfo}
+                          </p>
+                        )}
 
                         {/* Status badge and description */}
                         <div className="space-y-2 pt-1.5">
@@ -863,53 +939,29 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                           </p>
                         </div>
 
-                        {isOwnProfile && (
-                          <div className="flex space-x-2.5 pt-1">
-                            <button
-                              type="button"
-                              onClick={() => setEditingJob(job)}
-                              className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
-                            >
-                              Засах
-                            </button>
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                if (window.confirm('Та энэ зарыг устгахдаа итгэлтэй байна уу? Устгасны дараа сэргээх боломжгүй.')) {
-                                  try {
-                                    await deleteJob(job.id);
-                                    
-                                    const allJobs = await getJobs();
-                                    const filteredJobs = allJobs.filter(j => j.employerId === profileUser.id);
-                                    setDriverJobs(filteredJobs);
-                                    
-                                    setSuccess('Зарыг амжилттай устгалаа.');
-                                    setTimeout(() => setSuccess(''), 3000);
-                                  } catch (err) {
-                                    console.error(err);
-                                    alert('Зарыг устгахад алдаа гарлаа.');
-                                  }
-                                }
-                              }}
-                              className="flex-1 border border-rose-955/40 hover:border-rose-900 bg-slate-950 hover:bg-rose-955/20 text-rose-400 hover:text-rose-350 font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
-                            >
-                              Устгах
-                            </button>
-                          </div>
-                        )}
-
                         {job.hiredOperatorId && (
                           <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-850 flex justify-between items-center text-[10.5px] mt-2">
                             <span className="text-slate-500">Томилогдсон жолооч:</span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                router.push(`/profile?id=${job.hiredOperatorId}`);
-                              }}
-                              className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
-                            >
-                              {job.hiredOperatorName}
-                            </button>
+                            <div className="flex items-center space-x-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  router.push(`/profile?id=${job.hiredOperatorId}`);
+                                }}
+                                className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
+                              >
+                                {job.hiredOperatorName}
+                              </button>
+                              {isOwnProfile && job.status === 'completed' && !job.isReviewedByEmployer && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCancelHiring(job.id)}
+                                  className="text-slate-400 hover:text-rose-450 bg-slate-900 border border-slate-800 hover:border-slate-700 px-2 py-0.5 rounded text-[9.5px] font-bold cursor-pointer transition-colors"
+                                >
+                                  Болих
+                                </button>
+                              )}
+                            </div>
                           </div>
                         )}
 
@@ -1000,19 +1052,8 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                             );
                           })()}
 
-                          <div className="border-t border-slate-850/80 pt-3.5 flex items-center justify-between">
-                             <div className="flex items-center space-x-1 text-xs">
-                              <DollarSign className="w-3.5 h-3.5 text-emerald-455" />
-                              <span className="font-mono font-bold text-white">
-                                {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
-                              </span>
-                            </div>
-
-                            {job.isReviewedByEmployer ? (
-                              <span className="text-[10px] text-emerald-450 bg-emerald-950/20 px-2.5 py-1 rounded font-semibold border border-emerald-900/30">
-                                ✓ Жолоочийг үнэлсэн
-                              </span>
-                            ) : (
+                          {!job.isReviewedByEmployer && (
+                            <div className="pt-2 flex justify-end">
                               <button
                                 type="button"
                                 onClick={() => setActiveReviewJob(job)}
@@ -1020,8 +1061,46 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                               >
                                 Жолоочийг Үнэлэх
                               </button>
-                            )}
-                          </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Action buttons (Edit/Delete) relocated to the bottom of the card */}
+                      {isOwnProfile && (
+                        <div className="flex space-x-2.5 pt-2 mt-auto border-t border-slate-850/50">
+                          {job.status !== 'completed' && (
+                            <button
+                              type="button"
+                              onClick={() => setEditingJob(job)}
+                              className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
+                            >
+                              Засах
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (window.confirm('Та энэ зарыг устгахдаа итгэлтэй байна уу? Устгасны дараа сэргээх боломжгүй.')) {
+                                try {
+                                  await deleteJob(job.id);
+                                  
+                                  const allJobs = await getJobs();
+                                  const filteredJobs = allJobs.filter(j => j.employerId === profileUser.id);
+                                  setDriverJobs(filteredJobs);
+                                  
+                                  setSuccess('Зарыг амжилттай устгалаа.');
+                                  setTimeout(() => setSuccess(''), 3000);
+                                } catch (err) {
+                                  console.error(err);
+                                  alert('Зарыг устгахад алдаа гарлаа.');
+                                }
+                              }
+                            }}
+                            className={`${job.status === 'completed' ? 'w-full' : 'flex-1'} border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center`}
+                          >
+                            Устгах
+                          </button>
                         </div>
                       )}
                     </div>
@@ -1057,10 +1136,13 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
             setActiveReviewJob(null);
             // Refresh data
             const allJobs = await getJobs();
-            const filteredJobs = allJobs.filter(j => 
-              j.applicants.includes(profileUser.id) || 
-              j.hiredOperatorId === profileUser.id
-            );
+            const filteredJobs = allJobs.filter(j => {
+              if (profileUser.type === 'operator') {
+                return j.applicants.includes(profileUser.id) || j.hiredOperatorId === profileUser.id;
+              } else {
+                return j.employerId === profileUser.id;
+              }
+            });
             setDriverJobs(filteredJobs);
 
             const allReviews = await getReviews();

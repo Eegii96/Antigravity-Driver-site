@@ -47,7 +47,7 @@ export default function Footer() {
           <ul className="space-y-2.5 text-xs font-sans">
             <li className="flex items-center space-x-2">
               <Mail className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span>Ekhyondoo@gmail.com</span>
+              <span>enkhyondoo@gmail.com</span>
             </li>
             <li className="flex items-center space-x-2">
               <Phone className="w-4 h-4 text-emerald-500 shrink-0" />

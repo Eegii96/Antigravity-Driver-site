@@ -1,26 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Auth from '../../components/Auth';
-import { getCurrentUser } from '../../lib/db';
+import { useAuth } from '../../context/AuthContext';
+import { User } from '../../types';
 
 export default function AuthClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab'); // 'login' or 'register'
-  const [loading, setLoading] = useState(true);
+  const { currentUser, setCurrentUser, loading } = useAuth();
 
   useEffect(() => {
-    const user = getCurrentUser();
-    if (user) {
+    if (!loading && currentUser) {
       router.replace('/');
-    } else {
-      setLoading(false);
     }
-  }, [router]);
+  }, [currentUser, loading, router]);
 
-  const handleAuthSuccess = () => {
+  const handleAuthSuccess = (user: User) => {
+    setCurrentUser(user);
     router.replace('/');
   };
 
@@ -39,3 +38,4 @@ export default function AuthClient() {
 
   return <Auth onSuccess={handleAuthSuccess} defaultIsLogin={defaultIsLogin} />;
 }
+

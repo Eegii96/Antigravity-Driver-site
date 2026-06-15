@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { getSingleJob, getJobs } from '../../../lib/db';
-import JobDetailClient from './JobDetailClient';
+import BoardClient from '../../board/BoardClient';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -93,7 +93,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function JobPage({ params }: Props) {
-  const { id } = await params;
-  return <JobDetailClient jobId={id} />;
+  return <BoardClient />;
 }
 

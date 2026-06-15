@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "../components/Footer";
+import { AuthProvider } from "../context/AuthContext";
+import InAppBrowserGuard from "../components/InAppBrowserGuard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,9 +43,13 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col justify-between">
-        <div className="flex-grow flex flex-col">{children}</div>
-        <Footer />
+        <AuthProvider>
+          <InAppBrowserGuard />
+          <div className="flex-grow flex flex-col">{children}</div>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );
 }
+

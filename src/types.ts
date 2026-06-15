@@ -75,6 +75,9 @@ export interface Job {
   hiredOperatorName?: string;
   isReviewedByEmployer?: boolean; // employer reviewed operator
   isReviewedByOperator?: boolean; // operator reviewed employer
+  additionalInfo?: string;
+  imageUrl?: string;
+  imageUrls?: string[];
 }
 
 export interface AppNotification {
