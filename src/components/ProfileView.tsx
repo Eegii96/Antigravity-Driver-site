@@ -752,7 +752,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                     <div
                       key={job.id}
                       id={`job-card-${job.id}`}
-                      className={`glass-card p-5 rounded-2xl transition-all flex flex-col justify-between space-y-4 ${
+                      className={`glass-card p-5 rounded-2xl transition-all flex flex-col justify-between space-y-4 text-left ${
                         activeHighlightJobId === job.id
                           ? 'highlighted-job-card'
                           : 'border-slate-800/80 hover:border-slate-700/80'
@@ -760,14 +760,28 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                     >
                       <div className="space-y-3">
                         <div className="flex justify-between items-start gap-1">
-                          <div></div>
-                          <span className="text-[10px] text-gray-500 shrink-0 flex items-center space-x-1">
+                          <span className="font-mono text-[10px] text-slate-500">{formatDate(job.createdAt)}</span>
+                          <span className="text-[10px] text-gray-550 shrink-0 flex items-center space-x-1">
                             <MapPin className="w-3.5 h-3.5 text-slate-500" />
                             <span>{job.location.split(',')[0]}</span>
                           </span>
                         </div>
 
                         <h4 className="text-xs font-bold text-white leading-snug">{job.title}</h4>
+
+                        {/* Description */}
+                        {job.description && (
+                          <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed font-sans">
+                            {job.description}
+                          </p>
+                        )}
+
+                        {/* Additional info */}
+                        {job.additionalInfo && (
+                          <p className="text-[10.5px] text-slate-500 leading-relaxed italic font-sans bg-[#080d1a]/20 p-2.5 rounded-lg border border-slate-850/50">
+                            Нэмэлт: {job.additionalInfo}
+                          </p>
+                        )}
                         
                         <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-850 flex justify-between items-center text-[10.5px]">
                           <span className="text-slate-500">Захиалагч:</span>
@@ -816,55 +830,60 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                         )}
                       </div>
 
-                      {/* Footer / Review action if completed & not reviewed yet */}
-                      {isHired && job.status === 'completed' && (
-                        <div className="space-y-3 pt-2">
-                          {(() => {
-                            const receivedReview = displayReviews.find(r => r.jobId === job.id);
-                            if (!receivedReview) return null;
-                            return (
-                              <div className="bg-emerald-950/10 border border-emerald-500/20 p-3 rounded-lg text-xs space-y-1.5 mt-2">
-                                <div className="flex justify-between items-center text-[10.5px]">
-                                  <span className="font-bold text-emerald-400">Захиалагчийн үнэлгээ:</span>
-                                  <div className="flex items-center space-x-0.5">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                      <Star 
-                                        key={star} 
-                                        className={`w-3 h-3 ${star <= receivedReview.rating ? 'fill-amber-400 text-amber-500' : 'text-slate-700'}`} 
-                                      />
-                                    ))}
-                                    <span className="font-bold font-mono ml-1 text-white">{receivedReview.rating}.0</span>
-                                  </div>
+                      {/* Footer containing received review (for completed jobs) and salary for ALL statuses */}
+                      <div className="space-y-3 pt-2 mt-auto border-t border-slate-850/50">
+                        {isHired && job.status === 'completed' && (() => {
+                          const receivedReview = displayReviews.find(r => r.jobId === job.id);
+                          if (!receivedReview) return null;
+                          return (
+                            <div className="bg-emerald-950/10 border border-emerald-500/20 p-3 rounded-lg text-xs space-y-1.5">
+                              <div className="flex justify-between items-center text-[10.5px]">
+                                <span className="font-bold text-emerald-400">Захиалагчийн үнэлгээ:</span>
+                                <div className="flex items-center space-x-0.5">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star 
+                                      key={star} 
+                                      className={`w-3 h-3 ${star <= receivedReview.rating ? 'fill-amber-400 text-amber-500' : 'text-slate-700'}`} 
+                                    />
+                                  ))}
+                                  <span className="font-bold font-mono ml-1 text-white">{receivedReview.rating}.0</span>
                                 </div>
-                                <p className="text-[11px] text-slate-300 italic">"{receivedReview.comment}"</p>
                               </div>
-                            );
-                          })()}
-
-                          <div className="border-t border-slate-850/80 pt-3.5 flex items-center justify-between">
-                             <div className="flex items-center space-x-1 text-xs">
-                              <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                              <span className="font-mono font-bold text-white">
-                                {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
-                              </span>
+                              <p className="text-[11px] text-slate-300 italic">"{receivedReview.comment}"</p>
                             </div>
+                          );
+                        })()}
 
-                            {job.isReviewedByOperator ? (
-                              <span className="text-[10px] text-emerald-400 bg-emerald-950/20 px-2 py-1 rounded font-semibold border border-emerald-900/30">
-                                ✓ Захиалагчийг үнэлсэн
-                              </span>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => setActiveReviewJob(job)}
-                                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
-                              >
-                                Захиалагчийг Үнэлэх
-                              </button>
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center space-x-1">
+                            <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                            <span className="font-mono font-bold text-white text-xs">
+                              {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
+                            </span>
+                            {job.salaryUnit && (
+                              <span className="text-[10px] text-slate-500 font-mono"> / {job.salaryUnit}</span>
                             )}
                           </div>
+
+                          {isHired && job.status === 'completed' && (
+                            <div>
+                              {job.isReviewedByOperator ? (
+                                <span className="text-[10px] text-emerald-400 bg-emerald-950/20 px-2 py-1 rounded font-semibold border border-emerald-900/30">
+                                  ✓ Захиалагчийг үнэлсэн
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => setActiveReviewJob(job)}
+                                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
+                                >
+                                  Захиалагчийг Үнэлэх
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
                   );
                 } else {
