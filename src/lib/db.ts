@@ -1224,6 +1224,83 @@ export async function submitReview(reviewData: Omit<Review, 'id' | 'createdAt'>)
 // NOTIFICATIONS SYSTEM (Firestore-based)
 // ----------------------------------------------------
 
+/**
+ * Safely parses any date format used in notifications across all browsers (including iOS Safari/WebKit).
+ * Supports ISO strings, YYYY.MM.DD HH:mm, MM/DD/YYYY HH:mm, etc.
+ */
+export function parseNotificationDateString(str: string): number {
+  if (!str) return 0;
+  
+  // 1. If it's a standard ISO 8601 string, parse it directly.
+  // Standard ISO strings contain 'T' (e.g., 2026-06-15T06:00:52.338Z)
+  if (str.includes('T')) {
+    const parsed = Date.parse(str);
+    if (!isNaN(parsed)) return parsed;
+  }
+  
+  // 2. Otherwise, parse custom localized formats manually to avoid browser-specific quirks (especially in WebKit/Safari)
+  try {
+    const parts = str.trim().split(/\s+/);
+    if (parts.length === 0) return 0;
+    
+    const dateStr = parts[0];
+    const timeStr = parts[1] || '00:00';
+    
+    // Split date by delimiters: /, -, .
+    const dateComponents = dateStr.split(/[\/\-\.]+/).map(num => parseInt(num, 10));
+    if (dateComponents.length < 3 || dateComponents.some(isNaN)) {
+      const fallback = Date.parse(str);
+      return isNaN(fallback) ? 0 : fallback;
+    }
+    
+    const timeComponents = timeStr.split(':').map(num => parseInt(num, 10));
+    const hours = isNaN(timeComponents[0]) ? 0 : timeComponents[0];
+    const minutes = isNaN(timeComponents[1]) ? 0 : timeComponents[1];
+    const seconds = isNaN(timeComponents[2]) ? 0 : timeComponents[2];
+    
+    let year = 0;
+    let month = 0; // 0-indexed for JS Date
+    let day = 0;
+    
+    if (dateComponents[0] > 1000) {
+      // Format: YYYY/MM/DD or YYYY/DD/MM
+      year = dateComponents[0];
+      if (dateComponents[1] > 12) {
+        day = dateComponents[1];
+        month = dateComponents[2] - 1;
+      } else {
+        month = dateComponents[1] - 1;
+        day = dateComponents[2];
+      }
+    } else if (dateComponents[2] > 1000) {
+      // Format: MM/DD/YYYY or DD/MM/YYYY
+      year = dateComponents[2];
+      if (dateComponents[0] > 12) {
+        day = dateComponents[0];
+        month = dateComponents[1] - 1;
+      } else if (dateComponents[1] > 12) {
+        month = dateComponents[0] - 1;
+        day = dateComponents[1];
+      } else {
+        // Both first and second components are <= 12, default to MM/DD/YYYY
+        month = dateComponents[0] - 1;
+        day = dateComponents[1];
+      }
+    } else {
+      const fallback = Date.parse(str);
+      return isNaN(fallback) ? 0 : fallback;
+    }
+    
+    const d = new Date(year, month, day, hours, minutes, seconds);
+    const time = d.getTime();
+    return isNaN(time) ? 0 : time;
+  } catch (e) {
+    console.error('Error parsing custom date string:', str, e);
+    const fallback = Date.parse(str);
+    return isNaN(fallback) ? 0 : fallback;
+  }
+}
+
 export async function getNotifications(userId: string): Promise<AppNotification[]> {
   try {
     // Fetch only real notifications stored in Firestore for this user
@@ -1323,18 +1400,7 @@ export async function getNotifications(userId: string): Promise<AppNotification[
     const result = filtered.filter(n => !n.isDeleted);
 
     // Sort notifications chronologically: newest (most recent) at the top, oldest at the bottom
-    const parseDateString = (str: string): number => {
-      if (!str) return 0;
-      let parsed = Date.parse(str);
-      if (!isNaN(parsed)) return parsed;
-      // Handle dot separators, e.g., "2026.06.15 14:30"
-      const cleanStr = str.replace(/\./g, '/');
-      parsed = Date.parse(cleanStr);
-      if (!isNaN(parsed)) return parsed;
-      return 0;
-    };
-
-    result.sort((a, b) => parseDateString(b.createdAt) - parseDateString(a.createdAt));
+    result.sort((a, b) => parseNotificationDateString(b.createdAt) - parseNotificationDateString(a.createdAt));
 
     return result;
   } catch (err) {

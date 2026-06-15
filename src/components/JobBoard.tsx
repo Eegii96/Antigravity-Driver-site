@@ -11,6 +11,7 @@ import {
   completeJob,
   getUsers,
   getNotifications,
+  parseNotificationDateString,
   markNotificationAsRead,
   markAllNotificationsAsRead,
   addNotification,
@@ -189,11 +190,9 @@ export default function JobBoard({
   const formatNotificationDate = (isoString?: string) => {
     if (!isoString) return '';
     try {
-      if (isoString.includes('/') || (isoString.includes('.') && isoString.includes(':') && !isoString.includes('T'))) {
-        return isoString;
-      }
-      const d = new Date(isoString);
-      if (isNaN(d.getTime())) return isoString;
+      const ms = parseNotificationDateString(isoString);
+      if (ms === 0) return isoString;
+      const d = new Date(ms);
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
