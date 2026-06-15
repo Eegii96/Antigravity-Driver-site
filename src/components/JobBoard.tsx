@@ -1052,7 +1052,7 @@ export default function JobBoard({
                   : 'text-gray-400 border-transparent hover:text-gray-200'
               }`}
             >
-              Нийт зар ({openFilteredJobs.length})
+              Идэвхтэй зар ({openFilteredJobs.length})
             </button>
             <button
               onClick={() => setStatusFilter('completed')}
@@ -1117,6 +1117,39 @@ export default function JobBoard({
                         )}
                       </div>
 
+                      {/* ── IMAGES ── */}
+                      {job.imageUrls && job.imageUrls.length > 0 ? (
+                        <div className="w-full space-y-1">
+                          <div className="flex overflow-x-auto gap-2 snap-x snap-mandatory scrollbar-none py-1">
+                            {job.imageUrls.map((url, idx) => (
+                              <div key={idx} className="shrink-0 w-full snap-center h-48 md:h-64 overflow-hidden rounded-xl border border-slate-850 bg-slate-950/40 flex items-center justify-center relative">
+                                <img
+                                  src={url}
+                                  alt={`Slide ${idx + 1}`}
+                                  className="w-full h-full object-contain"
+                                />
+                                <div className="absolute bottom-2 right-2 bg-slate-950/70 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full border border-slate-800/60 font-sans">
+                                  {idx + 1} / {job.imageUrls?.length}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          {job.imageUrls.length > 1 && (
+                            <p className="text-[9px] text-gray-550 text-center font-sans select-none">
+                              ↔️ Хажуу тийш гүйлгэж үзнэ үү
+                            </p>
+                          )}
+                        </div>
+                      ) : (job.imageUrl && (
+                        <div className="w-full h-48 md:h-64 overflow-hidden rounded-xl border border-slate-850 bg-slate-950/40 flex items-center justify-center">
+                          <img
+                            src={job.imageUrl}
+                            alt={job.title}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      ))}
+
                       {/* ── SALARY + LOCATION 2-column grid ── */}
                       <div className="grid grid-cols-2 gap-3">
                         <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800">
@@ -1124,7 +1157,7 @@ export default function JobBoard({
                           <span className="font-mono font-bold text-emerald-400 text-sm">
                             {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
                           </span>
-                          {job.salaryUnit && (
+                          {job.salaryUnit && job.salaryUnit !== 'Өдрөөр' && (
                             <span className="text-[9px] text-slate-600 block mt-0.5">{job.salaryUnit}</span>
                           )}
                         </div>
@@ -1594,7 +1627,7 @@ export default function JobBoard({
                                 );
                               } else {
                                 return (
-                                  <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border border-rose-500/45 bg-rose-500/15 text-rose-405 shadow-[0_0_10px_rgba(244,63,94,0.1)] animate-pulse">
+                                  <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border border-rose-500/45 bg-rose-500/15 text-rose-455 shadow-[0_0_10px_rgba(244,63,94,0.1)] animate-pulse">
                                     <span className="w-1 h-1 rounded-full mr-1 bg-rose-500" />
                                     <span>Ажил дууссан ⚠️</span>
                                   </span>
@@ -1615,72 +1648,43 @@ export default function JobBoard({
       </main>
 
       {/* Floating Toast Notification Containers */}
-      {(() => {
-        const getToastStyle = (t: AppNotification & { x?: number; y?: number }) => {
-          if (t.x === undefined || t.y === undefined) {
-            return {
-              position: 'fixed' as const,
-              bottom: '1.5rem',
-              right: '1.5rem',
-              zIndex: 9999,
-            };
-          }
-
-          const toastWidth = 320; // w-80 is 320px
-          const toastHeight = 110; // approximate height
-          
-          let left = t.x - toastWidth / 2;
-          let top = t.y + 15; // slightly below the click
-          
-          // Boundary checks to make sure the toast is fully visible on screen
-          if (typeof window !== 'undefined') {
-            if (left < 16) left = 16;
-            if (left + toastWidth > window.innerWidth - 16) {
-              left = window.innerWidth - toastWidth - 16;
-            }
-            
-            if (top + toastHeight > window.innerHeight - 16) {
-              top = t.y - toastHeight - 15; // show above the click if bottom overflows
-            }
-            if (top < 16) top = 16;
-          }
-          
-          return {
-            position: 'fixed' as const,
-            left: `${left}px`,
-            top: `${top}px`,
-            zIndex: 9999,
-          };
-        };
-
-        return (
-          <div id="toast-alerts-container" className="fixed inset-0 pointer-events-none z-50">
-            {toasts.map((t) => (
-              <div
-                key={t.id}
-                onClick={() => handleNotificationClick(t)}
-                style={getToastStyle(t)}
-                className={`pointer-events-auto bg-slate-900/90 backdrop-blur-md border-l-4 ${
-                  t.type === 'alert' ? 'border-rose-500' : 'border-emerald-500'
-                } text-white px-5 py-4 rounded-xl shadow-2xl border border-slate-800 flex items-start space-x-3 w-80 animate-slide-in relative cursor-pointer hover:bg-slate-850/30 transition-colors`}
-              >
-                <div className="flex-1 text-left">
-                  <div className="flex justify-between items-start">
-                    <span className={`text-xs font-bold ${
-                      t.type === 'alert' ? 'text-rose-455' : 'text-emerald-400'
-                    } font-mono`}>
-                      {t.type === 'alert' ? 'Алдаа ⚠️' : 'Амжилттай 🎉'}
-                    </span>
-                    <span className="text-[9px] text-slate-550 font-mono">{t.createdAt}</span>
-                  </div>
-                  <h4 className="text-xs font-bold text-white mt-1 leading-snug">{t.title}</h4>
-                  <p className="text-[10px] text-slate-350 leading-relaxed mt-0.5">{t.message}</p>
-                </div>
+      <div id="toast-alerts-container" className="fixed top-24 right-6 flex flex-col gap-3 pointer-events-none z-[9999] max-w-sm w-80">
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            onClick={() => handleNotificationClick(t)}
+            className={`pointer-events-auto bg-slate-900/95 backdrop-blur-md border-l-4 ${
+              t.type === 'alert' ? 'border-rose-500' : 'border-emerald-500'
+            } text-white px-5 py-4 rounded-xl shadow-2xl border border-slate-800 flex items-start space-x-3 w-full animate-slide-in relative cursor-pointer hover:bg-slate-850/30 transition-colors`}
+          >
+            <div className="flex-1 text-left pr-4">
+              <div className="flex justify-between items-start">
+                <span className={`text-xs font-bold ${
+                  t.type === 'alert' ? 'text-rose-455' : 'text-emerald-400'
+                } font-mono`}>
+                  {t.type === 'alert' ? 'Алдаа ⚠️' : 'Амжилттай 🎉'}
+                </span>
+                <span className="text-[9px] text-slate-550 font-mono mr-2">{t.createdAt}</span>
               </div>
-            ))}
+              <h4 className="text-xs font-bold text-white mt-1 leading-snug">{t.title}</h4>
+              <p className="text-[10px] text-slate-355 leading-relaxed mt-0.5">{t.message}</p>
+            </div>
+            
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setToasts(prev => prev.filter(toast => toast.id !== t.id));
+              }}
+              className="absolute top-3 right-3 text-slate-400 hover:text-white transition-colors cursor-pointer p-0.5 rounded-full hover:bg-slate-800/80 flex items-center justify-center"
+              aria-label="Хаах"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
-        );
-      })()}
+        ))}
+      </div>
 
       {/* Modals trigger definitions */}
       {showPostModal && currentUser && (

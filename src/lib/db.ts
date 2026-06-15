@@ -902,7 +902,12 @@ export async function addJob(jobData: Omit<Job, 'id' | 'status' | 'createdAt' | 
       applicants: []
     };
     
-    await setDoc(doc(db, 'jobs', id), newJob);
+    // Filter out undefined properties to prevent Firestore write failures
+    const cleanJob = Object.fromEntries(
+      Object.entries(newJob).filter(([_, v]) => v !== undefined)
+    ) as unknown as Job;
+
+    await setDoc(doc(db, 'jobs', id), cleanJob);
     return newJob;
   } catch (err) {
     console.error('Error adding job to Firestore:', err);
@@ -1313,6 +1318,20 @@ export async function getNotifications(userId: string): Promise<AppNotification[
     if (needsCommit) {
       await batch.commit();
     }
+
+    // Sort notifications chronologically: newest (most recent) at the top, oldest at the bottom
+    const parseDateString = (str: string): number => {
+      if (!str) return 0;
+      let parsed = Date.parse(str);
+      if (!isNaN(parsed)) return parsed;
+      // Handle dot separators, e.g., "2026.06.15 14:30"
+      const cleanStr = str.replace(/\./g, '/');
+      parsed = Date.parse(cleanStr);
+      if (!isNaN(parsed)) return parsed;
+      return 0;
+    };
+
+    filtered.sort((a, b) => parseDateString(b.createdAt) - parseDateString(a.createdAt));
 
     return filtered;
   } catch (err) {

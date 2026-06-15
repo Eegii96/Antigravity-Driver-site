@@ -305,7 +305,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
           <Award className="w-6 h-6 text-amber-400 text-neon-cyan animate-pulse-soft" />
           <span>
             {defaultTab === 'applications'
-              ? (profileUser.type === 'operator' ? 'Миний Хүсэлтүүд & Ажлын Явц' : 'Миний Байршуулсан Зарууд')
+              ? (profileUser.type === 'operator' ? `Миний Хүсэлтүүд & Ажлын Явц (${driverJobs.length})` : `Миний Байршуулсан Зарууд (${driverJobs.length})`)
               : (isOwnProfile ? 'Миний Хувийн Профайл' : `${profileUser.fullName}-ийн Профайл`)}
           </span>
         </h2>
@@ -689,14 +689,6 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
       {activeTab === 'applications' && (
         <div className="space-y-6 animate-fade-in relative z-10 text-left">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-850 pb-2.5 flex items-center space-x-2">
-            <Clock className="w-4.5 h-4.5 text-emerald-450 drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
-            <span>
-              {profileUser.type === 'operator' 
-                ? `Миний илгээсэн хүсэлтүүд & Ажлын явц (${driverJobs.length})` 
-                : `Миний байршуулсан зарууд (${driverJobs.length})`}
-            </span>
-          </h3>
 
           {isLoading ? (
             <div className="glass-panel p-12 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-400 font-sans flex flex-col items-center justify-center space-y-4">
@@ -860,7 +852,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                             <span className="font-mono font-bold text-white text-xs">
                               {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
                             </span>
-                            {job.salaryUnit && (
+                            {job.salaryUnit && job.salaryUnit !== 'Өдрөөр' && (
                               <span className="text-[10px] text-slate-500 font-mono"> / {job.salaryUnit}</span>
                             )}
                           </div>

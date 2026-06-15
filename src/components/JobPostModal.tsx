@@ -410,15 +410,20 @@ export default function JobPostModal({
                   <input
                     type="file"
                     accept="image/*"
+                    multiple
                     className="hidden"
                     disabled={isImageUploading}
                     onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
+                      const files = e.target.files;
+                      if (files && files.length > 0) {
                         setIsImageUploading(true);
                         try {
-                          const compressed = await compressImage(file);
-                          setImageUrls(prev => [...prev, compressed]);
+                          const maxRemaining = 4 - imageUrls.length;
+                          const filesToProcess = Array.from(files).slice(0, maxRemaining);
+                          const compressed = await Promise.all(
+                            filesToProcess.map(file => compressImage(file))
+                          );
+                          setImageUrls(prev => [...prev, ...compressed]);
                         } catch (err) {
                           console.error(err);
                           alert('Зураг боловсруулахад алдаа гарлаа.');
