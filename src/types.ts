@@ -89,6 +89,7 @@ export interface AppNotification {
   isRead: boolean;
   createdAt: string;
   relatedId?: string;
+  isDeleted?: boolean;
 }
 
 export interface Ad {

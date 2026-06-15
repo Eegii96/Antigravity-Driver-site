@@ -1258,7 +1258,7 @@ export async function getNotifications(userId: string): Promise<AppNotification[
         message: targetWelcomeMsg,
         type: targetWelcomeType,
         isRead: false,
-        createdAt: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString().slice(0, 5)
+        createdAt: new Date().toISOString()
       };
       batch.set(doc(db, 'notifications', welcomeId), welcomeNotif);
       filtered.push(welcomeNotif);
@@ -1291,7 +1291,7 @@ export async function getNotifications(userId: string): Promise<AppNotification[
         message: targetSecurityMsg,
         type: targetSecurityType,
         isRead: false,
-        createdAt: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString().slice(0, 5)
+        createdAt: new Date().toISOString()
       };
       batch.set(doc(db, 'notifications', securityId), securityNotif);
       filtered.push(securityNotif);
@@ -1319,6 +1319,9 @@ export async function getNotifications(userId: string): Promise<AppNotification[
       await batch.commit();
     }
 
+    // Filter out deleted notifications
+    const result = filtered.filter(n => !n.isDeleted);
+
     // Sort notifications chronologically: newest (most recent) at the top, oldest at the bottom
     const parseDateString = (str: string): number => {
       if (!str) return 0;
@@ -1331,9 +1334,9 @@ export async function getNotifications(userId: string): Promise<AppNotification[
       return 0;
     };
 
-    filtered.sort((a, b) => parseDateString(b.createdAt) - parseDateString(a.createdAt));
+    result.sort((a, b) => parseDateString(b.createdAt) - parseDateString(a.createdAt));
 
-    return filtered;
+    return result;
   } catch (err) {
     console.error('Error fetching notifications from Firestore:', err);
     return [];
@@ -1356,7 +1359,7 @@ export async function addNotification(
       message,
       type,
       isRead: false,
-      createdAt: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString().slice(0, 5),
+      createdAt: new Date().toISOString(),
       relatedId
     };
     
@@ -1399,7 +1402,11 @@ export async function markAllNotificationsAsRead(userId: string): Promise<void> 
 
 export async function deleteNotification(notificationId: string): Promise<void> {
   try {
-    await deleteDoc(doc(db, 'notifications', notificationId));
+    if (notificationId.startsWith('notif_welcome_') || notificationId.startsWith('notif_security_')) {
+      await updateDoc(doc(db, 'notifications', notificationId), { isDeleted: true });
+    } else {
+      await deleteDoc(doc(db, 'notifications', notificationId));
+    }
   } catch (err) {
     console.error('Error deleting notification in Firestore:', err);
   }
@@ -1411,7 +1418,12 @@ export async function deleteAllNotifications(userId: string): Promise<void> {
     const snap = await getDocs(q);
     const batch = writeBatch(db);
     snap.docs.forEach(d => {
-      batch.delete(d.ref);
+      const n = d.data() as AppNotification;
+      if (n.id.startsWith('notif_welcome_') || n.id.startsWith('notif_security_')) {
+        batch.update(doc(db, 'notifications', n.id), { isDeleted: true });
+      } else {
+        batch.delete(d.ref);
+      }
     });
     await batch.commit();
   } catch (err) {
