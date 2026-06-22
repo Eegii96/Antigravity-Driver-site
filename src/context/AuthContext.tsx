@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '../types';
 import { auth, db } from '../lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { setCurrentUser as setLocalUser, getCurrentUser as getLocalUser } from '../lib/db';
 
 interface AuthContextType {
@@ -33,37 +33,103 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCurrentUserState(initialUser);
     }
 
+    let unsubscribeSnapshot: (() => void) | null = null;
+
     // 2. Register Firebase Auth State listener
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
-          // Fetch fresh profile data from Firestore
           const userDocRef = doc(db, 'users', firebaseUser.uid);
-          const docSnap = await getDoc(userDocRef);
           
-          if (docSnap.exists()) {
-            const userData = docSnap.data() as User;
-            userData.id = firebaseUser.uid;
-            
-            // Remove password field for security
-            const sessionUser = { ...userData };
-            if ('password' in sessionUser) {
-              delete sessionUser.password;
-            }
-            
-            handleSetCurrentUser(sessionUser);
-          } else {
-            // If the document doesn't exist yet (e.g. registration in progress),
-            // check if we already have a matching user in localStorage
-            const localUser = getLocalUser();
-            if (localUser && localUser.id === firebaseUser.uid) {
-              setCurrentUserState(localUser);
-            } else {
-              handleSetCurrentUser(null);
-            }
+          if (unsubscribeSnapshot) {
+            unsubscribeSnapshot();
+            unsubscribeSnapshot = null;
           }
+
+          // Listen in real-time to the user document in Firestore
+          unsubscribeSnapshot = onSnapshot(userDocRef, async (docSnap) => {
+            try {
+              if (docSnap.exists()) {
+                const userData = docSnap.data() as User;
+                userData.id = firebaseUser.uid;
+                
+                // Remove password field for security
+                const sessionUser = { ...userData };
+                if ('password' in sessionUser) {
+                  delete sessionUser.password;
+                }
+                
+                const localSessionId = localStorage.getItem('activeSessionId');
+                const sessionIdTime = Number(localStorage.getItem('activeSessionIdTime') || 0);
+                const isSessionFresh = (Date.now() - sessionIdTime) < 8000; // 8 seconds window
+                
+                if (!userData.activeSessionId) {
+                  // If no active session ID exists on the server, initialize one
+                  const newSessionId = localSessionId || (Math.random().toString(36).substring(2) + Date.now().toString(36));
+                  localStorage.setItem('activeSessionId', newSessionId);
+                  localStorage.setItem('activeSessionIdTime', Date.now().toString());
+                  await updateDoc(userDocRef, { activeSessionId: newSessionId });
+                  handleSetCurrentUser(sessionUser);
+                } else if (localSessionId && userData.activeSessionId !== localSessionId) {
+                  if (isSessionFresh) {
+                    // This device just logged in/registered. It has the right to claim the active session.
+                    console.log('Claiming active session for new login on this device.');
+                    await updateDoc(userDocRef, { activeSessionId: localSessionId });
+                    handleSetCurrentUser(sessionUser);
+                  } else {
+                    // Session ID mismatch on an established session! Another device has logged in.
+                    console.warn('Session ID mismatch. Logging out due to concurrent login.');
+                    alert('Таны хаяг өөр төхөөрөмж дээр нэвтэрсэн тул энэ төхөөрөмжөөс гарлаа.');
+                    
+                    await signOut(auth);
+                    localStorage.removeItem('activeSessionId');
+                    localStorage.removeItem('activeSessionIdTime');
+                    localStorage.removeItem('sessionIsNew');
+                    handleSetCurrentUser(null);
+                    window.location.href = '/auth';
+                  }
+                } else {
+                  // Session matches or localSessionId doesn't exist yet
+                  if (!localSessionId) {
+                    const localUser = getLocalUser();
+                    if (localUser && localUser.id === firebaseUser.uid) {
+                      localStorage.setItem('activeSessionId', userData.activeSessionId);
+                      localStorage.setItem('activeSessionIdTime', Date.now().toString());
+                      handleSetCurrentUser(sessionUser);
+                    } else {
+                      await signOut(auth);
+                      localStorage.removeItem('activeSessionId');
+                      localStorage.removeItem('activeSessionIdTime');
+                      handleSetCurrentUser(null);
+                    }
+                  } else {
+                    handleSetCurrentUser(sessionUser);
+                  }
+                }
+              } else {
+                // Document doesn't exist yet (e.g. registration in progress)
+                const localUser = getLocalUser();
+                if (localUser && localUser.id === firebaseUser.uid) {
+                  setCurrentUserState(localUser);
+                } else {
+                  handleSetCurrentUser(null);
+                }
+              }
+            } catch (snapErr) {
+              console.error('Error handling user doc snapshot:', snapErr);
+            }
+          }, (error) => {
+            console.error('Error in user doc snapshot listener:', error);
+          });
         } else {
           // Firebase says we are signed out
+          if (unsubscribeSnapshot) {
+            unsubscribeSnapshot();
+            unsubscribeSnapshot = null;
+          }
+          localStorage.removeItem('activeSessionId');
+          localStorage.removeItem('activeSessionIdTime');
+          localStorage.removeItem('sessionIsNew');
           handleSetCurrentUser(null);
         }
       } catch (err) {
@@ -73,7 +139,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+      }
+    };
   }, []);
 
   const logout = async () => {

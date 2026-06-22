@@ -146,6 +146,16 @@ export default function JobBoard({
   const [lastClickPos, setLastClickPos] = useState<{ x: number; y: number } | null>(null);
   const [viewingReview, setViewingReview] = useState<Review | null>(null);
 
+  useEffect(() => {
+    if (showBlurWarningModal || viewingReview || showNotificationsMenu) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [showBlurWarningModal, viewingReview, showNotificationsMenu]);
+
   const getEmployerDisplayName = (job: Job) => {
     const emp = users.find(u => u.id === job.employerId);
     if (emp) {
@@ -454,9 +464,7 @@ export default function JobBoard({
           
           const myJobIds = new Set<string>();
           for (const j of allJobs) {
-            if (currentUser.type === 'operator' && j.hiredOperatorId === currentUser.id) {
-              myJobIds.add(j.id);
-            } else if (currentUser.type === 'employer' && j.employerId === currentUser.id) {
+            if (j.hiredOperatorId === currentUser.id || j.employerId === currentUser.id || j.applicants.includes(currentUser.id)) {
               myJobIds.add(j.id);
             }
           }
@@ -496,11 +504,7 @@ export default function JobBoard({
           
           const allJobs = await getJobs();
           let candidateJobs = allJobs.filter(j => {
-            if (currentUser.type === 'operator') {
-              return j.hiredOperatorId === currentUser.id || j.applicants.includes(currentUser.id);
-            } else {
-              return j.employerId === currentUser.id;
-            }
+            return j.hiredOperatorId === currentUser.id || j.applicants.includes(currentUser.id) || j.employerId === currentUser.id;
           });
           
           if (jobTitle) {
@@ -622,7 +626,7 @@ export default function JobBoard({
     try {
       const success = await hireOperator(jobId, operatorId);
       if (success) {
-        const msg = '🤝 Жолоочийг ажилд амжилттай томиллоо. Хамтын ажиллагааны гэрээ батлагдсан тул хариуцлагатай ажиллана уу.';
+        const msg = '🤝 Жолоочийг ажилд амжилттай томиллоо.';
         setSuccessMessage(msg);
         addSuccessToast('Ажилд сонгогдлоо 🎉', msg);
         setTimeout(() => setSuccessMessage(''), 4500);
@@ -657,13 +661,14 @@ export default function JobBoard({
     const defaultTypes = [
       { value: 'Бүгд', label: 'Бүх маягт' },
       { value: 'operator_hiring', label: 'Жолооч, оператор хайж байна' },
+      { value: 'operator_job_seeking', label: 'Жолооч, операторын ажил хайж байна' },
       { value: 'machinery_rental', label: 'Машин механизмын түрээс' },
       { value: 'earthwork', label: 'Барилга, зам, газар шорооны ажил' }
     ];
     
     const activeTypes = new Set<string>();
     jobs.forEach(j => {
-      if (j.type && j.type !== 'operator_hiring' && j.type !== 'machinery_rental' && j.type !== 'earthwork') {
+      if (j.type && j.type !== 'operator_hiring' && j.type !== 'operator_job_seeking' && j.type !== 'machinery_rental' && j.type !== 'earthwork') {
         activeTypes.add(j.type);
       }
     });
@@ -701,8 +706,9 @@ export default function JobBoard({
     return matchesKeyword && matchesLocation && matchesType;
   });
 
-  const openFilteredJobs = filteredJobs.filter(j => j.status === 'open');
-  const completedFilteredJobs = filteredJobs.filter(j => j.status === 'completed');
+  const sortedFilteredJobs = [...filteredJobs].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const openFilteredJobs = sortedFilteredJobs.filter(j => j.status === 'open');
+  const completedFilteredJobs = sortedFilteredJobs.filter(j => j.status === 'completed');
   const displayJobs = statusFilter === 'open' ? openFilteredJobs : completedFilteredJobs;
 
   const unreadNotifs = notifications.filter(n => !n.isRead);
@@ -732,11 +738,11 @@ export default function JobBoard({
         <div className="flex items-center space-x-3.5">
           {currentUser ? (
             <>
-              {currentUser.type === 'employer' && (
+              {currentUser && (
                 <button
                   id="header-post-job-btn"
                   onClick={() => setShowPostModal(true)}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-3.5 py-2 rounded-lg flex items-center space-x-1.5 transition-all cursor-pointer shadow-md shadow-emerald-950/20"
+                  className="bg-emerald-600 hover:bg-emerald-550 text-white font-semibold text-xs px-3.5 py-2 rounded-lg flex items-center space-x-1.5 transition-all cursor-pointer shadow-md shadow-emerald-950/20"
                 >
                   <PlusCircle className="w-4 h-4" />
                   <span>Зар нэмэх</span>
@@ -777,7 +783,7 @@ export default function JobBoard({
                       )}
                     </div>
 
-                    <div className="max-h-80 overflow-y-auto divide-y divide-slate-800/60 scrollbar-thin">
+                    <div className="max-h-80 overflow-y-auto overscroll-contain divide-y divide-slate-800/60 scrollbar-thin">
                       {notifications.length === 0 ? (
                         <div className="py-10 px-4 text-center flex flex-col items-center justify-center space-y-2">
                           <CheckCircle className="w-8 h-8 text-slate-600 animate-pulse-soft" />
@@ -788,16 +794,42 @@ export default function JobBoard({
                           <div
                             key={notif.id}
                             onClick={() => handleNotificationClick(notif)}
-                            className={`p-3.5 text-left transition-all duration-300 relative flex items-start space-x-3 hover:bg-slate-850/20 cursor-pointer ${
-                              notif.isRead ? 'bg-transparent opacity-70 hover:opacity-100' : 'bg-slate-850/40 border-l-3 border-emerald-500'
+                            className={`p-3.5 pl-6 text-left transition-all duration-300 relative flex items-start space-x-3 border-l-4 cursor-pointer group ${
+                              notif.isRead 
+                                ? 'bg-transparent border-transparent hover:bg-slate-800/20' 
+                                : 'bg-emerald-950/35 border-emerald-500 shadow-[inset_4px_0_16px_rgba(16,185,129,0.08),0_1px_2px_rgba(0,0,0,0.2)]'
                             }`}
                           >
+                            {!notif.isRead && (
+                              <span className="absolute left-2 top-[18px] flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+                              </span>
+                            )}
                             <div className="flex-1 min-w-0">
                               <div className="flex justify-between items-start gap-1">
-                                <h5 className="text-xs font-bold text-white leading-tight font-sans">{notif.title}</h5>
-                                <span className="text-[8px] text-slate-550 font-mono shrink-0">{formatNotificationDate(notif.createdAt)}</span>
+                                <h5 className={`text-xs font-bold leading-tight font-sans transition-colors duration-200 ${
+                                  notif.isRead 
+                                    ? 'text-slate-400 group-hover:text-slate-300 font-medium' 
+                                    : 'text-slate-100 font-extrabold'
+                                }`}>
+                                  {notif.title}
+                                </h5>
+                                <span className={`text-[8px] font-mono shrink-0 transition-colors duration-200 ${
+                                  notif.isRead 
+                                    ? 'text-slate-500 group-hover:text-slate-400' 
+                                    : 'text-emerald-400 font-bold'
+                                }`}>
+                                  {formatNotificationDate(notif.createdAt)}
+                                </span>
                               </div>
-                              <p className="text-[11px] text-slate-300 leading-relaxed mt-1 font-sans">{notif.message}</p>
+                              <p className={`text-[11px] leading-relaxed mt-1 font-sans transition-colors duration-200 ${
+                                notif.isRead 
+                                  ? 'text-slate-500 group-hover:text-slate-450' 
+                                  : 'text-slate-200'
+                              }`}>
+                                {notif.message}
+                              </p>
                               
                               <div className="flex items-center space-x-2 mt-2.5">
                                 <button
@@ -806,7 +838,7 @@ export default function JobBoard({
                                     e.stopPropagation();
                                     handleDeleteNotification(notif.id);
                                   }}
-                                  className="bg-rose-955/30 hover:bg-rose-900/50 active:scale-95 text-rose-455 border border-rose-800/30 px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
+                                  className="bg-rose-950/30 hover:bg-rose-900/50 active:scale-95 text-rose-400 hover:text-rose-300 border border-rose-800/30 px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                   <span>Устгах</span>
@@ -891,7 +923,7 @@ export default function JobBoard({
                         className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
                       >
                         <Briefcase className="w-4 h-4 text-emerald-455" />
-                        <span>{currentUser.type === 'operator' ? 'Миний хүсэлтүүд' : 'Миний байршуулсан зарууд'}</span>
+                        <span>Миний зарууд, хүсэлтүүд</span>
                       </button>
                       
                       <button
@@ -1124,6 +1156,43 @@ export default function JobBoard({
                         <span className="font-mono text-[10px] text-slate-500">{formatDate(job.createdAt)}</span>
                       </div>
 
+                      {/* ── CREATOR INFO ROW (Name on left, Phone on right) ── */}
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-800/60" onClick={(e) => e.stopPropagation()}>
+                        {/* Creator name */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!currentUser) { setShowBlurWarningModal(true); return; }
+                            const employerUser = users.find(u => u.id === job.employerId);
+                            if (employerUser) router.push(`/profile?id=${employerUser.id}`);
+                          }}
+                          className="flex items-center space-x-2 text-left focus:outline-none hover:opacity-80 transition-opacity bg-transparent border-0 p-0 cursor-pointer"
+                        >
+                          <UserIcon className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <span className={`text-xs font-bold font-sans ${
+                            !currentUser ? 'text-emerald-400 filter blur-[5px] select-none cursor-pointer' : 'text-emerald-400 hover:underline'
+                          }`}>
+                            {!currentUser ? getMockEmployerName(job.id) : getEmployerDisplayName(job)}
+                          </span>
+                        </button>
+
+                        {/* Phone number */}
+                        <div
+                          onClick={(e) => {
+                            if (!currentUser) { e.stopPropagation(); setShowBlurWarningModal(true); }
+                          }}
+                          className={`flex items-center space-x-1.5 ${ !currentUser ? 'cursor-pointer' : '' }`}
+                        >
+                          <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                          <span className={`font-mono text-xs font-bold text-emerald-400 ${
+                            !currentUser ? 'filter blur-[5px] select-none' : ''
+                          }`}>
+                            {!currentUser ? getMockEmployerPhone(job.id) : (getEmployerPhone(job) || 'Утасгүй')}
+                          </span>
+                        </div>
+                      </div>
+
                       {/* ── TITLE + DESCRIPTION ── */}
                       <div className="space-y-2">
                         <h3 className="text-base font-extrabold text-white leading-snug">{job.title}</h3>
@@ -1202,7 +1271,7 @@ export default function JobBoard({
                             return (
                               <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full border-2 border-amber-500/40 bg-amber-500/10 text-amber-400">
                                 <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-amber-400 animate-pulse" />
-                                Гэрээт ажил
+                                Ажиллаж байгаа
                               </span>
                             );
                           } else {
@@ -1225,39 +1294,7 @@ export default function JobBoard({
                         })()}
                       </div>
 
-                      {/* ── EMPLOYER CARD: name left, phone right ── */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!currentUser) { setShowBlurWarningModal(true); return; }
-                          const employerUser = users.find(u => u.id === job.employerId);
-                          if (employerUser) router.push(`/profile?id=${employerUser.id}`);
-                        }}
-                        className="w-full flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800 hover:bg-slate-900 transition-colors text-left focus:outline-none"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <UserIcon className="w-4 h-4 text-emerald-400 shrink-0" />
-                          <span className={`text-xs font-semibold ${
-                            !currentUser ? 'text-gray-300 filter blur-[5px] select-none' : 'text-gray-200'
-                          }`}>
-                            {!currentUser ? getMockEmployerName(job.id) : getEmployerDisplayName(job)}
-                          </span>
-                        </div>
-                        <div
-                          onClick={(e) => {
-                            if (!currentUser) { e.stopPropagation(); setShowBlurWarningModal(true); }
-                          }}
-                          className={`flex items-center space-x-1.5 ${ !currentUser ? 'cursor-pointer' : '' }`}
-                        >
-                          <Phone className="w-3.5 h-3.5 text-emerald-500" />
-                          <span className={`font-mono text-[12px] font-bold text-emerald-400 ${
-                            !currentUser ? 'filter blur-[5px] select-none' : ''
-                          }`}>
-                            {!currentUser ? getMockEmployerPhone(job.id) : (getEmployerPhone(job) || 'Утасгүй')}
-                          </span>
-                        </div>
-                      </button>
+
 
                       {/* ── WORKFLOW ACTIONS ── */}
                       <div className="border-t border-slate-800 pt-3 space-y-3" onClick={(e) => e.stopPropagation()}>
@@ -1279,7 +1316,60 @@ export default function JobBoard({
                           <>
                             {job.status === 'open' && (
                               <>
-                                {currentUser.type === 'operator' ? (
+                                {currentUser.id === job.employerId ? (
+                                  <div className="space-y-3">
+                                    <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-3">
+                                      <span className="text-[10px] text-slate-500 block uppercase font-mono tracking-wider">Зарын Тохиргоо:</span>
+                                      <div className="flex space-x-2.5">
+                                        <button type="button" onClick={() => setEditingJob(job)} className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center">
+                                          Засах
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={async () => {
+                                            if (window.confirm('Та энэ зарыг устгахдаа итгэлтэй байна уу? Устгасны дараа сэргээх боломжгүй.')) {
+                                              try {
+                                                await deleteJob(job.id);
+                                                setSelectedJob(null);
+                                                await refreshJobs();
+                                                addSuccessToast('Устгагдлаа', 'Зарыг амжилттай устгалаа.');
+                                              } catch (err) {
+                                                console.error(err);
+                                                addErrorToast('Зарыг устгахад алдаа гарлаа.');
+                                              }
+                                            }
+                                          }}
+                                          className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
+                                        >
+                                          Устгах
+                                        </button>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center justify-between text-xs border-b border-slate-800 pb-2">
+                                      <span className="font-bold text-gray-300">Хүсэлт ирүүлсэн харилцагч ({job.applicants.length})</span>
+                                    </div>
+                                    {job.applicants.length === 0 ? (
+                                      <p className="text-[11px] text-gray-500 text-center py-2">Ирүүлсэн хүсэлт байхгүй байна.</p>
+                                    ) : (
+                                      <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                                        {job.applicants.map((opId) => {
+                                          const op = users.find(u => u.id === opId);
+                                          if (!op) return null;
+                                          return (
+                                            <div key={opId} className="flex items-center justify-between bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                                              <button type="button" onClick={() => router.push(`/profile?id=${op.id}`)} className="text-xs text-white font-medium hover:underline hover:text-emerald-400 text-left focus:outline-none">
+                                                {op.fullName} {op.type === 'operator' && `(${op.experienceYears || 0} жил)`}
+                                              </button>
+                                              <button onClick={() => handleHire(job.id, op.id)} className="bg-emerald-500 hover:bg-emerald-450 text-slate-950 text-[10px] font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
+                                                Сонгох
+                                              </button>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
                                   job.applicants.includes(currentUser.id) ? (
                                     <div className="space-y-2.5">
                                       <button disabled className="w-full bg-slate-800 text-gray-400 text-xs font-bold py-3 px-4 rounded-xl cursor-not-allowed border border-slate-700 text-center">
@@ -1293,65 +1383,10 @@ export default function JobBoard({
                                       )}
                                     </div>
                                   ) : (
-                                    <button onClick={() => handleApply(job.id)} className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold py-3 px-4 rounded-xl transition-all shadow-md shadow-emerald-500/10 cursor-pointer text-center">
-                                      Ажилд орох хүсэлт илгээх
+                                    <button onClick={() => handleApply(job.id)} className="w-full bg-emerald-500 hover:bg-emerald-450 text-slate-950 text-xs font-bold py-3 px-4 rounded-xl transition-all shadow-md shadow-emerald-500/10 cursor-pointer text-center">
+                                      Хүсэлт илгээх
                                     </button>
                                   )
-                                ) : (
-                                  currentUser.id === job.employerId ? (
-                                    <div className="space-y-3">
-                                      <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-3">
-                                        <span className="text-[10px] text-slate-500 block uppercase font-mono tracking-wider">Зарын Тохиргоо:</span>
-                                        <div className="flex space-x-2.5">
-                                          <button type="button" onClick={() => setEditingJob(job)} className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center">
-                                            Засах
-                                          </button>
-                                          <button
-                                            type="button"
-                                            onClick={async () => {
-                                              if (window.confirm('Та энэ зарыг устгахдаа итгэлтэй байна уу? Устгасны дараа сэргээх боломжгүй.')) {
-                                                try {
-                                                  await deleteJob(job.id);
-                                                  setSelectedJob(null);
-                                                  await refreshJobs();
-                                                  addSuccessToast('Устгагдлаа', 'Зарыг амжилттай устгалаа.');
-                                                } catch (err) {
-                                                  console.error(err);
-                                                  addErrorToast('Зарыг устгахад алдаа гарлаа.');
-                                                }
-                                              }
-                                            }}
-                                            className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
-                                          >
-                                            Устгах
-                                          </button>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-center justify-between text-xs border-b border-slate-800 pb-2">
-                                        <span className="font-bold text-gray-300">Хүсэлт ирүүлсэн жолооч нар ({job.applicants.length})</span>
-                                      </div>
-                                      {job.applicants.length === 0 ? (
-                                        <p className="text-[11px] text-gray-500 text-center py-2">Ирүүлсэн хүсэлт байхгүй байна.</p>
-                                      ) : (
-                                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                                          {job.applicants.map((opId) => {
-                                            const op = users.find(u => u.id === opId);
-                                            if (!op) return null;
-                                            return (
-                                              <div key={opId} className="flex items-center justify-between bg-slate-950 p-2.5 rounded-lg border border-slate-800">
-                                                <button type="button" onClick={() => router.push(`/profile?id=${op.id}`)} className="text-xs text-white font-medium hover:underline hover:text-emerald-400 text-left focus:outline-none">
-                                                  {op.fullName} ({op.experienceYears || 0} жил)
-                                                </button>
-                                                <button onClick={() => handleHire(job.id, op.id)} className="bg-emerald-500 hover:bg-emerald-450 text-slate-950 text-[10px] font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
-                                                  Сонгох
-                                                </button>
-                                              </div>
-                                            );
-                                          })}
-                                        </div>
-                                      )}
-                                    </div>
-                                  ) : null
                                 )}
                               </>
                             )}
@@ -1627,7 +1662,7 @@ export default function JobBoard({
                         {/* Salary and Status */}
                         <div className="flex flex-col items-end space-y-2 shrink-0">
                           <span className="font-sans font-bold text-emerald-400 flex items-center gap-1.5">
-                            <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Цалин:</span>
+                            <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Цалин / Төлбөр:</span>
                             <span className="font-mono text-xs">{job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}</span>
                           </span>
                           
@@ -1643,7 +1678,7 @@ export default function JobBoard({
                               return (
                                 <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border border-amber-500/40 bg-amber-500/15 text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.15)]">
                                   <span className="w-1 h-1 rounded-full mr-1 bg-amber-400 animate-pulse" />
-                                  <span>Гэрээт</span>
+                                  <span>Ажиллаж байгаа</span>
                                 </span>
                               );
                             } else {
@@ -1786,8 +1821,16 @@ export default function JobBoard({
 
       {/* Viewing Review Detail Modal */}
       {viewingReview && (
-        <div id="view-review-detail-modal-backdrop" className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div id="view-review-detail-modal-container" className="bg-[#0b1329] border border-slate-800 max-w-md w-full rounded-2xl overflow-hidden shadow-2xl relative">
+        <div 
+          id="view-review-detail-modal-backdrop" 
+          onClick={() => setViewingReview(null)}
+          className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in"
+        >
+          <div 
+            id="view-review-detail-modal-container" 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#0b1329] border border-slate-800 max-w-md w-full rounded-2xl overflow-hidden shadow-2xl relative"
+          >
             <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-500/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
             

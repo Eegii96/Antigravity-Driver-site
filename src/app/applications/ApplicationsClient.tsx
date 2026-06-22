@@ -44,6 +44,11 @@ function ApplicationsContent() {
   );
 }
 
+function ApplicationsContentWrapper() {
+  const searchParams = useSearchParams();
+  return <ApplicationsContent key={searchParams.toString() || 'default'} />;
+}
+
 export default function ApplicationsClient() {
   return (
     <div className="bg-[#070a13] flex-grow py-8">
@@ -55,7 +60,7 @@ export default function ApplicationsClient() {
           </div>
         </div>
       }>
-        <ApplicationsContent />
+        <ApplicationsContentWrapper />
       </Suspense>
     </div>
   );

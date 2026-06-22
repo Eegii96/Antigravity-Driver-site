@@ -202,8 +202,16 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
   const isSecured = !!(securityQuestion1.trim() && securityAnswer1.trim() && securityQuestion2.trim() && securityAnswer2.trim());
 
   return (
-    <div id="profile-edit-modal-backdrop" className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div id="profile-edit-content-container" className="bg-slate-900 border border-slate-700/80 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+    <div 
+      id="profile-edit-modal-backdrop" 
+      onClick={onClose}
+      className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto"
+    >
+      <div 
+        id="profile-edit-content-container" 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-slate-900 border border-slate-700/80 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+      >
         
         {/* Header */}
         <div className="flex justify-between items-center border-b border-slate-850 px-6 py-4">

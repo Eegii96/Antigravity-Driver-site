@@ -59,6 +59,17 @@ export default function SettingsView() {
 
   // Account deletion modal states
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isDeleteModalOpen) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [isDeleteModalOpen]);
+
   const [deleteReason, setDeleteReason] = useState<string>('');
   const [otherReasonText, setOtherReasonText] = useState<string>('');
   const [deleteSuccess, setDeleteSuccess] = useState<boolean>(false);
@@ -341,8 +352,16 @@ export default function SettingsView() {
 
       {/* Account Deletion Modal */}
       {isDeleteModalOpen && (
-        <div id="delete-account-modal-backdrop" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm p-4 animate-fade-in">
-          <div id="delete-account-modal-container" className="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-xl shadow-2xl overflow-hidden font-sans">
+        <div 
+          id="delete-account-modal-backdrop" 
+          onClick={() => setIsDeleteModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm p-4 animate-fade-in"
+        >
+          <div 
+            id="delete-account-modal-container" 
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-xl shadow-2xl overflow-hidden font-sans"
+          >
             
             {/* Modal Header */}
             <div className="flex justify-between items-center border-b border-slate-850 px-5 py-4 bg-slate-950/40">

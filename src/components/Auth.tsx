@@ -77,6 +77,17 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
   const [showLoginPassword, setShowLoginPassword] = useState<boolean>(false);
   const [showTerms, setShowTerms] = useState<boolean>(false);
   const [showPrivacy, setShowPrivacy] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (showTerms || showPrivacy) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [showTerms, showPrivacy]);
+
   const [isAgreedToTerms, setIsAgreedToTerms] = useState<boolean>(false);
 
   const [error, setError] = useState<string>('');
@@ -1289,8 +1300,14 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       {/* TERMS OF SERVICE MODAL */}
       {/* ============================================================== */}
       {showTerms && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in text-left">
-          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl relative">
+        <div 
+          onClick={() => setShowTerms(false)}
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in text-left"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl relative"
+          >
             {/* Header */}
             <div className="sticky top-0 bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between z-10">
               <div className="flex items-center space-x-2.5">
@@ -1355,8 +1372,14 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       {/* PRIVACY POLICY MODAL */}
       {/* ============================================================== */}
       {showPrivacy && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in text-left">
-          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl relative">
+        <div 
+          onClick={() => setShowPrivacy(false)}
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in text-left"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl relative"
+          >
             {/* Header */}
             <div className="sticky top-0 bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between z-10">
               <div className="flex items-center space-x-2.5">

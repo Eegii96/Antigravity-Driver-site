@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, Review, JobHistoryItem, Job } from '../types';
-import { getReviews, getJobHistory, saveSingleUser, getSingleUser, getJobs, getUsers, hireOperator, completeJob, deleteJob, cancelHiring } from '../lib/db';
-import { Star, ShieldAlert, Award, Phone, Mail, MapPin, Calendar, CheckCircle, Clock, DollarSign, Briefcase, Users, X } from 'lucide-react';
+import { getReviews, getJobHistory, saveSingleUser, getSingleUser, getJobs, getUsers, hireOperator, completeJob, deleteJob, cancelHiring, deleteReview, updateReview } from '../lib/db';
+import { Star, ShieldAlert, Award, Phone, Mail, MapPin, Calendar, CheckCircle, Clock, DollarSign, Briefcase, Users, X, Edit, Trash2, Bookmark } from 'lucide-react';
 import ProfileEditModal from './ProfileEditModal';
 import ReviewModal from './ReviewModal';
 import JobPostModal from './JobPostModal';
@@ -29,9 +29,24 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
   const [historyItems, setHistoryItems] = useState<JobHistoryItem[]>([]);
   const [success, setSuccess] = useState<string>('');
 
+  // States for reviews given and editing reviews
+  const [givenReviews, setGivenReviews] = useState<Review[]>([]);
+  const [allJobs, setAllJobs] = useState<Job[]>([]);
+  const [editingReview, setEditingReview] = useState<Review | null>(null);
+  const [editRating, setEditRating] = useState<number>(5);
+  const [editHoverRating, setEditHoverRating] = useState<number | null>(null);
+  const [editComment, setEditComment] = useState<string>('');
+  const [editError, setEditError] = useState<string>('');
+  const [isEditSubmitting, setIsEditSubmitting] = useState<boolean>(false);
+
   // Tracking driver applications and job status
   const [activeTab, setActiveTab] = useState<'profile' | 'applications'>(defaultTab || 'profile');
-  const [driverJobs, setDriverJobs] = useState<Job[]>([]);
+  const [applicationsSubTab, setApplicationsSubTab] = useState<'sent' | 'posted'>(
+    user.type === 'operator' ? 'sent' : 'posted'
+  );
+  const [sentApplications, setSentApplications] = useState<Job[]>([]);
+  const [postedJobs, setPostedJobs] = useState<Job[]>([]);
+  const driverJobs = applicationsSubTab === 'sent' ? sentApplications : postedJobs;
   const [activeReviewJob, setActiveReviewJob] = useState<Job | null>(null);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -63,78 +78,151 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
     setProfileUser(user);
   }, [user]);
 
-  useEffect(() => {
-    const loadProfileData = async () => {
-      setIsLoading(true);
-      try {
-        // Run all queries in parallel to optimize load speed and eliminate the delay waterfall
-        const [freshUser, allReviews, allHistory, usersList, allJobs] = await Promise.all([
-          getSingleUser(profileUser.id).catch(err => {
-            console.error('Error fetching fresh profile user:', err);
-            return null;
-          }),
-          getReviews().catch(err => {
-            console.error('Error fetching reviews:', err);
-            return [] as Review[];
-          }),
-          getJobHistory().catch(err => {
-            console.error('Error fetching job history:', err);
-            return [] as JobHistoryItem[];
-          }),
-          getUsers().catch(err => {
-            console.error('Error fetching users:', err);
-            return [] as User[];
-          }),
-          getJobs().catch(err => {
-            console.error('Error loading jobs:', err);
-            return [] as Job[];
-          })
-        ]);
-
-        if (freshUser) {
-          setProfileUser(freshUser);
+  const parseReviewDateToTimestamp = (dateStr?: string): number => {
+    if (!dateStr) return 0;
+    try {
+      if (dateStr.includes('.')) {
+        const parts = dateStr.split('.');
+        if (parts.length === 3) {
+          const year = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10) - 1;
+          const day = parseInt(parts[2], 10);
+          return new Date(year, month, day).getTime();
         }
-        if (usersList) {
-          setAllUsers(usersList);
-        }
-
-        const reviews = allReviews.filter(r => {
-          if (profileUser.type === 'operator') {
-            return r.reviewerType === 'employer' && (r.jobId.includes('unreliable') ? profileUser.id === 'user_op_unreliable' : profileUser.id !== 'user_op_unreliable');
-          } else {
-            return r.reviewerType === 'operator';
-          }
-        });
-
-        const isDemoUnreliable = profileUser.id === 'user_op_unreliable';
-        const dispReviews = isDemoUnreliable 
-          ? allReviews.filter(r => r.id.includes('unreliable'))
-          : reviews.filter(r => !r.id.includes('unreliable'));
-
-        const histItems = allHistory.filter(h => {
-          if (isDemoUnreliable) {
-            return h.id.includes('unreliable');
-          }
-          return h.role === profileUser.type && !h.id.includes('unreliable');
-        });
-
-        setDisplayReviews(dispReviews);
-        setHistoryItems(histItems);
-
-        const filteredJobs = allJobs.filter(j => {
-          if (profileUser.type === 'operator') {
-            return j.applicants.includes(profileUser.id) || j.hiredOperatorId === profileUser.id;
-          } else {
-            return j.employerId === profileUser.id;
-          }
-        });
-        setDriverJobs(filteredJobs);
-      } catch (err) {
-        console.error('Error loading profile data:', err);
-      } finally {
-        setIsLoading(false);
       }
-    };
+      const d = new Date(dateStr);
+      if (!isNaN(d.getTime())) return d.getTime();
+    } catch (e) {}
+    return 0;
+  };
+
+  const formatReviewDate = (dateStr?: string): string => {
+    if (!dateStr) return '';
+    try {
+      if (dateStr.includes('.')) {
+        const parts = dateStr.split('.');
+        if (parts.length === 3) {
+          const year = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10) - 1;
+          const day = parseInt(parts[2], 10);
+          const d = new Date(year, month, day);
+          return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+        }
+      }
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+    } catch (e) {
+      return dateStr || '';
+    }
+  };
+
+  const loadProfileData = async () => {
+    setIsLoading(true);
+    try {
+      const [freshUser, allReviews, allHistory, usersList, allJobsList] = await Promise.all([
+        getSingleUser(profileUser.id).catch(err => {
+          console.error('Error fetching fresh profile user:', err);
+          return null;
+        }),
+        getReviews().catch(err => {
+          console.error('Error fetching reviews:', err);
+          return [] as Review[];
+        }),
+        getJobHistory().catch(err => {
+          console.error('Error fetching job history:', err);
+          return [] as JobHistoryItem[];
+        }),
+        getUsers().catch(err => {
+          console.error('Error fetching users:', err);
+          return [] as User[];
+        }),
+        getJobs().catch(err => {
+          console.error('Error loading jobs:', err);
+          return [] as Job[];
+        })
+      ]);
+
+      if (freshUser) {
+        setProfileUser(freshUser);
+      }
+      if (usersList) {
+        setAllUsers(usersList);
+      }
+      if (allJobsList) {
+        setAllJobs(allJobsList);
+      }
+
+      // Received Reviews
+      const targetUserJobIds = new Set<string>();
+      for (const j of allJobsList || []) {
+        if (profileUser.type === 'operator' && j.hiredOperatorId === profileUser.id) {
+          targetUserJobIds.add(j.id);
+        } else if (profileUser.type === 'employer' && j.employerId === profileUser.id) {
+          targetUserJobIds.add(j.id);
+        }
+      }
+
+      const reviews = allReviews.filter(r => {
+        if (profileUser.id === 'user_op_unreliable') {
+          return r.id.includes('unreliable');
+        }
+        if (r.id.includes('unreliable')) return false;
+
+        if (!targetUserJobIds.has(r.jobId)) return false;
+        if (r.reviewerType === profileUser.type) return false;
+        if (r.reviewerId === profileUser.id) return false;
+        return true;
+      });
+
+      const sortedReceived = reviews.sort((a, b) => 
+        parseReviewDateToTimestamp(b.createdAt) - parseReviewDateToTimestamp(a.createdAt)
+      );
+      setDisplayReviews(sortedReceived);
+
+      // Given Reviews
+      const writtenReviews = allReviews.filter(r => {
+        if (profileUser.id === 'user_op_unreliable') {
+          return false;
+        }
+        if (r.id.includes('unreliable')) return false;
+        return r.reviewerId === profileUser.id;
+      });
+
+      const sortedGiven = writtenReviews.sort((a, b) => 
+        parseReviewDateToTimestamp(b.createdAt) - parseReviewDateToTimestamp(a.createdAt)
+      );
+      setGivenReviews(sortedGiven);
+
+      // Job History
+      const isDemoUnreliable = profileUser.id === 'user_op_unreliable';
+      const histItems = allHistory.filter(h => {
+        if (isDemoUnreliable) {
+          return h.id.includes('unreliable');
+        }
+        return h.role === profileUser.type && !h.id.includes('unreliable');
+      });
+      setHistoryItems(histItems);
+
+      // Sent Applications
+      const sentApps = (allJobsList || []).filter(j => 
+        j.applicants.includes(profileUser.id) || j.hiredOperatorId === profileUser.id
+      );
+      setSentApplications(sentApps);
+
+      // Posted Jobs
+      const posted = (allJobsList || []).filter(j => 
+        j.employerId === profileUser.id
+      );
+      setPostedJobs(posted);
+    } catch (err) {
+      console.error('Error loading profile data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadProfileData();
   }, [profileUser.id]);
 
@@ -150,23 +238,25 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
     }
   }, [activeHighlightJobId, activeTab, driverJobs]);
 
+  useEffect(() => {
+    const isModalOpen = showEdit || !!activeReviewJob || !!editingReview || !!editingJob;
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showEdit, activeReviewJob, editingReview, editingJob]);
+
   const handleHireOperator = async (jobId: string, operatorId: string) => {
     try {
       const success = await hireOperator(jobId, operatorId);
       if (success) {
         setSuccess('🤝 Жолоочийг ажилд амжилттай томиллоо. Гэрээ идэвхжлээ.');
         setTimeout(() => setSuccess(''), 4500);
-        
-        // Refresh data
-        const allJobs = await getJobs();
-        const filteredJobs = allJobs.filter(j => {
-          if (profileUser.type === 'operator') {
-            return j.applicants.includes(profileUser.id) || j.hiredOperatorId === profileUser.id;
-          } else {
-            return j.employerId === profileUser.id;
-          }
-        });
-        setDriverJobs(filteredJobs);
+        await loadProfileData();
       }
     } catch (err) {
       console.error('Error hiring operator:', err);
@@ -195,17 +285,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
         if (success) {
           setSuccess('Зарын сонгосон жолоочийг амжилттай цуцаллаа. Зар буцаж нээлттэй төлөвт шилжлээ.');
           setTimeout(() => setSuccess(''), 4500);
-
-          // Refresh data
-          const allJobs = await getJobs();
-          const filteredJobs = allJobs.filter(j => {
-            if (profileUser.type === 'operator') {
-              return j.applicants.includes(profileUser.id) || j.hiredOperatorId === profileUser.id;
-            } else {
-              return j.employerId === profileUser.id;
-            }
-          });
-          setDriverJobs(filteredJobs);
+          await loadProfileData();
         }
       }
     } catch (err) {
@@ -220,20 +300,11 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
       if (success) {
         setSuccess('✓ Ажил амжилттай дууслаа. Одоо үнэлгээгээ өгнө үү.');
         setTimeout(() => setSuccess(''), 4500);
-        
-        // Refresh jobs
-        const allJobs = await getJobs();
-        const filteredJobs = allJobs.filter(j => {
-          if (profileUser.type === 'operator') {
-            return j.applicants.includes(profileUser.id) || j.hiredOperatorId === profileUser.id;
-          } else {
-            return j.employerId === profileUser.id;
-          }
-        });
-        setDriverJobs(filteredJobs);
+        await loadProfileData();
         
         // Set active review job to open review modal immediately!
-        const updatedJob = allJobs.find(j => j.id === job.id);
+        const allJobsList = await getJobs();
+        const updatedJob = allJobsList.find(j => j.id === job.id);
         if (updatedJob) {
           setActiveReviewJob(updatedJob);
         }
@@ -241,6 +312,47 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
     } catch (err) {
       console.error('Error completing job:', err);
       alert('Алдаа гарлаа. Дахин оролдоно уу.');
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (window.confirm('Та энэ үнэлгээг устгахдаа итгэлтэй байна уу?')) {
+      try {
+        const success = await deleteReview(reviewId);
+        if (success) {
+          setSuccess('Үнэлгээг амжилттай устгалаа.');
+          setTimeout(() => setSuccess(''), 3000);
+          await loadProfileData();
+        } else {
+          alert('Үнэлгээг устгаход алдаа гарлаа.');
+        }
+      } catch (err) {
+        console.error('Error deleting review:', err);
+        alert('Үнэлгээг устгаход алдаа гарлаа.');
+      }
+    }
+  };
+
+  const handleEditReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingReview) return;
+    setIsEditSubmitting(true);
+    setEditError('');
+    try {
+      const success = await updateReview(editingReview.id, editRating, editComment);
+      if (success) {
+        setSuccess('Үнэлгээг амжилттай шинэчиллээ.');
+        setTimeout(() => setSuccess(''), 3000);
+        setEditingReview(null);
+        await loadProfileData();
+      } else {
+        setEditError('Үнэлгээг шинэчлэхэд алдаа гарлаа.');
+      }
+    } catch (err) {
+      console.error('Error updating review:', err);
+      setEditError('Системийн алдаа гарлаа.');
+    } finally {
+      setIsEditSubmitting(false);
     }
   };
 
@@ -302,19 +414,29 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
       {/* Back to jobs / breadcrumb */}
       <div className="flex items-center justify-between relative z-10">
         <h2 className="text-xl font-bold tracking-tight text-white flex items-center space-x-2">
-          <Award className="w-6 h-6 text-amber-400 text-neon-cyan animate-pulse-soft" />
+          {defaultTab === 'applications' ? (
+            <Bookmark className="w-6 h-6 text-emerald-400 text-neon-cyan animate-pulse-soft" />
+          ) : (
+            <Award className="w-6 h-6 text-amber-400 text-neon-cyan animate-pulse-soft" />
+          )}
           <span>
             {defaultTab === 'applications'
-              ? (profileUser.type === 'operator' ? `Миний Хүсэлтүүд & Ажлын Явц (${driverJobs.length})` : `Миний Байршуулсан Зарууд (${driverJobs.length})`)
+              ? 'Миний хүсэлтүүд & Зарууд'
               : (isOwnProfile ? 'Миний Хувийн Профайл' : `${profileUser.fullName}-ийн Профайл`)}
           </span>
         </h2>
         <button
           id="back-to-board-btn"
-          onClick={() => router.push('/')}
+          onClick={() => {
+            if (typeof document !== 'undefined' && document.referrer && document.referrer.includes(window.location.host)) {
+              window.history.back();
+            } else {
+              window.location.href = '/';
+            }
+          }}
           className="text-xs bg-slate-900/60 hover:bg-slate-800 text-emerald-450 border border-slate-800/80 px-4 py-2 rounded-xl transition-all cursor-pointer shadow-md"
         >
-          Жагсаалт руу буцах
+          {defaultTab === 'applications' ? 'Жагсаалт руу буцах' : 'Буцах'}
         </button>
       </div>
 
@@ -628,8 +750,8 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
         {/* Uncensored reviews written for this user */}
         <div className="space-y-4">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-850 pb-2.5 flex items-center space-x-2">
-            <Star className="w-4.5 h-4.5 text-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.2)]" />
-            <span>Хамтран ажиллагсдын сэтгэгдэл ({profileUser.reviewsVisible !== false || isOwnProfile ? displayReviews.length : 0})</span>
+            <Star className="w-4.5 h-4.5 text-emerald-450 drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
+            <span>Надад өгсөн үнэлгээнүүд ({profileUser.reviewsVisible !== false || isOwnProfile ? displayReviews.length : 0})</span>
             {isOwnProfile && profileUser.reviewsVisible === false && (
               <span className="text-[9px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded font-normal normal-case ml-2 shrink-0">Бусдад харагдахгүй</span>
             )}
@@ -646,14 +768,21 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                   <div key={rev.id} className="glass-card p-4 rounded-xl border border-slate-800/60 hover:border-slate-700/60 space-y-3 relative overflow-hidden group">
                     <div className="glow-blob bg-emerald-500 w-[50px] h-[50px] -top-5 -right-5 opacity-5 group-hover:scale-150 transition-all duration-700"></div>
                     <div className="flex justify-between items-start">
-                      <div>
-                        <span className="text-xs font-bold block text-emerald-400 group-hover:text-emerald-350 transition-colors">
-                          {(() => {
-                            const parts = rev.reviewerName.trim().split(/\s+/);
-                            return parts[parts.length - 1] || rev.reviewerName;
-                          })()}
+                      <div className="flex flex-col space-y-1.5 text-left">
+                        <span 
+                          onClick={() => { window.location.href = `/profile?id=${rev.reviewerId}`; }}
+                          className="text-xs font-semibold text-white hover:text-emerald-400 active:text-emerald-400 transition-colors cursor-pointer select-none flex items-center gap-1.5"
+                        >
+                          <Users className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          <span>{rev.reviewerName}</span>
                         </span>
-                        <span className="text-[10px] text-slate-500 font-mono block mt-0.5">Төсөл: {rev.jobTitle}</span>
+                        <span 
+                          onClick={() => { window.location.href = `/applications?jobId=${rev.jobId}`; }}
+                          className="text-xs font-semibold text-white hover:text-emerald-400 active:text-emerald-400 transition-colors cursor-pointer select-none flex items-center gap-1.5"
+                        >
+                          <Briefcase className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          <span>{rev.jobTitle}</span>
+                        </span>
                       </div>
                       {/* Stars indicator */}
                       <div className="flex items-center space-x-0.5 bg-[#080d1a] px-2 py-1 rounded-lg border border-slate-850 shadow-sm shrink-0">
@@ -664,13 +793,12 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                       </div>
                     </div>
 
-                    <p className="text-xs leading-relaxed text-slate-300 italic font-sans bg-[#080d1a]/30 p-2.5 rounded-lg border border-slate-850/60">
+                    <p className="text-xs leading-relaxed text-slate-300 italic font-sans bg-[#080d1a]/30 p-2.5 rounded-lg border border-slate-850/60 text-left">
                       "{rev.comment}"
                     </p>
 
-                    <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono border-t border-slate-850 pt-2 flex-wrap gap-1">
-                      <span>Үүрэг: {rev.reviewerType === 'employer' ? 'Ажил Олгогчийн үнэлгээ' : 'Жолоочийн үнэлгээ'}</span>
-                      <span className="text-slate-450">{rev.createdAt}</span>
+                    <div className="flex justify-end items-center text-[10px] text-slate-500 font-mono border-t border-slate-850 pt-2">
+                      <span className="text-slate-450">{formatReviewDate(rev.createdAt)}</span>
                     </div>
                   </div>
                 ))}
@@ -684,11 +812,144 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
         </div>
 
       </div>
+
+      {/* Reviews I Have Given section */}
+      {isOwnProfile && (
+        <div className="mt-8 space-y-4 relative z-10 text-left">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-850 pb-2.5 flex items-center space-x-2">
+            <Star className="w-4.5 h-4.5 text-emerald-450 drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
+            <span>Миний өгсөн үнэлгээнүүд ({givenReviews.length})</span>
+          </h3>
+
+          {givenReviews.length === 0 ? (
+            <div className="glass-panel p-6 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-500 font-sans">
+              Та одоогоор өөр хэрэглэгчид үнэлгээ өгөөгүй байна.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[32rem] overflow-y-auto pr-1">
+              {givenReviews.map((rev) => {
+                const job = allJobs.find(j => j.id === rev.jobId);
+                let targetId = '';
+                let targetName = '';
+                if (job) {
+                  if (rev.reviewerType === 'employer') {
+                    targetId = job.hiredOperatorId || '';
+                    targetName = job.hiredOperatorName || 'Жолооч';
+                  } else {
+                    targetId = job.employerId || '';
+                    targetName = job.employerName || 'Ажил олгогч';
+                  }
+                } else {
+                  targetName = rev.reviewerType === 'employer' ? 'Жолооч' : 'Ажил олгогч';
+                }
+
+                return (
+                  <div key={rev.id} className="glass-card p-4 rounded-xl border border-slate-800/60 hover:border-slate-700/60 space-y-3 relative overflow-hidden group">
+                    <div className="glow-blob bg-emerald-500 w-[50px] h-[50px] -top-5 -right-5 opacity-5 group-hover:scale-150 transition-all duration-700"></div>
+                    <div className="flex justify-between items-start">
+                      <div className="flex flex-col space-y-1.5 text-left">
+                        {targetId ? (
+                          <span 
+                            onClick={() => { window.location.href = `/profile?id=${targetId}`; }}
+                            className="text-xs font-semibold text-white hover:text-emerald-400 active:text-emerald-400 transition-colors cursor-pointer select-none flex items-center gap-1.5"
+                          >
+                            <Users className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                            <span>{targetName}</span>
+                          </span>
+                        ) : (
+                          <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                            <Users className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                            <span>{targetName}</span>
+                          </span>
+                        )}
+                        <span 
+                          onClick={() => { window.location.href = `/applications?jobId=${rev.jobId}`; }}
+                          className="text-xs font-semibold text-white hover:text-emerald-400 active:text-emerald-400 transition-colors cursor-pointer select-none flex items-center gap-1.5"
+                        >
+                          <Briefcase className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          <span>{rev.jobTitle}</span>
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col items-end space-y-2 shrink-0">
+                        {/* Stars */}
+                        <div className="flex items-center space-x-0.5 bg-[#080d1a] px-2 py-1 rounded-lg border border-slate-850 shadow-sm">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <Star key={s} className={`w-2.5 h-2.5 ${s <= rev.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-700'}`} />
+                          ))}
+                          <span className="text-[10px] text-white font-bold ml-1 font-mono">{rev.rating}.0</span>
+                        </div>
+
+                        {/* Edit/Delete Actions */}
+                        <div className="flex items-center space-x-2">
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setEditingReview(rev);
+                              setEditRating(rev.rating);
+                              setEditComment(rev.comment);
+                            }} 
+                            className="text-[10px] bg-slate-950 hover:bg-slate-900 border border-slate-850 hover:border-slate-800 text-slate-400 hover:text-white px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            <Edit className="w-2.5 h-2.5 text-emerald-450" />
+                            <span>Засах</span>
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => handleDeleteReview(rev.id)} 
+                            className="text-[10px] bg-slate-950 hover:bg-slate-900 border border-slate-850 hover:border-slate-800 text-slate-400 hover:text-rose-455 px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            <Trash2 className="w-2.5 h-2.5 text-rose-500" />
+                            <span>Устгах</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-xs leading-relaxed text-slate-300 italic font-sans bg-[#080d1a]/30 p-2.5 rounded-lg border border-slate-850/60 text-left">
+                      "{rev.comment}"
+                    </p>
+
+                    <div className="flex justify-end items-center text-[10px] text-slate-500 font-mono border-t border-slate-850 pt-2">
+                      <span className="text-slate-450">{formatReviewDate(rev.createdAt)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
         </>
       )}
 
       {activeTab === 'applications' && (
         <div className="space-y-6 animate-fade-in relative z-10 text-left">
+          {/* Sub-tabs for Sent Applications vs Posted Jobs */}
+          <div className="flex border-b border-slate-800/80 space-x-6">
+            <button
+              onClick={() => setApplicationsSubTab('sent')}
+              className={`flex items-center space-x-2 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
+                applicationsSubTab === 'sent'
+                  ? 'border-emerald-500 text-emerald-450 font-extrabold'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Clock className="w-4 h-4" />
+              <span>МИНИЙ ЯВУУЛСАН ХҮСЭЛТ ({sentApplications.length})</span>
+            </button>
+            <button
+              onClick={() => setApplicationsSubTab('posted')}
+              className={`flex items-center space-x-2 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
+                applicationsSubTab === 'posted'
+                  ? 'border-emerald-500 text-emerald-450 font-extrabold'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Briefcase className="w-4 h-4" />
+              <span>МИНИЙ ОРУУЛСАН ЗАР ({postedJobs.length})</span>
+            </button>
+          </div>
 
           {isLoading ? (
             <div className="glass-panel p-12 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-400 font-sans flex flex-col items-center justify-center space-y-4">
@@ -697,14 +958,14 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
             </div>
           ) : driverJobs.length === 0 ? (
             <div className="glass-panel p-12 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-500 font-sans">
-              {profileUser.type === 'operator' 
+              {applicationsSubTab === 'sent' 
                 ? 'Та одоогоор ямар нэгэн заранд хүсэлт илгээгээгүй байна.' 
                 : 'Та одоогоор ямар нэгэн зар оруулаагүй байна.'}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {driverJobs.map((job) => {
-                if (profileUser.type === 'operator') {
+                if (applicationsSubTab === 'sent') {
                   const isHired = job.hiredOperatorId === profileUser.id;
                   const isPending = !job.hiredOperatorId && job.status === 'open';
                   const isRejected = job.hiredOperatorId && job.hiredOperatorId !== profileUser.id;
@@ -791,7 +1052,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                           <button
                             type="button"
                             onClick={() => {
-                              router.push(`/profile?id=${job.employerId}`);
+                              window.location.href = `/profile?id=${job.employerId}`;
                             }}
                             className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
                           >
@@ -979,7 +1240,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                               <button
                                 type="button"
                                 onClick={() => {
-                                  router.push(`/profile?id=${job.hiredOperatorId}`);
+                                  window.location.href = `/profile?id=${job.hiredOperatorId}`;
                                 }}
                                 className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
                               >
@@ -1015,7 +1276,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                                     className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-850 flex items-center justify-between text-xs"
                                   >
                                     <div
-                                      onClick={() => router.push(`/profile?id=${op.id}`)}
+                                      onClick={() => { window.location.href = `/profile?id=${op.id}`; }}
                                       className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
                                     >
                                       <img
@@ -1117,11 +1378,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                               if (window.confirm('Та энэ зарыг устгахдаа итгэлтэй байна уу? Устгасны дараа сэргээх боломжгүй.')) {
                                 try {
                                   await deleteJob(job.id);
-                                  
-                                  const allJobs = await getJobs();
-                                  const filteredJobs = allJobs.filter(j => j.employerId === profileUser.id);
-                                  setDriverJobs(filteredJobs);
-                                  
+                                  await loadProfileData();
                                   setSuccess('Зарыг амжилттай устгалаа.');
                                   setTimeout(() => setSuccess(''), 3000);
                                 } catch (err) {
@@ -1167,39 +1424,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
           onClose={() => setActiveReviewJob(null)}
           onSuccess={async (rev) => {
             setActiveReviewJob(null);
-            // Refresh data
-            const allJobs = await getJobs();
-            const filteredJobs = allJobs.filter(j => {
-              if (profileUser.type === 'operator') {
-                return j.applicants.includes(profileUser.id) || j.hiredOperatorId === profileUser.id;
-              } else {
-                return j.employerId === profileUser.id;
-              }
-            });
-            setDriverJobs(filteredJobs);
-
-            const allReviews = await getReviews();
-            const reviews = allReviews.filter(r => {
-              if (profileUser.type === 'operator') {
-                return r.reviewerType === 'employer' && (r.jobId.includes('unreliable') ? profileUser.id === 'user_op_unreliable' : profileUser.id !== 'user_op_unreliable');
-              } else {
-                return r.reviewerType === 'operator';
-              }
-            });
-            const dispReviews = profileUser.id === 'user_op_unreliable' 
-              ? allReviews.filter(r => r.id.includes('unreliable'))
-              : reviews.filter(r => !r.id.includes('unreliable'));
-            setDisplayReviews(dispReviews);
-
-            const allHistory = await getJobHistory();
-            const histItems = allHistory.filter(h => {
-              if (profileUser.id === 'user_op_unreliable') {
-                return h.id.includes('unreliable');
-              }
-              return h.role === profileUser.type && !h.id.includes('unreliable');
-            });
-            setHistoryItems(histItems);
-
+            await loadProfileData();
             setSuccess('Сэтгэгдэл, үнэлгээ амжилттай бүртгэгдлээ!');
             setTimeout(() => setSuccess(''), 3000);
           }}
@@ -1215,18 +1440,117 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
           onClose={() => setEditingJob(null)}
           onSuccess={async () => {
             setEditingJob(null);
-            
-            const allJobs = await getJobs();
-            const filteredJobs = allJobs.filter(j => j.employerId === profileUser.id);
-            setDriverJobs(filteredJobs);
-            
+            await loadProfileData();
             setSuccess('🎉 Ажлын зар амжилттай засагдаж шинэчлэгдлээ!');
             setTimeout(() => setSuccess(''), 3000);
           }}
         />
       )}
 
+      {/* Edit Review Modal */}
+      {editingReview && (
+        <div 
+          id="edit-review-modal-backdrop" 
+          onClick={() => setEditingReview(null)}
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in"
+        >
+          <div 
+            id="edit-review-modal-container" 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900 border border-slate-700 max-w-md w-full rounded-xl overflow-hidden shadow-2xl relative text-left animate-fade-in"
+          >
+            {/* Header */}
+            <div className="flex justify-between items-center border-b border-slate-800 px-6 py-4">
+              <h3 className="text-sm font-semibold text-white">Үнэлгээ Засах</h3>
+              <button 
+                type="button" 
+                onClick={() => setEditingReview(null)} 
+                className="text-gray-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
+            {/* Form */}
+            <form onSubmit={handleEditReviewSubmit} className="p-6 space-y-4">
+              <div className="bg-slate-850 p-3.5 rounded-lg border border-slate-800 space-y-1">
+                <span className="text-[10px] text-gray-400 uppercase tracking-widest block font-mono">Ажлын нэр</span>
+                <p className="text-xs font-semibold text-emerald-450">{editingReview.jobTitle}</p>
+              </div>
+
+              {/* Rating selection */}
+              <div className="flex flex-col items-center py-3 space-y-2 bg-[#080d1a] border border-slate-850 rounded-lg">
+                <span className="text-[10px] text-slate-450 uppercase tracking-widest font-mono">Үнэлгээ</span>
+                <div className="flex items-center space-x-1.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setEditRating(star)}
+                      onMouseEnter={() => setEditHoverRating(star)}
+                      onMouseLeave={() => setEditHoverRating(null)}
+                      className="p-1 focus:outline-none transition-transform hover:scale-110 cursor-pointer"
+                    >
+                      <Star
+                        className={`w-7 h-7 transition-colors ${
+                          star <= (editHoverRating ?? editRating)
+                            ? 'text-amber-400 fill-amber-400'
+                            : 'text-slate-700'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <span className="text-xs font-bold text-amber-455 font-mono">
+                  {editRating === 5 ? '5.0 / Маш сайн' : 
+                   editRating === 4 ? '4.0 / Сайн' :
+                   editRating === 3 ? '3.0 / Дундаж' :
+                   editRating === 2 ? '2.0 / Хангалтгүй' : '1.0 / Маш муу'}
+                </span>
+              </div>
+
+              {/* Comment field */}
+              <div className="space-y-1.5">
+                <label htmlFor="edit-review-comment" className="block text-[10px] text-slate-450 uppercase tracking-widest font-mono">Сэтгэгдэл, тайлбар</label>
+                <textarea
+                  id="edit-review-comment"
+                  required
+                  rows={4}
+                  value={editComment}
+                  onChange={(e) => setEditComment(e.target.value)}
+                  placeholder="Хамтран ажилласан сэтгэгдлээ энд бичнэ үү..."
+                  className="block w-full px-3.5 py-2.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none placeholder-gray-500 font-sans"
+                />
+              </div>
+
+              {/* Error */}
+              {editError && (
+                <div className="text-[11px] text-rose-450 bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg text-center font-semibold">
+                  {editError}
+                </div>
+              )}
+
+              {/* Submit Buttons */}
+              <div className="flex space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingReview(null)}
+                  className="flex-1 bg-slate-850 hover:bg-slate-800 border border-slate-800 text-white text-xs font-semibold py-2.5 px-4 rounded transition-colors cursor-pointer text-center"
+                >
+                  Цуцлах
+                </button>
+                <button
+                  type="submit"
+                  disabled={isEditSubmitting}
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-450 disabled:bg-emerald-700 disabled:opacity-50 text-slate-950 text-xs font-bold py-2.5 px-4 rounded transition-colors cursor-pointer text-center"
+                >
+                  {isEditSubmitting ? 'Хадгалж байна...' : 'Хадгалах'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

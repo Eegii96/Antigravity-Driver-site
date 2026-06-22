@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, MapPin, DollarSign, Briefcase, Clock, 
-  CheckCircle, Star, Users, User as UserIcon, Loader2, AlertCircle, ChevronDown, LogOut, Settings as SettingsIcon, X
+  CheckCircle, Star, Users, User as UserIcon, Loader2, AlertCircle, ChevronDown, LogOut, Settings as SettingsIcon, X,
+  Phone
 } from 'lucide-react';
 import { getSingleJob, getSingleUser, saveSingleUser, applyForJob } from '../../../lib/db';
 import { Job, User } from '../../../types';
@@ -26,10 +27,28 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
   const [showProfileMenu, setShowProfileMenu] = useState<boolean>(false);
   const [showBlurWarningModal, setShowBlurWarningModal] = useState<boolean>(false);
 
+  useEffect(() => {
+    if (showBlurWarningModal) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [showBlurWarningModal]);
+
   const getMockEmployerName = (jobId: string) => {
     const mockNames = ['Бат-Эрдэнэ', 'Лхагвасүрэн', 'Энхбат', 'Ганзориг', 'Мөнх-Эрдэнэ', 'Болдбаатар', 'Төмөрхүү', 'Алтанхуяг'];
     const charCodeSum = jobId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
     return mockNames[charCodeSum % mockNames.length];
+  };
+
+  const getMockEmployerPhone = (jobId: string) => {
+    const prefixes = ['9911', '8811', '9909', '8010', '9511', '9400', '8515', '9922'];
+    const charCodeSum = jobId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    const prefix = prefixes[charCodeSum % prefixes.length];
+    const lastFour = (charCodeSum * 17) % 9000 + 1000;
+    return `${prefix}${lastFour}`;
   };
 
   useEffect(() => {
@@ -117,7 +136,13 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
       <header className="sticky top-0 z-40 bg-[#070a13]/85 backdrop-blur-md border-b border-slate-900 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <button 
-            onClick={() => router.push('/')}
+            onClick={() => {
+              if (typeof document !== 'undefined' && document.referrer && document.referrer.includes(window.location.host)) {
+                window.history.back();
+              } else {
+                window.location.href = '/';
+              }
+            }}
             className="p-2 bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 text-emerald-400" />
@@ -167,7 +192,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                     className="w-full text-left px-4 py-2 text-xs hover:bg-slate-800 text-gray-300 hover:text-white flex items-center space-x-2.5 cursor-pointer"
                   >
                     <Briefcase className="w-4 h-4 text-emerald-400" />
-                    <span>{currentUser.type === 'operator' ? 'Миний хүсэлтүүд' : 'Миний зарууд'}</span>
+                    <span>Миний зарууд, хүсэлтүүд</span>
                   </button>
                   <button
                     onClick={() => router.push('/settings')}
@@ -216,8 +241,47 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
           <div className="bg-slate-900/60 border border-slate-800 p-6 md:p-8 rounded-2xl space-y-6 shadow-2xl backdrop-blur-sm">
             {/* Header info */}
             <div className="border-b border-slate-800 pb-5 space-y-3">
+              {employer && (
+                <div className="flex justify-between items-center pb-2 border-b border-slate-800/60" onClick={(e) => e.stopPropagation()}>
+                  {/* Creator name */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!currentUser) { setShowBlurWarningModal(true); return; }
+                      router.push(`/profile?id=${employer.id}`);
+                    }}
+                    className="flex items-center space-x-2 text-left focus:outline-none hover:opacity-80 transition-opacity bg-transparent border-0 p-0 cursor-pointer"
+                  >
+                    <UserIcon className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span className={`text-xs font-bold font-sans ${
+                      !currentUser ? 'text-emerald-400 filter blur-[5px] select-none cursor-pointer' : 'text-emerald-400 hover:underline'
+                    }`}>
+                      {!currentUser ? getMockEmployerName(job.id) : (employer.companyName || employer.fullName)}
+                    </span>
+                  </button>
+
+                  {/* Phone number */}
+                  <div
+                    onClick={(e) => {
+                      if (!currentUser) { e.stopPropagation(); setShowBlurWarningModal(true); }
+                    }}
+                    className={`flex items-center space-x-1.5 ${ !currentUser ? 'cursor-pointer' : '' }`}
+                  >
+                    <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className={`font-mono text-xs font-bold text-emerald-400 ${
+                      !currentUser ? 'filter blur-[5px] select-none' : ''
+                    }`}>
+                      {!currentUser ? getMockEmployerPhone(job.id) : (employer.phone || 'Утасгүй')}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div></div>
+                <span className="font-mono text-[10px] text-slate-500">
+                  {job.createdAt ? new Date(job.createdAt).toLocaleDateString('mn-MN').replace(/\//g, '.') : ''}
+                </span>
                 <span className="text-xs text-gray-500 flex items-center space-x-1">
                   <MapPin className="w-3.5 h-3.5" />
                   <span>{job.location}</span>
@@ -226,37 +290,6 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
               <h2 className="text-lg md:text-xl font-extrabold text-white leading-snug text-left">
                 {job.title}
               </h2>
-
-              {/* Employer Preview */}
-              {employer && (
-                <div 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!currentUser) {
-                      setShowBlurWarningModal(true);
-                      return;
-                    }
-                    router.push(`/profile?id=${employer.id}`);
-                  }}
-                  className="inline-flex items-center space-x-2 bg-slate-950/50 p-2.5 pr-4 rounded-xl border border-slate-850 hover:bg-slate-800/80 transition-colors text-left cursor-pointer mt-1"
-                >
-                  <img 
-                    src={employer.profileImage} 
-                    alt={employer.fullName} 
-                    className={`w-7 h-7 rounded-full object-cover border border-slate-700 ${!currentUser ? 'filter blur-[3px] select-none' : ''}`}
-                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=E&background=334155&color=fff'; }}
-                  />
-                  <div>
-                    <span className={`text-xs font-bold block leading-tight ${!currentUser ? 'text-emerald-400 filter blur-[5px] select-none cursor-pointer' : 'text-emerald-400 hover:underline'}`}>
-                      {!currentUser ? getMockEmployerName(job.id) : (employer.companyName || employer.fullName)}
-                    </span>
-                    <div className="flex items-center space-x-1 font-mono text-[9px] text-amber-400">
-                      <Star className="w-3 h-3 fill-amber-400 text-amber-500" />
-                      <span>{employer.rating.toFixed(1)} Захиалагчийн үнэлгээ</span>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Job Image Banner */}
@@ -318,7 +351,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
 
             {/* Requirements */}
             <div className="space-y-3 text-left">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">Жолооч, операторт тавигдах шаардлага</span>
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">Шаардлага</span>
               <ul className="space-y-2 text-xs text-gray-300">
                 {job.requirements.map((req, idx) => (
                   <li key={idx} className="flex items-start">
@@ -333,12 +366,22 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
             <div className="border-t border-slate-800/80 pt-6">
               {currentUser ? (
                 /* Authenticated User Actions */
-                currentUser.type === 'operator' ? (
+                currentUser.id === job.employerId ? (
+                  <div className="space-y-3">
+                    <p className="font-semibold text-white text-left">Таны оруулсан зар байна.</p>
+                    <button 
+                      onClick={() => router.push(`/profile?id=${currentUser.id}`)}
+                      className="w-full bg-slate-800 hover:bg-slate-750 text-emerald-450 border border-slate-700 py-2 px-4 rounded-xl text-xs cursor-pointer transition-colors"
+                    >
+                      Хүсэлт ирүүлсэн харилцагчдыг хянах
+                    </button>
+                  </div>
+                ) : (
                   job.applicants.includes(currentUser.id) ? (
                     <div className="space-y-3">
                       <div className="bg-emerald-500/5 border border-emerald-500/20 p-4 rounded-xl text-center text-xs text-emerald-400 font-semibold flex items-center justify-center space-x-2">
                         <CheckCircle className="w-5 h-5 text-emerald-550" />
-                        <span>Та энэ заранд орох хүсэлтээ амжилттай илгээсэн байна. Захиалагчийн хариуг хүлээж байна.</span>
+                        <span>Та энэ заранд хүсэлтээ амжилттай илгээсэн байна. Захиалагчийн хариуг хүлээж байна.</span>
                       </div>
                       {successMessage && (
                         <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 p-3.5 rounded-xl text-xs flex items-start space-x-2 animate-fade-in text-left">
@@ -351,7 +394,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                     <button
                       onClick={handleApply}
                       disabled={isApplying || job.status !== 'open'}
-                      className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white py-3 px-6 rounded-xl font-bold text-xs transition-colors cursor-pointer flex items-center justify-center space-x-2 shadow-lg"
+                      className="w-full bg-emerald-600 hover:bg-emerald-550 text-white py-3 px-6 rounded-xl font-bold text-xs transition-colors cursor-pointer flex items-center justify-center space-x-2 shadow-lg"
                     >
                       {isApplying ? (
                         <>
@@ -361,28 +404,11 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                       ) : (
                         <>
                           <Briefcase className="w-4 h-4" />
-                          <span>АЖИЛД ОРОХ ХҮСЭЛТ ИЛГЭЭХ (Үнэлгээ хавсаргах)</span>
+                          <span>ХҮСЭЛТ ИЛГЭЭХ (Хувийн мэдээлэл хавсаргах)</span>
                         </>
                       )}
                     </button>
                   )
-                ) : (
-                  /* Employer message */
-                  <div className="bg-slate-950 p-4 rounded-xl border border-slate-850 text-center text-xs text-gray-400">
-                    {currentUser.id === job.employerId ? (
-                      <div className="space-y-3">
-                        <p className="font-semibold text-white text-left">Таны оруулсан зар байна.</p>
-                        <button 
-                          onClick={() => router.push(`/profile?id=${currentUser.id}`)}
-                          className="w-full bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 py-2 px-4 rounded-xl text-xs cursor-pointer transition-colors"
-                        >
-                          Хүсэлт ирүүлсэн жолооч нарыг хянах
-                        </button>
-                      </div>
-                    ) : (
-                      <p>Энэ зарыг өөр ажил олгогч байршуулсан байна. Хүсэлт илгээх үйлдлийг зөвхөн жолооч нар хийнэ.</p>
-                    )}
-                  </div>
                 )
               ) : (
                 /* Guest User Call To Action */
@@ -390,12 +416,12 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-white">Та энэ заранд хүсэлт илгээх үү?</p>
                     <p className="text-[10.5px] text-gray-400">
-                      Жолооч, операторын үнэлгээ, ажлын түүхээ хавсаргаж ажилд орох хүсэлт илгээхийн тулд системд нэвтэрсэн байх шаардлагатай.
+                      Хувийн үнэлгээ, ажлын түүхээ хавсаргаж хүсэлт илгээхийн тулд системд нэвтэрсэн байх шаардлагатай.
                     </p>
                   </div>
                   <button
                     onClick={() => router.push('/auth')}
-                    className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-550 text-white font-bold text-xs px-6 py-2.5 rounded-xl transition-all shadow-md cursor-pointer"
+                    className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-555 text-white font-bold text-xs px-6 py-2.5 rounded-xl transition-all shadow-md cursor-pointer"
                   >
                     <span>Нэвтэрч ороод хүсэлт илгээх</span>
                   </button>

@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { Star, X } from 'lucide-react';
 import { Review, UserType } from '../types';
 import { submitReview } from '../lib/db';
@@ -26,6 +26,14 @@ export default function ReviewModal({
   onClose,
   onSuccess
 }: ReviewModalProps) {
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
   const [rating, setRating] = useState<number>(5);
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
   const [comment, setComment] = useState<string>('');
@@ -63,8 +71,16 @@ export default function ReviewModal({
   };
 
   return (
-    <div id="review-modal-backdrop" className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div id="review-modal-container" className="bg-slate-900 border border-slate-700 max-w-md w-full rounded-xl overflow-hidden shadow-2xl">
+    <div 
+      id="review-modal-backdrop" 
+      onClick={onClose}
+      className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+    >
+      <div 
+        id="review-modal-container" 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-slate-900 border border-slate-700 max-w-md w-full rounded-xl overflow-hidden shadow-2xl"
+      >
         
         {/* Header */}
         <div className="flex justify-between items-center border-b border-slate-800 px-6 py-4">

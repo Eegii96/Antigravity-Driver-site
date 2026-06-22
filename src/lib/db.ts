@@ -689,6 +689,11 @@ export async function loginUser(email: string, phone: string, password?: string)
       }
     }
     
+    // Generate session ID before sign in to prevent race condition in onAuthStateChanged observer
+    const newSessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    localStorage.setItem('activeSessionId', newSessionId);
+    localStorage.setItem('activeSessionIdTime', Date.now().toString());
+
     // 2. Authenticate using Firebase Auth
     let authUser = null;
     try {
@@ -714,6 +719,9 @@ export async function loginUser(email: string, phone: string, password?: string)
         }
       } catch (authErr2) {
         console.warn('Firebase Auth sign-in failed with both passwords:', authErr2);
+        localStorage.removeItem('activeSessionId');
+        localStorage.removeItem('activeSessionIdTime');
+        localStorage.removeItem('sessionIsNew');
         return null; // Login failed! Incorrect password or auth issue.
       }
     }
@@ -735,6 +743,8 @@ export async function loginUser(email: string, phone: string, password?: string)
     }
     
     if (userData) {
+      userData.activeSessionId = localStorage.getItem('activeSessionId') || undefined;
+
       // Security: Remove raw password field from session object
       const sessionUser = { ...userData };
       if ('password' in sessionUser) {
@@ -787,6 +797,11 @@ export async function registerUser(
       throw new Error('Энэхүү утасны дугаар системд бүртгэгдсэн байна. Та өөр дугаар ашиглах эсвэл нэвтэрч орно уу.');
     }
     
+    // Generate session ID before creating auth user to prevent race condition in onAuthStateChanged observer
+    const newSessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    localStorage.setItem('activeSessionId', newSessionId);
+    localStorage.setItem('activeSessionIdTime', Date.now().toString());
+
     // 1. Create Auth user
     if (onProgress) onProgress('Шинэ бүртгэл үүсгэж байна...');
     try {
@@ -794,6 +809,9 @@ export async function registerUser(
       uid = authUser.user.uid;
     } catch (authErr: any) {
       console.error('Auth user registration failed:', authErr);
+      localStorage.removeItem('activeSessionId');
+      localStorage.removeItem('activeSessionIdTime');
+      localStorage.removeItem('sessionIsNew');
       let userFriendlyMsg = authErr.message || 'Бүртгэл үүсгэхэд алдаа гарлаа.';
       if (authErr.code === 'auth/email-already-in-use') {
         userFriendlyMsg = 'Энэ имэйл хаяг эсвэл утас аль хэдийн бүртгэгдсэн байна.';
@@ -809,11 +827,13 @@ export async function registerUser(
     
     // 3. Store profile
     if (onProgress) onProgress('Бүртгэлийг баталгаажуулж байна...');
+
     const newUser: User = {
       ...userData,
       id: uid,
       rating: 5.0,
       ratingCount: 0,
+      activeSessionId: localStorage.getItem('activeSessionId') || undefined,
       createdAt: new Date().toISOString().split('T')[0]
     };
 
@@ -972,12 +992,14 @@ export async function applyForJob(jobId: string, operatorId: string): Promise<bo
       
       // Get operator name for notification
       const opDoc = await getDoc(doc(db, 'users', operatorId));
-      const opName = opDoc.exists() ? (opDoc.data() as User).fullName : 'Жолооч';
+      const opData = opDoc.exists() ? (opDoc.data() as User) : null;
+      const opName = opData ? opData.fullName : 'Харилцагч';
+      const roleText = opData && opData.type === 'operator' ? 'Жолооч/Оператор' : 'Харилцагч';
       
       await addNotification(
         job.employerId,
         'Шинэ хүсэлт ирлээ 🚜',
-        `Оператор ${opName} таны "${job.title}" заранд ажиллах хүсэлт ирүүлж, ажлын түүхээ илгээлээ.`,
+        `${roleText} ${opName} таны "${job.title}" заранд хүсэлт ирүүлж, мэдээллээ илгээлээ.`,
         'info',
         jobId
       );
@@ -1136,6 +1158,41 @@ export async function completeJob(jobId: string): Promise<boolean> {
   }
 }
 
+export async function recalculateUserRating(targetUserId: string): Promise<void> {
+  const [allReviews, allJobs] = await Promise.all([getReviews(), getJobs()]);
+  const targetUserDoc = await getDoc(doc(db, 'users', targetUserId));
+  if (targetUserDoc.exists()) {
+    const targetUser = targetUserDoc.data() as User;
+    
+    // Build a Set of jobIds where this target user was a participant
+    const targetUserJobIds = new Set<string>();
+    for (const j of allJobs) {
+      if (targetUser.type === 'operator' && j.hiredOperatorId === targetUserId) {
+        targetUserJobIds.add(j.id);
+      } else if (targetUser.type === 'employer' && j.employerId === targetUserId) {
+        targetUserJobIds.add(j.id);
+      }
+    }
+    
+    // Filter reviews that are FOR this target user
+    const relevantReviews = allReviews.filter(r => {
+      if (!targetUserJobIds.has(r.jobId)) return false;
+      if (r.reviewerType === targetUser.type) return false;
+      if (r.reviewerId === targetUserId) return false;
+      return true;
+    });
+    
+    // Re-calculate average rating
+    const totalRating = relevantReviews.reduce((sum, r) => sum + r.rating, 0);
+    const avg = relevantReviews.length > 0 ? Number((totalRating / relevantReviews.length).toFixed(1)) : 5.0;
+    
+    await updateDoc(doc(db, 'users', targetUserId), {
+      rating: avg,
+      ratingCount: relevantReviews.length
+    });
+  }
+}
+
 export async function submitReview(reviewData: Omit<Review, 'id' | 'createdAt'>): Promise<Review> {
   try {
     const id = `rev_${Date.now()}`;
@@ -1156,43 +1213,7 @@ export async function submitReview(reviewData: Omit<Review, 'id' | 'createdAt'>)
       const targetUserId = reviewData.reviewerType === 'operator' ? job.employerId : job.hiredOperatorId;
       
       if (targetUserId) {
-        // Fetch all reviews and all jobs to correctly identify reviews FOR this target user
-        const [allReviews, allJobs] = await Promise.all([getReviews(), getJobs()]);
-        
-        const targetUserDoc = await getDoc(doc(db, 'users', targetUserId));
-        if (targetUserDoc.exists()) {
-          const targetUser = targetUserDoc.data() as User;
-          
-          // Build a Set of jobIds where this target user was a participant
-          const targetUserJobIds = new Set<string>();
-          for (const j of allJobs) {
-            if (targetUser.type === 'operator' && j.hiredOperatorId === targetUserId) {
-              targetUserJobIds.add(j.id);
-            } else if (targetUser.type === 'employer' && j.employerId === targetUserId) {
-              targetUserJobIds.add(j.id);
-            }
-          }
-          
-          // Filter reviews that are FOR this target user:
-          // - The review must be on a job where target user participated
-          // - The reviewer must be the opposite type (employer reviews operator, operator reviews employer)
-          // - The reviewer must NOT be the target user themselves
-          const relevantReviews = allReviews.filter(r => {
-            if (!targetUserJobIds.has(r.jobId)) return false; // Review must be on a job involving target user
-            if (r.reviewerType === targetUser.type) return false; // Reviewer must be opposite type
-            if (r.reviewerId === targetUserId) return false; // Can't review yourself
-            return true;
-          });
-          
-          // Re-calculate average rating
-          const totalRating = relevantReviews.reduce((sum, r) => sum + r.rating, 0);
-          const avg = relevantReviews.length > 0 ? Number((totalRating / relevantReviews.length).toFixed(1)) : 5.0;
-          
-          await updateDoc(doc(db, 'users', targetUserId), {
-            rating: avg,
-            ratingCount: relevantReviews.length
-          });
-        }
+        await recalculateUserRating(targetUserId);
         
         await addNotification(
           targetUserId,
@@ -1217,6 +1238,68 @@ export async function submitReview(reviewData: Omit<Review, 'id' | 'createdAt'>)
   } catch (err) {
     console.error('Error submitting review in Firestore:', err);
     throw err;
+  }
+}
+
+export async function deleteReview(reviewId: string): Promise<boolean> {
+  try {
+    const revDoc = await getDoc(doc(db, 'reviews', reviewId));
+    if (!revDoc.exists()) return false;
+    const reviewData = revDoc.data() as Review;
+
+    // Delete review document
+    await deleteDoc(doc(db, 'reviews', reviewId));
+
+    // Reset review flag on job
+    const jobDoc = await getDoc(doc(db, 'jobs', reviewData.jobId));
+    if (jobDoc.exists()) {
+      const job = jobDoc.data() as Job;
+      const targetUserId = reviewData.reviewerType === 'operator' ? job.employerId : job.hiredOperatorId;
+      
+      const jobUpdate: any = {};
+      if (reviewData.reviewerType === 'employer') {
+        jobUpdate.isReviewedByEmployer = false;
+      } else {
+        jobUpdate.isReviewedByOperator = false;
+      }
+      await updateDoc(doc(db, 'jobs', reviewData.jobId), jobUpdate);
+
+      if (targetUserId) {
+        await recalculateUserRating(targetUserId);
+      }
+    }
+    return true;
+  } catch (err) {
+    console.error('Error deleting review:', err);
+    return false;
+  }
+}
+
+export async function updateReview(reviewId: string, rating: number, comment: string): Promise<boolean> {
+  try {
+    const revDoc = await getDoc(doc(db, 'reviews', reviewId));
+    if (!revDoc.exists()) return false;
+    const reviewData = revDoc.data() as Review;
+
+    // Update review
+    await updateDoc(doc(db, 'reviews', reviewId), {
+      rating: rating,
+      comment: comment
+    });
+
+    // Recalculate target user's ratings
+    const jobDoc = await getDoc(doc(db, 'jobs', reviewData.jobId));
+    if (jobDoc.exists()) {
+      const job = jobDoc.data() as Job;
+      const targetUserId = reviewData.reviewerType === 'operator' ? job.employerId : job.hiredOperatorId;
+      if (targetUserId) {
+        await recalculateUserRating(targetUserId);
+      }
+    }
+    return true;
+  } catch (err) {
+    console.error('Error updating review:', err);
+    return false;
   }
 }
 

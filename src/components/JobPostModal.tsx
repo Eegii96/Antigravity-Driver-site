@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { X, ShieldCheck, Camera, Trash2, Image as ImageIcon } from 'lucide-react';
 import { Job } from '../types';
 import { addJob, updateJob } from '../lib/db';
@@ -92,6 +92,14 @@ export default function JobPostModal({
 }: JobPostModalProps) {
   const isEditing = !!jobToEdit;
 
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
   const [title, setTitle] = useState<string>(jobToEdit?.title || '');
   const [description, setDescription] = useState<string>(jobToEdit?.description || '');
   const [imageUrls, setImageUrls] = useState<string[]>(jobToEdit?.imageUrls || (jobToEdit?.imageUrl ? [jobToEdit.imageUrl] : []));
@@ -99,13 +107,13 @@ export default function JobPostModal({
   
   // Determine initial type selection
   const initialType = jobToEdit
-    ? (['operator_hiring', 'machinery_rental', 'earthwork'].includes(jobToEdit.type)
+    ? (['operator_hiring', 'machinery_rental', 'earthwork', 'operator_job_seeking'].includes(jobToEdit.type)
         ? jobToEdit.type
         : 'custom')
     : 'operator_hiring';
   const [type, setType] = useState<string>(initialType);
   const [customType, setCustomType] = useState<string>(
-    jobToEdit && !['operator_hiring', 'machinery_rental', 'earthwork'].includes(jobToEdit.type)
+    jobToEdit && !['operator_hiring', 'machinery_rental', 'earthwork', 'operator_job_seeking'].includes(jobToEdit.type)
       ? jobToEdit.type
       : ''
   );
@@ -206,8 +214,16 @@ export default function JobPostModal({
   };
 
   return (
-    <div id="job-post-modal-backdrop" className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in">
-      <div id="job-post-modal-container" className="bg-slate-900 border border-slate-700 max-w-xl w-full rounded-xl overflow-hidden shadow-2xl my-8">
+    <div 
+      id="job-post-modal-backdrop" 
+      onClick={onClose}
+      className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in"
+    >
+      <div 
+        id="job-post-modal-container" 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-slate-900 border border-slate-700 max-w-xl w-full rounded-xl overflow-hidden shadow-2xl my-8"
+      >
         
         {/* Header */}
         <div className="flex justify-between items-center border-b border-slate-800 px-6 py-4">
@@ -256,6 +272,7 @@ export default function JobPostModal({
               className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none"
             >
               <option value="operator_hiring" className="bg-slate-900 text-white">Жолооч, оператор хайж байна</option>
+              <option value="operator_job_seeking" className="bg-slate-900 text-white">Жолооч, операторын ажил хайж байна</option>
               <option value="machinery_rental" className="bg-slate-900 text-white">Машин механизмын түрээс</option>
               <option value="earthwork" className="bg-slate-900 text-white">Барилга, зам, газар шорооны ажил</option>
               <option value="custom" className="bg-slate-900 text-white">✍️ Өөр төрөл нэмэх...</option>

@@ -28,6 +28,7 @@ export interface User {
   securityQuestion2?: string;
   securityAnswer2?: string;
   phone2?: string;
+  activeSessionId?: string;
 }
 
 export interface Review {
