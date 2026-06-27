@@ -74,30 +74,30 @@ export default function ReviewModal({
     <div 
       id="review-modal-backdrop" 
       onClick={onClose}
-      className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+      className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
     >
       <div 
         id="review-modal-container" 
         onClick={(e) => e.stopPropagation()}
-        className="bg-slate-900 border border-slate-700 max-w-md w-full rounded-xl overflow-hidden shadow-2xl"
+        className="bg-slate-900/60 backdrop-blur-xl border border-[var(--color-glass-border)] max-w-md w-full rounded-xl overflow-hidden shadow-2xl"
       >
         
         {/* Header */}
-        <div className="flex justify-between items-center border-b border-slate-800 px-6 py-4">
-          <h3 className="text-sm font-semibold text-white">Үнэлгээ & Баталгаажуулалт</h3>
-          <button id="close-review-modal" onClick={onClose} className="text-gray-400 hover:text-white transition-colors cursor-pointer">
+        <div className="flex justify-between items-center border-b border-[var(--color-glass-border)] px-6 py-4">
+          <h3 className="text-sm font-semibold text-[#f1f3f8]">Үнэлгээ & Баталгаажуулалт</h3>
+          <button id="close-review-modal" onClick={onClose} className="text-slate-400 hover:text-[#f1f3f8] transition-colors cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="bg-slate-800 p-3.5 rounded-lg border border-slate-800 space-y-1">
-            <span className="text-[10px] text-gray-400 uppercase tracking-widest block font-mono">Ажлын нэр</span>
-            <p className="text-xs font-semibold text-emerald-400">{jobTitle}</p>
+          <div className="bg-white/5 p-3.5 rounded-lg border border-[var(--color-glass-border)] space-y-1">
+            <span className="text-[10px] text-slate-400 uppercase tracking-widest block font-mono">Ажлын нэр</span>
+            <p className="text-xs font-semibold text-violet-400">{jobTitle}</p>
             <div className="pt-2 flex items-center justify-between text-xs text-slate-300">
               <span>Үнэлгээ авах хүн:</span>
-              <span className="font-semibold text-white">{targetUserName}</span>
+              <span className="font-semibold text-[#f1f3f8]">{targetUserName}</span>
             </div>
           </div>
 
@@ -109,7 +109,7 @@ export default function ReviewModal({
 
           {/* Stars */}
           <div className="space-y-1.5 text-center py-2">
-            <label className="block text-xs text-gray-300 font-medium">Хариуцлагын зэрэглэл сонгох</label>
+            <label className="block text-xs text-slate-300 font-medium">Хариуцлагын зэрэглэл сонгох</label>
             <div className="flex items-center justify-center space-x-1.5 pt-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -124,14 +124,14 @@ export default function ReviewModal({
                   <Star
                     className={`w-8 h-8 ${
                       (hoveredRating !== null ? star <= hoveredRating : star <= rating)
-                        ? 'fill-amber-400 text-amber-500'
-                        : 'text-gray-500'
+                        ? 'fill-cyan-400 text-cyan-400'
+                        : 'text-slate-500'
                     }`}
                   />
                 </button>
               ))}
             </div>
-            <div className="text-xs font-medium text-amber-400 font-mono mt-1">
+            <div className="text-xs font-medium text-cyan-400 font-mono mt-1">
               {rating === 1 && '⚠️ Маш хариуцлагагүй! (Ажил хаясан, согтуу эсвэл мурисан)'}
               {rating === 2 && '👎 Шаардлага хангахгүй (Ажлын хурд муу, утас унтраадаг)'}
               {rating === 3 && '✊ Дундаж (Ажлаа дуусгасан ч алдаа дутагдалтай)'}
@@ -142,7 +142,7 @@ export default function ReviewModal({
 
           {/* Comments Text */}
           <div>
-            <label className="block text-xs font-medium text-gray-300 mb-1" htmlFor="review-comment">
+            <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="review-comment">
               Сэтгэгдэл, үнэлгээний дэлгэрэнгүй түүх бичих
             </label>
             <textarea
@@ -152,11 +152,11 @@ export default function ReviewModal({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Үнэлгээ болон сэтгэгдлийн дэлгэрэнгүйг энд бичнэ үү..."
-              className="block w-full px-3 py-2 border border-slate-700 rounded bg-slate-950 text-white placeholder-gray-500 text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none resize-none font-sans"
+              className="block w-full px-3 py-2 border border-[var(--color-glass-border)] rounded bg-white/5 text-[#f1f3f8] placeholder-slate-500 text-xs focus:ring-1 focus:ring-violet-500 focus:outline-none resize-none font-sans"
             />
           </div>
 
-          <p className="text-[10px] text-slate-500 leading-normal">
+          <p className="text-[10px] text-slate-400 leading-normal">
             🛡️ Санамж: Таны бичсэн үнэлгээ устгах боломжгүй бөгөөд тухайн хэрэглэгчийн бүртгэлийн түүхэнд байнга хадгалагдан харагдана. Үнэн зөв мэдээлнэ үү.
           </p>
 
@@ -165,7 +165,7 @@ export default function ReviewModal({
               id="cancel-submit-review"
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 border border-slate-700 text-gray-300 text-xs rounded hover:bg-slate-850 transition-colors cursor-pointer"
+              className="flex-1 py-2 border border-[var(--color-glass-border)] text-slate-300 text-xs rounded hover:bg-white/10 transition-colors cursor-pointer"
             >
               Буцах
             </button>
@@ -173,7 +173,7 @@ export default function ReviewModal({
               id="submit-review-form-btn"
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Бүртгэж байна...' : 'Үнэлгээг Системд Бүртгэх'}
             </button>

@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 export default function AuthPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#070a13] flex items-center justify-center text-white font-sans">
+      <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center text-[var(--fg)] font-sans">
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-slate-400 text-sm">Уншиж байна...</p>
         </div>
       </div>

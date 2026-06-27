@@ -1,13 +1,22 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "../components/Footer";
 import { AuthProvider } from "../context/AuthContext";
 import InAppBrowserGuard from "../components/InAppBrowserGuard";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Glass Premium Violet (Концепт D) canonical fonts:
+// Fraunces for headings/display, Inter for body/UI text.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -29,7 +38,7 @@ export default function RootLayout({
   return (
     <html
       lang="mn"
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      className={`${fraunces.variable} ${inter.variable} ${geistMono.variable} antialiased`}
     >
       <head>
         <script
@@ -52,4 +61,3 @@ export default function RootLayout({
     </html>
   );
 }
-

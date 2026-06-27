@@ -61,13 +61,31 @@ The canonical source of truth for all data types is `src/types.ts`. Key rules:
 
 ## 4. Design, Styling & Mongolian Grammar Rules
 
-### UI & Styling (Premium & Mobile-First)
+### Design System: "Glass Premium Violet" (Концепт D — canonical, 2026-06-27)
+
+> [!IMPORTANT]
+> This is the **single canonical design system** for Jolooch.net, chosen by the product owner after reviewing 6 design concepts (A–F). It supersedes all earlier slate/emerald/amber/sky/rose palette references. Every page, modal, header, and footer MUST converge on these tokens — no exceptions, no one-off colors.
+
 - **Target Audience**: Jolooch.net is primarily accessed on mobile phones by users aged 30–50. All UI must be minimal, highly legible, and touch-optimized.
-- **Dark Background**: Use `#070a13` as the base background (defined as `--color-brand-bg` in `globals.css`). Do not use `bg-black`, `bg-gray-900`, or system defaults as the page background.
-- **Glassmorphism Panels**: Use `backdrop-blur-md`, `bg-slate-900/60`, and `border border-slate-800` for panel cards. Avoid flat opaque surfaces for primary content panels.
-- **Color Palette**: Use HSL-tuned Tailwind slate/emerald/amber/sky/rose colors. Never use plain red, blue, or green.
+- **Canonical Color Tokens** (defined in `globals.css`, consumed via Tailwind arbitrary-value classes like `bg-[var(--accent)]`):
+  - `--bg: #0c0f17` — base page background. Never use `bg-black`, `bg-gray-900`, or system defaults.
+  - `--bg2: #11151f` — secondary/alternating section background.
+  - `--card` / `--color-glass-bg: rgba(255,255,255,0.04)` — glass card fill.
+  - `--border: rgba(255,255,255,0.10)` — glass card/divider border.
+  - `--fg: #f1f3f8` — primary text. `--muted-foreground: #9aa3b5` — secondary text.
+  - `--accent: #8b5cf6` (violet) — primary brand accent: primary buttons, links, active states, headline highlight spans.
+  - `--accent-soft: rgba(139,92,246,0.14)` with `--accent-soft-foreground: #c4b5fd` — badges, soft icon backgrounds, subtle highlights.
+  - `--teal: #22d3ee` — secondary accent reserved for trust/verification signals (checkmarks, "verified" badges, salary highlights, success states). Never use teal and violet for the same semantic meaning on one screen.
+  - **Retired palette**: `amber`/`gold`/`#caa03d`, `sky-*`, and the mislabeled `--color-neon-emerald` (which was actually violet hex `#8b5cf6`) must be migrated to the violet/teal tokens above. Do not introduce new ad-hoc Tailwind color utilities for brand/trust/CTA meaning — always reference the CSS variables.
+  - **Exception — destructive & hard-warning states**: `rose-*`/`red-*` remain valid ONLY for genuinely destructive actions (delete account, cancel hiring, remove applicant) and hard error/validation states — these are not brand colors and must stay visually distinct from violet/teal. `amber-*` remains valid ONLY for true blacklist/compliance warning banners (e.g. "согтуу ажиллах... хар дансанд бүртгэгдэнэ") and "needs review/in-progress" workflow-attention badges that must stand apart from the violet=open/teal=completed status pair. Do not use rose/amber for brand, CTA, or trust signals.
+- **Glassmorphism Panels (preserved)**: Use `backdrop-blur-md`/`backdrop-blur-xl`, `bg-[var(--card)]`, and `border border-[var(--border)]` for panel cards. The existing `.glass-panel`, `.glass-card`, `.glass-input` utility classes in `globals.css` remain valid — only their underlying color variables are being consolidated, not the blur/glow visual effect itself. Avoid flat opaque surfaces for primary content panels.
+- **Ambient glow**: Radial violet/teal gradient blobs (`.glow-blob`) behind hero/section headers are part of the canonical look — keep them, but source their colors from `--accent`/`--teal`, not hardcoded hex.
 - **No Placeholder Images**: Never use `<img src="placeholder.jpg">`. Use Lucide React icons or styled SVG avatars instead.
-- **Typography**: Use `font-sans` (Inter) for UI text and `font-mono` for numbers, codes, phone numbers, and dates.
+- **Typography**:
+  - Headings (`h1`–`h3`, hero copy, section titles): `Fraunces` (serif display font), loaded via `next/font/google` in `layout.tsx`, wired to `--font-display`/`font-display` utility.
+  - Body text, UI labels, buttons: `Inter`, loaded via `next/font/google`, wired to `--font-sans`/`font-sans`.
+  - Numbers, codes, phone numbers, dates: keep `font-mono` (Geist Mono) — unchanged.
+  - Do NOT hardcode `'Inter'` as a raw `font-family` string anywhere — it must always resolve through the `next/font` CSS variable so it is actually self-hosted at build time, not silently falling back to system fonts.
 
 ### Mongolian Grammar & SEO Rules
 - **Location Suffixes**: Always append correct Mongolian location suffixes:

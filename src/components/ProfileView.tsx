@@ -406,18 +406,18 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
   };
 
   return (
-    <div id="profile-view-wrapper" className="max-w-4xl mx-auto p-4 md:p-6 text-white font-sans space-y-8 relative overflow-hidden">
+    <div id="profile-view-wrapper" className="max-w-4xl mx-auto p-4 md:p-6 text-[#f1f3f8] font-sans space-y-8 relative overflow-hidden">
       {/* Ambient background glow blobs */}
-      <div className="glow-blob bg-emerald-500 w-[300px] h-[300px] -top-20 -left-20 opacity-5"></div>
+      <div className="glow-blob bg-violet-600 w-[300px] h-[300px] -top-20 -left-20 opacity-5"></div>
       <div className="glow-blob bg-cyan-500 w-[400px] h-[400px] bottom-0 -right-20 opacity-5" style={{ animationDelay: '-6s' }}></div>
 
       {/* Back to jobs / breadcrumb */}
       <div className="flex items-center justify-between relative z-10">
-        <h2 className="text-xl font-bold tracking-tight text-white flex items-center space-x-2">
+        <h2 className="text-xl font-bold tracking-tight text-[#f1f3f8] flex items-center space-x-2">
           {defaultTab === 'applications' ? (
-            <Bookmark className="w-6 h-6 text-emerald-400 text-neon-cyan animate-pulse-soft" />
+            <Bookmark className="w-6 h-6 text-violet-600 text-neon-cyan animate-pulse-soft" />
           ) : (
-            <Award className="w-6 h-6 text-amber-400 text-neon-cyan animate-pulse-soft" />
+            <Award className="w-6 h-6 text-violet-400 text-neon-cyan animate-pulse-soft" />
           )}
           <span>
             {defaultTab === 'applications'
@@ -434,15 +434,15 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
               window.location.href = '/';
             }
           }}
-          className="text-xs bg-slate-900/60 hover:bg-slate-800 text-emerald-450 border border-slate-800/80 px-4 py-2 rounded-xl transition-all cursor-pointer shadow-md"
+          className="text-xs bg-[var(--color-glass-bg)] hover:bg-[rgba(255,255,255,0.07)] text-violet-500 border border-[var(--color-glass-border)] px-4 py-2 rounded-xl transition-all cursor-pointer shadow-md"
         >
           {defaultTab === 'applications' ? 'Жагсаалт руу буцах' : 'Буцах'}
         </button>
       </div>
 
       {success && (
-        <div className="fixed top-6 right-6 max-w-sm bg-slate-900/95 border border-emerald-500/80 text-emerald-300 p-4 rounded-xl text-xs flex items-center space-x-2.5 animate-fade-in text-left z-50 backdrop-blur-md shadow-2xl">
-          <CheckCircle className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+        <div className="fixed top-6 right-6 max-w-sm bg-[var(--color-glass-bg)] border border-violet-600/80 text-violet-400 p-4 rounded-xl text-xs flex items-center space-x-2.5 animate-fade-in text-left z-50 backdrop-blur-md shadow-2xl">
+          <CheckCircle className="w-4.5 h-4.5 text-violet-600 shrink-0" />
           <span>{success}</span>
         </div>
       )}
@@ -464,7 +464,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
               Асуулт тохируулах (Хамгаалах)
             </button>
           </div>
-          <p className="text-[11px] text-gray-300 leading-relaxed font-sans">
+          <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
             Та аюулгүй байдлын 2 нууц асуултыг тохируулаагүй байна. Нууц асуултыг тохируулснаар нууц үгээ мартсан үедээ утасны дугаараар найдвартай сэргээх боломж бүрдэж, бусад хүмүүс таны хаягийг хулгайлахаас 100% сэргийлнэ.
           </p>
         </div>
@@ -479,35 +479,35 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
             <img
               src={profileUser.profileImage}
               alt={profileUser.fullName}
-              className="w-28 h-28 rounded-full border-4 border-slate-800/80 object-cover shadow-2xl drop-shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+              className="w-28 h-28 rounded-full border-4 border-[var(--color-glass-border)] object-cover shadow-2xl drop-shadow-[0_0_10px_rgba(16,185,129,0.2)]"
               referrerPolicy="no-referrer"
               onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }}
             />
             <div className={`absolute bottom-0 right-1 px-3 py-0.5 rounded-full text-[8px] font-bold font-mono text-white tracking-wider ${
-              profileUser.rating >= 4.5 ? 'bg-emerald-600' : profileUser.rating >= 3.5 ? 'bg-amber-600' : 'bg-rose-600'
+              profileUser.rating >= 4.5 ? 'bg-[var(--color-neon-teal)]' : profileUser.rating >= 3.5 ? 'bg-violet-600' : 'bg-violet-800'
             }`}>
               {profileUser.type === 'operator' ? 'ЖОЛООЧ' : 'ЗАХИАЛАГЧ'}
             </div>
           </div>
 
           <div className="text-center">
-            <h3 className="text-base font-bold text-white leading-tight">
+            <h3 className="text-base font-bold text-[#f1f3f8] leading-tight">
               {profileUser.fullName}
               {profileUser.companyName && (
-                <span className="block text-xs font-semibold text-emerald-400 mt-1">{profileUser.companyName}</span>
+                <span className="block text-xs font-semibold text-violet-600 mt-1">{profileUser.companyName}</span>
               )}
             </h3>
-            <p className="text-[10px] text-slate-500 mt-1 font-mono">ID: {profileUser.id}</p>
+            <p className="text-[10px] text-slate-400 mt-1 font-mono">ID: {profileUser.id}</p>
           </div>
 
           {/* Rating overview */}
-          <div className="bg-slate-950/40 border border-slate-850 p-3.5 rounded-2xl w-full text-center">
-            <p className="text-[11px] text-slate-500 font-medium">Дундаж үнэлгээ</p>
+          <div className="bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] p-3.5 rounded-2xl w-full text-center">
+            <p className="text-[11px] text-slate-400 font-medium">Дундаж үнэлгээ</p>
             <div className="flex items-center justify-center space-x-1 mt-1">
-              <Star className="w-5 h-5 text-amber-400 fill-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.4)]" />
-              <span className="text-2xl font-black font-mono text-white">{(profileUser.rating ?? 5).toFixed(1)}</span>
+              <Star className="w-5 h-5 text-violet-400 fill-violet-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.4)]" />
+              <span className="text-2xl font-black font-mono text-[#f1f3f8]">{(profileUser.rating ?? 5).toFixed(1)}</span>
             </div>
-            <p className="text-[10px] text-slate-500 mt-1.5 font-semibold">{displayReviews.length} удаагийн ажил дуусгасан</p>
+            <p className="text-[10px] text-slate-400 mt-1.5 font-semibold">{displayReviews.length} удаагийн ажил дуусгасан</p>
           </div>
         </div>
 
@@ -515,12 +515,12 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
         <div className="md:col-span-3 space-y-4 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
-              <span className="bg-[#080d1a] px-3.5 py-1.5 rounded-xl text-xs text-slate-350 border border-slate-850 flex items-center space-x-1.5 shadow-sm">
-                <Calendar className="w-4 h-4 text-slate-500" />
+              <span className="bg-[rgba(255,255,255,0.04)] px-3.5 py-1.5 rounded-xl text-xs text-slate-300 border border-[var(--color-glass-border)] flex items-center space-x-1.5 shadow-sm">
+                <Calendar className="w-4 h-4 text-slate-400" />
                 <span>Гишүүн болсон: {profileUser.createdAt}</span>
               </span>
               {profileUser.type === 'operator' && (
-                <span className="bg-emerald-950/20 px-3.5 py-1.5 rounded-xl text-xs text-emerald-300 border border-emerald-900/30 font-mono shadow-sm">
+                <span className="bg-violet-100/20 px-3.5 py-1.5 rounded-xl text-xs text-violet-400 border border-violet-100/30 font-mono shadow-sm">
                   Туршлага: {profileUser.experienceYears || 0} жил техник барьсан
                 </span>
               )}
@@ -528,7 +528,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
             {/* Toggles bar for granular privacy - visible if isOwnProfile */}
             {isOwnProfile && (
-              <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-850/80 flex flex-wrap gap-4 items-center justify-between text-xs w-full">
+              <div className="bg-[var(--color-glass-bg)] p-4 rounded-xl border border-[var(--color-glass-border)] flex flex-wrap gap-4 items-center justify-between text-xs w-full">
                 <div className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">
                   Нууцлалын Тохиргоо (Хүмүүст харагдуулах):
                 </div>
@@ -540,7 +540,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                       type="button"
                       onClick={() => toggleFieldVisibility('emailVisible')}
                       className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
-                        profileUser.emailVisible !== false ? 'bg-emerald-600' : 'bg-rose-600'
+                        profileUser.emailVisible !== false ? 'bg-violet-600' : 'bg-slate-600'
                       }`}
                     >
                       <span
@@ -558,7 +558,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                       type="button"
                       onClick={() => toggleFieldVisibility('phoneVisible')}
                       className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
-                        profileUser.phoneVisible !== false ? 'bg-emerald-600' : 'bg-rose-600'
+                        profileUser.phoneVisible !== false ? 'bg-violet-600' : 'bg-slate-600'
                       }`}
                     >
                       <span
@@ -576,7 +576,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                       type="button"
                       onClick={() => toggleFieldVisibility('historyVisible')}
                       className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
-                        profileUser.historyVisible !== false ? 'bg-emerald-600' : 'bg-rose-600'
+                        profileUser.historyVisible !== false ? 'bg-violet-600' : 'bg-slate-600'
                       }`}
                     >
                       <span
@@ -594,7 +594,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                       type="button"
                       onClick={() => toggleFieldVisibility('reviewsVisible')}
                       className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
-                        profileUser.reviewsVisible !== false ? 'bg-emerald-600' : 'bg-rose-600'
+                        profileUser.reviewsVisible !== false ? 'bg-violet-600' : 'bg-slate-600'
                       }`}
                     >
                       <span
@@ -608,69 +608,69 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
               </div>
             )}
 
-            <div className="text-xs space-y-2.5 border-t border-slate-850 pt-4">
+            <div className="text-xs space-y-2.5 border-t border-[var(--color-glass-border)] pt-4">
               {(profileUser.emailVisible !== false || isOwnProfile) ? (
                 <div className="flex items-center space-x-2 text-slate-300">
-                  <Mail className="w-4 h-4 text-emerald-450 shrink-0" />
-                  <span className="font-semibold text-slate-500">Имэйл хаяг:</span>
-                  <span className="select-all font-sans text-white">{profileUser.email ? profileUser.email : 'бөглөөгүй'}</span>
+                  <Mail className="w-4 h-4 text-violet-500 shrink-0" />
+                  <span className="font-semibold text-slate-400">Имэйл хаяг:</span>
+                  <span className="select-all font-sans text-[#f1f3f8]">{profileUser.email ? profileUser.email : 'бөглөөгүй'}</span>
                   {isOwnProfile && profileUser.emailVisible === false && (
-                    <span className="text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded font-medium ml-2 shrink-0">Бусдад харагдахгүй</span>
+                    <span className="text-[10px] bg-slate-600/20 text-slate-400 border border-slate-600/30 px-2 py-0.5 rounded font-medium ml-2 shrink-0">Бусдад харагдахгүй</span>
                   )}
                 </div>
               ) : (
-                <div className="flex items-center space-x-2 text-slate-500">
-                  <Mail className="w-4 h-4 text-slate-700 shrink-0" />
-                  <span className="font-semibold text-slate-500">Имэйл хаяг:</span>
-                  <span className="italic text-[10px] text-slate-600 font-sans">(Нууцалсан)</span>
+                <div className="flex items-center space-x-2 text-slate-400">
+                  <Mail className="w-4 h-4 text-slate-300 shrink-0" />
+                  <span className="font-semibold text-slate-400">Имэйл хаяг:</span>
+                  <span className="italic text-[10px] text-slate-400 font-sans">(Нууцалсан)</span>
                 </div>
               )}
 
               {(profileUser.phoneVisible !== false || isOwnProfile) ? (
                 <div className="flex items-center space-x-2 text-slate-300">
-                  <Phone className="w-4 h-4 text-emerald-450 shrink-0" />
-                  <span className="font-semibold text-slate-500">Утас:</span>
-                  <span className="select-all font-mono font-bold text-emerald-400 text-neon-emerald">{profileUser.phone}</span>
+                  <Phone className="w-4 h-4 text-violet-500 shrink-0" />
+                  <span className="font-semibold text-slate-400">Утас:</span>
+                  <span className="select-all font-mono font-bold text-violet-600">{profileUser.phone}</span>
                   {isOwnProfile && profileUser.phoneVisible === false && (
-                    <span className="text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded font-medium ml-2 shrink-0">Бусдад харагдахгүй</span>
+                    <span className="text-[10px] bg-slate-600/20 text-slate-400 border border-slate-600/30 px-2 py-0.5 rounded font-medium ml-2 shrink-0">Бусдад харагдахгүй</span>
                   )}
                 </div>
               ) : (
-                <div className="flex items-center space-x-2 text-slate-500">
-                  <Phone className="w-4 h-4 text-slate-700 shrink-0" />
-                  <span className="font-semibold text-slate-500">Утас:</span>
-                  <span className="italic text-[10px] text-slate-600 font-sans">(Нууцалсан)</span>
+                <div className="flex items-center space-x-2 text-slate-400">
+                  <Phone className="w-4 h-4 text-slate-300 shrink-0" />
+                  <span className="font-semibold text-slate-400">Утас:</span>
+                  <span className="italic text-[10px] text-slate-400 font-sans">(Нууцалсан)</span>
                 </div>
               )}
 
               {profileUser.phone2 && ((profileUser.phoneVisible !== false || isOwnProfile) ? (
                 <div className="flex items-center space-x-2 text-slate-300">
-                  <Phone className="w-4 h-4 text-emerald-450 shrink-0 opacity-80" />
-                  <span className="font-semibold text-slate-500">Утас 2:</span>
-                  <span className="select-all font-mono font-bold text-emerald-400 text-neon-emerald opacity-90">{profileUser.phone2}</span>
+                  <Phone className="w-4 h-4 text-violet-500 shrink-0 opacity-80" />
+                  <span className="font-semibold text-slate-400">Утас 2:</span>
+                  <span className="select-all font-mono font-bold text-violet-600 opacity-90">{profileUser.phone2}</span>
                 </div>
               ) : null)}
 
               <div className="flex items-center space-x-2 text-slate-300">
-                <MapPin className="w-4 h-4 text-emerald-450 shrink-0" />
-                <span className="font-semibold text-slate-500">Хаяг:</span>
-                <span className="text-white">{profileUser.address}</span>
+                <MapPin className="w-4 h-4 text-violet-500 shrink-0" />
+                <span className="font-semibold text-slate-400">Хаяг:</span>
+                <span className="text-[#f1f3f8]">{profileUser.address}</span>
               </div>
             </div>
 
-            <div className="border-t border-slate-850 pt-4">
-              <h4 className="text-xs font-bold text-slate-450 mb-1.5">Танилцуулга ба Нэмэлт мэдээлэл:</h4>
-              <p className="text-xs leading-relaxed text-slate-300 bg-[#080d1a]/50 p-4 rounded-xl border border-slate-850 whitespace-pre-line">
+            <div className="border-t border-[var(--color-glass-border)] pt-4">
+              <h4 className="text-xs font-bold text-slate-400 mb-1.5">Танилцуулга ба Нэмэлт мэдээлэл:</h4>
+              <p className="text-xs leading-relaxed text-slate-300 bg-[rgba(255,255,255,0.04)] p-4 rounded-xl border border-[var(--color-glass-border)] whitespace-pre-line">
                 {profileUser.bio}
               </p>
             </div>
 
             {profileUser.type === 'operator' && profileUser.machineTypes && profileUser.machineTypes.length > 0 && (
               <div className="pt-2">
-                <h4 className="text-xs font-bold text-slate-450 mb-2">Мэргэшсэн механизмын төрлүүд:</h4>
+                <h4 className="text-xs font-bold text-slate-400 mb-2">Мэргэшсэн механизмын төрлүүд:</h4>
                 <div className="flex flex-wrap gap-2">
                   {profileUser.machineTypes.map((m, idx) => (
-                    <span key={idx} className="bg-[#080d1a] px-3.5 py-1.5 rounded-xl text-xs text-cyan-400 font-mono border border-slate-850 shadow-sm">
+                    <span key={idx} className="bg-[rgba(255,255,255,0.04)] px-3.5 py-1.5 rounded-xl text-xs text-cyan-400 font-mono border border-[var(--color-glass-border)] shadow-sm">
                       🚜 {m}
                     </span>
                   ))}
@@ -685,7 +685,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
               <button
                 id="open-edit-profile-modal"
                 onClick={() => setShowEdit(true)}
-                className="bg-emerald-600 hover:bg-emerald-550 text-white font-bold text-xs py-2 px-5 rounded-xl transition-all cursor-pointer shadow-lg shadow-emerald-950/20 glow-btn-emerald"
+                className="bg-violet-600 hover:bg-violet-600 text-white font-bold text-xs py-2 px-5 rounded-xl transition-all cursor-pointer shadow-lg shadow-violet-100/20"
               >
                 Хувийн Мэдээлэл Засах
               </button>
@@ -700,39 +700,39 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
         
         {/* Verification lists of Jobs */}
         <div className="space-y-4">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-850 pb-2.5 flex items-center space-x-2">
-            <CheckCircle className="w-4.5 h-4.5 text-emerald-450 drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-[var(--color-glass-border)] pb-2.5 flex items-center space-x-2">
+            <CheckCircle className="w-4.5 h-4.5 text-violet-500 drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
             <span>Баталгаажсан Ажлын Түүх ({profileUser.historyVisible !== false || isOwnProfile ? historyItems.length : 0})</span>
             {isOwnProfile && profileUser.historyVisible === false && (
-              <span className="text-[9px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded font-normal normal-case ml-2 shrink-0">Бусдад харагдахгүй</span>
+              <span className="text-[9px] bg-slate-600/20 text-slate-400 border border-slate-600/30 px-2 py-0.5 rounded font-normal normal-case ml-2 shrink-0">Бусдад харагдахгүй</span>
             )}
           </h3>
 
           {(profileUser.historyVisible !== false || isOwnProfile) ? (
             historyItems.length === 0 ? (
-              <div className="glass-panel p-6 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-500 font-sans">
+              <div className="glass-panel p-6 rounded-2xl border border-[var(--color-glass-border)] text-center text-xs text-slate-400 font-sans">
                 Ажлын бүртгэлийн түүх байхгүй байна.
               </div>
             ) : (
               <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
                 {historyItems.map((item) => (
-                  <div key={item.id} className="glass-card p-4 rounded-xl border border-slate-800/60 hover:border-slate-700/60 space-y-2 relative overflow-hidden group">
+                  <div key={item.id} className="glass-card p-4 rounded-xl border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] space-y-2 relative overflow-hidden group">
                     <div className="glow-blob bg-cyan-500 w-[50px] h-[50px] -top-5 -right-5 opacity-5 group-hover:scale-150 transition-all duration-700"></div>
                     <div className="flex justify-between items-start">
-                      <h4 className="text-xs font-bold text-white block max-w-[70%] truncate group-hover:text-cyan-400 transition-colors">{item.title}</h4>
+                      <h4 className="text-xs font-bold text-[#f1f3f8] block max-w-[70%] truncate group-hover:text-cyan-400 transition-colors">{item.title}</h4>
                       <span className={`px-2 py-0.5 rounded text-[8px] font-bold font-mono tracking-wide uppercase ${
-                        item.status === 'completed' ? 'bg-emerald-950/20 text-emerald-400 border border-emerald-900/30' : 'bg-amber-950/20 text-amber-400 border border-amber-900/30'
+                        item.status === 'completed' ? 'bg-[rgba(34,211,238,0.15)] text-[#22d3ee] border border-[rgba(34,211,238,0.3)]' : 'bg-violet-500/10 text-violet-400 border border-violet-500/20'
                       }`}>
                         {item.status === 'completed' ? 'Гүйцэтгэсэн' : 'Идэвхтэй'}
                       </span>
                     </div>
                     
-                    <div className="flex justify-between text-[11px] text-slate-500 font-mono">
+                    <div className="flex justify-between text-[11px] text-slate-400 font-mono">
                       <span>Хамтарсан тал:</span>
                       <span className="text-slate-305 font-sans font-medium">{item.partnerName}</span>
                     </div>
 
-                    <div className="flex justify-between text-[11px] text-slate-500 font-mono">
+                    <div className="flex justify-between text-[11px] text-slate-400 font-mono">
                       <span>Хугацаа:</span>
                       <span className="text-slate-400">{item.dateRange}</span>
                     </div>
@@ -741,7 +741,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
               </div>
             )
           ) : (
-            <div className="glass-panel p-6 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-500 italic font-sans">
+            <div className="glass-panel p-6 rounded-2xl border border-[var(--color-glass-border)] text-center text-xs text-slate-400 italic font-sans">
               Хэрэглэгч ажлын түүхийн мэдээллээ нууцалсан байна.
             </div>
           )}
@@ -749,63 +749,63 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
         {/* Uncensored reviews written for this user */}
         <div className="space-y-4">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-850 pb-2.5 flex items-center space-x-2">
-            <Star className="w-4.5 h-4.5 text-emerald-450 drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-[var(--color-glass-border)] pb-2.5 flex items-center space-x-2">
+            <Star className="w-4.5 h-4.5 text-violet-500 drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
             <span>Надад өгсөн үнэлгээнүүд ({profileUser.reviewsVisible !== false || isOwnProfile ? displayReviews.length : 0})</span>
             {isOwnProfile && profileUser.reviewsVisible === false && (
-              <span className="text-[9px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded font-normal normal-case ml-2 shrink-0">Бусдад харагдахгүй</span>
+              <span className="text-[9px] bg-slate-600/20 text-slate-400 border border-slate-600/30 px-2 py-0.5 rounded font-normal normal-case ml-2 shrink-0">Бусдад харагдахгүй</span>
             )}
           </h3>
 
           {(profileUser.reviewsVisible !== false || isOwnProfile) ? (
             displayReviews.length === 0 ? (
-              <div className="glass-panel p-6 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-500 font-sans">
+              <div className="glass-panel p-6 rounded-2xl border border-[var(--color-glass-border)] text-center text-xs text-slate-400 font-sans">
                 Хэрэглэгчид одоогоор үнэлгээ бичигдээгүй байна.
               </div>
             ) : (
               <div className="space-y-3.5 max-h-96 overflow-y-auto pr-1">
                 {displayReviews.map((rev) => (
-                  <div key={rev.id} className="glass-card p-4 rounded-xl border border-slate-800/60 hover:border-slate-700/60 space-y-3 relative overflow-hidden group">
-                    <div className="glow-blob bg-emerald-500 w-[50px] h-[50px] -top-5 -right-5 opacity-5 group-hover:scale-150 transition-all duration-700"></div>
+                  <div key={rev.id} className="glass-card p-4 rounded-xl border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] space-y-3 relative overflow-hidden group">
+                    <div className="glow-blob bg-violet-600 w-[50px] h-[50px] -top-5 -right-5 opacity-5 group-hover:scale-150 transition-all duration-700"></div>
                     <div className="flex justify-between items-start">
                       <div className="flex flex-col space-y-1.5 text-left">
                         <span 
                           onClick={() => { window.location.href = `/profile?id=${rev.reviewerId}`; }}
-                          className="text-xs font-semibold text-white hover:text-emerald-400 active:text-emerald-400 transition-colors cursor-pointer select-none flex items-center gap-1.5"
+                          className="text-xs font-semibold text-[#f1f3f8] hover:text-violet-600 active:text-violet-600 transition-colors cursor-pointer select-none flex items-center gap-1.5"
                         >
-                          <Users className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span>{rev.reviewerName}</span>
                         </span>
                         <span 
                           onClick={() => { window.location.href = `/applications?jobId=${rev.jobId}`; }}
-                          className="text-xs font-semibold text-white hover:text-emerald-400 active:text-emerald-400 transition-colors cursor-pointer select-none flex items-center gap-1.5"
+                          className="text-xs font-semibold text-[#f1f3f8] hover:text-violet-600 active:text-violet-600 transition-colors cursor-pointer select-none flex items-center gap-1.5"
                         >
-                          <Briefcase className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          <Briefcase className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span>{rev.jobTitle}</span>
                         </span>
                       </div>
                       {/* Stars indicator */}
-                      <div className="flex items-center space-x-0.5 bg-[#080d1a] px-2 py-1 rounded-lg border border-slate-850 shadow-sm shrink-0">
+                      <div className="flex items-center space-x-0.5 bg-[rgba(255,255,255,0.04)] px-2 py-1 rounded-lg border border-[var(--color-glass-border)] shadow-sm shrink-0">
                         {[1, 2, 3, 4, 5].map((s) => (
-                          <Star key={s} className={`w-2.5 h-2.5 ${s <= rev.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-700'}`} />
+                          <Star key={s} className={`w-2.5 h-2.5 ${s <= rev.rating ? 'text-violet-400 fill-violet-400' : 'text-slate-700'}`} />
                         ))}
-                        <span className="text-[10px] text-white font-bold ml-1 font-mono">{rev.rating}.0</span>
+                        <span className="text-[10px] text-[#f1f3f8] font-bold ml-1 font-mono">{rev.rating}.0</span>
                       </div>
                     </div>
 
-                    <p className="text-xs leading-relaxed text-slate-300 italic font-sans bg-[#080d1a]/30 p-2.5 rounded-lg border border-slate-850/60 text-left">
+                    <p className="text-xs leading-relaxed text-slate-300 italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--color-glass-border)] text-left">
                       "{rev.comment}"
                     </p>
 
-                    <div className="flex justify-end items-center text-[10px] text-slate-500 font-mono border-t border-slate-850 pt-2">
-                      <span className="text-slate-450">{formatReviewDate(rev.createdAt)}</span>
+                    <div className="flex justify-end items-center text-[10px] text-slate-400 font-mono border-t border-[var(--color-glass-border)] pt-2">
+                      <span className="text-slate-400">{formatReviewDate(rev.createdAt)}</span>
                     </div>
                   </div>
                 ))}
               </div>
             )
           ) : (
-            <div className="glass-panel p-6 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-500 italic font-sans">
+            <div className="glass-panel p-6 rounded-2xl border border-[var(--color-glass-border)] text-center text-xs text-slate-400 italic font-sans">
               Хэрэглэгч үнэлгээ, сэтгэгдлийн хэсгийг нууцалсан байна.
             </div>
           )}
@@ -816,13 +816,13 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
       {/* Reviews I Have Given section */}
       {isOwnProfile && (
         <div className="mt-8 space-y-4 relative z-10 text-left">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-850 pb-2.5 flex items-center space-x-2">
-            <Star className="w-4.5 h-4.5 text-emerald-450 drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-[var(--color-glass-border)] pb-2.5 flex items-center space-x-2">
+            <Star className="w-4.5 h-4.5 text-violet-500 drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
             <span>Миний өгсөн үнэлгээнүүд ({givenReviews.length})</span>
           </h3>
 
           {givenReviews.length === 0 ? (
-            <div className="glass-panel p-6 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-500 font-sans">
+            <div className="glass-panel p-6 rounded-2xl border border-[var(--color-glass-border)] text-center text-xs text-slate-400 font-sans">
               Та одоогоор өөр хэрэглэгчид үнэлгээ өгөөгүй байна.
             </div>
           ) : (
@@ -844,40 +844,40 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                 }
 
                 return (
-                  <div key={rev.id} className="glass-card p-4 rounded-xl border border-slate-800/60 hover:border-slate-700/60 space-y-3 relative overflow-hidden group">
-                    <div className="glow-blob bg-emerald-500 w-[50px] h-[50px] -top-5 -right-5 opacity-5 group-hover:scale-150 transition-all duration-700"></div>
+                  <div key={rev.id} className="glass-card p-4 rounded-xl border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] space-y-3 relative overflow-hidden group">
+                    <div className="glow-blob bg-violet-600 w-[50px] h-[50px] -top-5 -right-5 opacity-5 group-hover:scale-150 transition-all duration-700"></div>
                     <div className="flex justify-between items-start">
                       <div className="flex flex-col space-y-1.5 text-left">
                         {targetId ? (
                           <span 
                             onClick={() => { window.location.href = `/profile?id=${targetId}`; }}
-                            className="text-xs font-semibold text-white hover:text-emerald-400 active:text-emerald-400 transition-colors cursor-pointer select-none flex items-center gap-1.5"
+                            className="text-xs font-semibold text-[#f1f3f8] hover:text-violet-600 active:text-violet-600 transition-colors cursor-pointer select-none flex items-center gap-1.5"
                           >
-                            <Users className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                            <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                             <span>{targetName}</span>
                           </span>
                         ) : (
                           <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
-                            <Users className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                            <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                             <span>{targetName}</span>
                           </span>
                         )}
                         <span 
                           onClick={() => { window.location.href = `/applications?jobId=${rev.jobId}`; }}
-                          className="text-xs font-semibold text-white hover:text-emerald-400 active:text-emerald-400 transition-colors cursor-pointer select-none flex items-center gap-1.5"
+                          className="text-xs font-semibold text-[#f1f3f8] hover:text-violet-600 active:text-violet-600 transition-colors cursor-pointer select-none flex items-center gap-1.5"
                         >
-                          <Briefcase className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          <Briefcase className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span>{rev.jobTitle}</span>
                         </span>
                       </div>
 
                       <div className="flex flex-col items-end space-y-2 shrink-0">
                         {/* Stars */}
-                        <div className="flex items-center space-x-0.5 bg-[#080d1a] px-2 py-1 rounded-lg border border-slate-850 shadow-sm">
+                        <div className="flex items-center space-x-0.5 bg-[rgba(255,255,255,0.04)] px-2 py-1 rounded-lg border border-[var(--color-glass-border)] shadow-sm">
                           {[1, 2, 3, 4, 5].map((s) => (
-                            <Star key={s} className={`w-2.5 h-2.5 ${s <= rev.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-700'}`} />
+                            <Star key={s} className={`w-2.5 h-2.5 ${s <= rev.rating ? 'text-violet-400 fill-violet-400' : 'text-slate-700'}`} />
                           ))}
-                          <span className="text-[10px] text-white font-bold ml-1 font-mono">{rev.rating}.0</span>
+                          <span className="text-[10px] text-[#f1f3f8] font-bold ml-1 font-mono">{rev.rating}.0</span>
                         </div>
 
                         {/* Edit/Delete Actions */}
@@ -889,29 +889,29 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                               setEditRating(rev.rating);
                               setEditComment(rev.comment);
                             }} 
-                            className="text-[10px] bg-slate-950 hover:bg-slate-900 border border-slate-850 hover:border-slate-800 text-slate-400 hover:text-white px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
+                            className="text-[10px] bg-[var(--color-glass-bg)] hover:bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] text-slate-400 hover:text-[#f1f3f8] px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
                           >
-                            <Edit className="w-2.5 h-2.5 text-emerald-450" />
+                            <Edit className="w-2.5 h-2.5 text-violet-500" />
                             <span>Засах</span>
                           </button>
                           <button 
                             type="button"
                             onClick={() => handleDeleteReview(rev.id)} 
-                            className="text-[10px] bg-slate-950 hover:bg-slate-900 border border-slate-850 hover:border-slate-800 text-slate-400 hover:text-rose-455 px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
+                            className="text-[10px] bg-[var(--color-glass-bg)] hover:bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] text-slate-400 hover:text-violet-400 px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
                           >
-                            <Trash2 className="w-2.5 h-2.5 text-rose-500" />
+                            <Trash2 className="w-2.5 h-2.5 text-violet-400" />
                             <span>Устгах</span>
                           </button>
                         </div>
                       </div>
                     </div>
 
-                    <p className="text-xs leading-relaxed text-slate-300 italic font-sans bg-[#080d1a]/30 p-2.5 rounded-lg border border-slate-850/60 text-left">
+                    <p className="text-xs leading-relaxed text-slate-300 italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--color-glass-border)] text-left">
                       "{rev.comment}"
                     </p>
 
-                    <div className="flex justify-end items-center text-[10px] text-slate-500 font-mono border-t border-slate-850 pt-2">
-                      <span className="text-slate-450">{formatReviewDate(rev.createdAt)}</span>
+                    <div className="flex justify-end items-center text-[10px] text-slate-400 font-mono border-t border-[var(--color-glass-border)] pt-2">
+                      <span className="text-slate-400">{formatReviewDate(rev.createdAt)}</span>
                     </div>
                   </div>
                 );
@@ -926,13 +926,13 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
       {activeTab === 'applications' && (
         <div className="space-y-6 animate-fade-in relative z-10 text-left">
           {/* Sub-tabs for Sent Applications vs Posted Jobs */}
-          <div className="flex border-b border-slate-800/80 space-x-6">
+          <div className="flex border-b border-[var(--color-glass-border)] space-x-6">
             <button
               onClick={() => setApplicationsSubTab('sent')}
               className={`flex items-center space-x-2 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
                 applicationsSubTab === 'sent'
-                  ? 'border-emerald-500 text-emerald-450 font-extrabold'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'border-violet-600 text-violet-500 font-extrabold'
+                  : 'border-transparent text-slate-400 hover:text-slate-300'
               }`}
             >
               <Clock className="w-4 h-4" />
@@ -942,8 +942,8 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
               onClick={() => setApplicationsSubTab('posted')}
               className={`flex items-center space-x-2 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
                 applicationsSubTab === 'posted'
-                  ? 'border-emerald-500 text-emerald-450 font-extrabold'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'border-violet-600 text-violet-500 font-extrabold'
+                  : 'border-transparent text-slate-400 hover:text-slate-300'
               }`}
             >
               <Briefcase className="w-4 h-4" />
@@ -952,12 +952,12 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
           </div>
 
           {isLoading ? (
-            <div className="glass-panel p-12 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-400 font-sans flex flex-col items-center justify-center space-y-4">
-              <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="glass-panel p-12 rounded-2xl border border-[var(--color-glass-border)] text-center text-xs text-slate-400 font-sans flex flex-col items-center justify-center space-y-4">
+              <div className="w-8 h-8 border-2 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
               <span>Мэдээллийг ачаалж байна...</span>
             </div>
           ) : driverJobs.length === 0 ? (
-            <div className="glass-panel p-12 rounded-2xl border border-slate-800/60 text-center text-xs text-slate-500 font-sans">
+            <div className="glass-panel p-12 rounded-2xl border border-[var(--color-glass-border)] text-center text-xs text-slate-400 font-sans">
               {applicationsSubTab === 'sent' 
                 ? 'Та одоогоор ямар нэгэн заранд хүсэлт илгээгээгүй байна.' 
                 : 'Та одоогоор ямар нэгэн зар оруулаагүй байна.'}
@@ -977,27 +977,27 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                   if (isHired) {
                     if (job.status === 'in_progress') {
                       statusText = 'Идэвхтэй • Ажил явагдаж байна';
-                      badgeClass = 'bg-emerald-500/15 text-emerald-400 border-2 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.15)]';
+                      badgeClass = 'bg-violet-600/15 text-violet-600 border-2 border-violet-600/40 shadow-[0_0_10px_rgba(16,185,129,0.15)]';
                       statusDesc = '🤝 Баяр хүргэе! Захиалагч таныг ажилд сонгосон байна. Ажлын хариуцлагын гэрээ идэвхтэй байгаа тул хариуцлагатай ажиллана уу.';
                     } else if (job.status === 'completed') {
                       const isReviewed = job.isReviewedByEmployer;
                       if (isReviewed) {
                         statusText = 'Үнэлгээ хийгдсэн • Хаагдсан ✓';
-                        badgeClass = 'bg-sky-500/15 text-sky-400 border-2 border-sky-500/40 shadow-[0_0_10px_rgba(14,165,233,0.15)]';
+                        badgeClass = 'bg-[rgba(34,211,238,0.15)] text-[#22d3ee] border-2 border-[rgba(34,211,238,0.4)] shadow-[0_0_10px_rgba(34,211,238,0.15)]';
                         statusDesc = '✓ Ажил дууссан. Захиалагч таны гүйцэтгэлийг үнэлж, ажил амжилттай хаагдсан байна.';
                       } else {
                         statusText = 'Ажил дууссан • Үнэлэх шаардлагатай ⚠️';
-                        badgeClass = 'bg-rose-500/15 text-rose-400 border-2 border-rose-500/40 shadow-[0_0_10px_rgba(244,63,94,0.15)] animate-pulse';
+                        badgeClass = 'bg-violet-500/15 text-violet-400 border-2 border-violet-500/40 shadow-[0_0_10px_rgba(139,92,246,0.15)] animate-pulse';
                         statusDesc = '⏳ Ажил дууссан. Захиалагчаас ажлын гүйцэтгэлийн үнэлгээ болон баталгаажуулалтыг хүлээж байна.';
                       }
                     }
                   } else if (isPending) {
                     statusText = 'Хүсэлт илгээсэн • Хүлээгдэж буй';
-                    badgeClass = 'bg-amber-500/15 text-amber-400 border-2 border-amber-500/35 shadow-[0_0_10px_rgba(245,158,11,0.1)]';
+                    badgeClass = 'bg-violet-500/15 text-violet-400 border-2 border-violet-500/35 shadow-[0_0_10px_rgba(139,92,246,0.1)]';
                     statusDesc = '⏳ Таны ажилд орох хүсэлтийг захиалагч хянаж байна. Хэрэв та сонгогдвол системд шинэчлэгдэн харагдах болно.';
                   } else if (isRejected) {
                     statusText = 'Өөр жолооч сонгогдсон';
-                    badgeClass = 'bg-slate-900/40 text-slate-500 border border-slate-800';
+                    badgeClass = 'bg-[var(--color-glass-bg)] text-slate-400 border border-[var(--color-glass-border)]';
                     statusDesc = '❌ Захиалагч энэ заранд өөр жолооч сонгон ажилласан байна. Та дараагийн зар руу хүсэлтээ илгээнэ үү.';
                   }
 
@@ -1008,23 +1008,23 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                       className={`glass-card p-5 rounded-2xl transition-all flex flex-col justify-between space-y-4 text-left ${
                         activeHighlightJobId === job.id
                           ? 'highlighted-job-card'
-                          : 'border border-slate-800/80 hover:border-slate-700/80'
+                          : 'border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)]'
                       }`}
                     >
                       <div className="space-y-3">
                         <div className="flex justify-between items-start gap-1">
-                          <span className="font-mono text-[10px] text-slate-500">{formatDate(job.createdAt)}</span>
-                          <span className="text-[10px] text-gray-550 shrink-0 flex items-center space-x-1">
-                            <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                          <span className="font-mono text-[10px] text-slate-400">{formatDate(job.createdAt)}</span>
+                          <span className="text-[10px] text-slate-400 shrink-0 flex items-center space-x-1">
+                            <MapPin className="w-3.5 h-3.5 text-slate-400" />
                             <span>{job.location.split(',')[0]}</span>
                           </span>
                         </div>
 
-                        <h4 className="text-xs font-bold text-white leading-snug">{job.title}</h4>
+                        <h4 className="text-xs font-bold text-[#f1f3f8] leading-snug">{job.title}</h4>
 
                         {/* Job Image Thumbnail */}
                         {((job.imageUrls && job.imageUrls.length > 0) || job.imageUrl) && (
-                          <div className="w-full h-36 rounded-xl overflow-hidden bg-slate-950/40 border border-slate-800/80 relative shrink-0">
+                          <div className="w-full h-36 rounded-xl overflow-hidden bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] relative shrink-0">
                             <img
                               src={job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl}
                               alt={job.title}
@@ -1042,19 +1042,19 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
                         {/* Additional info */}
                         {job.additionalInfo && (
-                          <p className="text-[10.5px] text-slate-500 leading-relaxed italic font-sans bg-[#080d1a]/20 p-2.5 rounded-lg border border-slate-850/50">
+                          <p className="text-[10.5px] text-slate-400 leading-relaxed italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--color-glass-border)]">
                             Нэмэлт: {job.additionalInfo}
                           </p>
                         )}
                         
-                        <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-850 flex justify-between items-center text-[10.5px]">
-                          <span className="text-slate-500">Захиалагч:</span>
+                        <div className="bg-[var(--color-glass-bg)] p-2.5 rounded-lg border border-[var(--color-glass-border)] flex justify-between items-center text-[10.5px]">
+                          <span className="text-slate-400">Захиалагч:</span>
                           <button
                             type="button"
                             onClick={() => {
                               window.location.href = `/profile?id=${job.employerId}`;
                             }}
-                            className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
+                            className="font-semibold text-violet-600 hover:text-violet-500 hover:underline cursor-pointer text-left transition-colors"
                           >
                             {job.employerName}
                           </button>
@@ -1065,7 +1065,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                           <span className={`inline-flex px-2.5 py-0.5 rounded text-[9.5px] font-bold font-mono tracking-wide uppercase ${badgeClass}`}>
                             {statusText}
                           </span>
-                          <p className="text-[11px] text-gray-400 leading-relaxed bg-[#080d1a]/40 p-3 rounded-lg border border-slate-850/80 font-sans">
+                          <p className="text-[11px] text-slate-500 leading-relaxed bg-[rgba(255,255,255,0.04)] p-3 rounded-lg border border-[var(--color-glass-border)] font-sans">
                             {statusDesc}
                           </p>
                         </div>
@@ -1073,20 +1073,20 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                         {/* Step Indicator for active jobs */}
                         {isHired && job.status === 'in_progress' && (
                           <div className="pt-2">
-                            <span className="text-[10px] text-slate-500 block uppercase font-mono tracking-wider mb-2">Ажлын явцын төлөв:</span>
+                            <span className="text-[10px] text-slate-400 block uppercase font-mono tracking-wider mb-2">Ажлын явцын төлөв:</span>
                             <div className="flex items-center space-x-2 text-xs">
-                              <div className="flex items-center text-emerald-400">
-                                <span className="h-4 w-4 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-[9px] font-bold mr-1.5">1</span>
+                              <div className="flex items-center text-violet-600">
+                                <span className="h-4 w-4 rounded-full bg-violet-600 text-slate-950 flex items-center justify-center text-[9px] font-bold mr-1.5">1</span>
                                 <span>Сонгогдсон</span>
                               </div>
-                              <span className="text-slate-600">➔</span>
-                              <div className="flex items-center text-emerald-400 font-bold animate-pulse-soft">
-                                <span className="h-4 w-4 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-[9px] font-bold mr-1.5 animate-ping-slow">2</span>
+                              <span className="text-slate-400">➔</span>
+                              <div className="flex items-center text-violet-600 font-bold animate-pulse-soft">
+                                <span className="h-4 w-4 rounded-full bg-violet-600 text-slate-950 flex items-center justify-center text-[9px] font-bold mr-1.5 animate-ping-slow">2</span>
                                 <span>Ажиллаж байна</span>
                               </div>
-                              <span className="text-slate-600">➔</span>
-                              <div className="flex items-center text-slate-500">
-                                <span className="h-4 w-4 rounded-full bg-slate-800 text-slate-500 flex items-center justify-center text-[9px] font-bold mr-1.5">3</span>
+                              <span className="text-slate-400">➔</span>
+                              <div className="flex items-center text-slate-400">
+                                <span className="h-4 w-4 rounded-full bg-[rgba(255,255,255,0.06)] text-slate-400 flex items-center justify-center text-[9px] font-bold mr-1.5">3</span>
                                 <span>Үнэлгээ</span>
                               </div>
                             </div>
@@ -1095,22 +1095,22 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                       </div>
 
                       {/* Footer containing received review (for completed jobs) and salary for ALL statuses */}
-                      <div className="space-y-3 pt-2 mt-auto border-t border-slate-850/50">
+                      <div className="space-y-3 pt-2 mt-auto border-t border-[var(--color-glass-border)]">
                         {isHired && job.status === 'completed' && (() => {
                           const receivedReview = displayReviews.find(r => r.jobId === job.id);
                           if (!receivedReview) return null;
                           return (
-                            <div className="bg-emerald-950/10 border border-emerald-500/20 p-3 rounded-lg text-xs space-y-1.5">
+                            <div className="bg-violet-100/10 border border-violet-600/20 p-3 rounded-lg text-xs space-y-1.5">
                               <div className="flex justify-between items-center text-[10.5px]">
-                                <span className="font-bold text-emerald-400">Захиалагчийн үнэлгээ:</span>
+                                <span className="font-bold text-violet-600">Захиалагчийн үнэлгээ:</span>
                                 <div className="flex items-center space-x-0.5">
                                   {[1, 2, 3, 4, 5].map((star) => (
                                     <Star 
                                       key={star} 
-                                      className={`w-3 h-3 ${star <= receivedReview.rating ? 'fill-amber-400 text-amber-500' : 'text-slate-700'}`} 
+                                      className={`w-3 h-3 ${star <= receivedReview.rating ? 'fill-violet-400 text-violet-500' : 'text-slate-700'}`} 
                                     />
                                   ))}
-                                  <span className="font-bold font-mono ml-1 text-white">{receivedReview.rating}.0</span>
+                                  <span className="font-bold font-mono ml-1 text-[#f1f3f8]">{receivedReview.rating}.0</span>
                                 </div>
                               </div>
                               <p className="text-[11px] text-slate-300 italic">"{receivedReview.comment}"</p>
@@ -1120,26 +1120,26 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
                         <div className="flex items-center justify-between text-xs">
                           <div className="flex items-center space-x-1">
-                            <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="font-mono font-bold text-white text-xs">
+                            <DollarSign className="w-3.5 h-3.5 text-violet-600" />
+                            <span className="font-mono font-bold text-[#f1f3f8] text-xs">
                               {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
                             </span>
                             {job.salaryUnit && job.salaryUnit !== 'Өдрөөр' && (
-                              <span className="text-[10px] text-slate-500 font-mono"> / {job.salaryUnit}</span>
+                              <span className="text-[10px] text-slate-400 font-mono"> / {job.salaryUnit}</span>
                             )}
                           </div>
 
                           {isHired && job.status === 'completed' && (
                             <div>
                               {job.isReviewedByOperator ? (
-                                <span className="text-[10px] text-emerald-400 bg-emerald-950/20 px-2 py-1 rounded font-semibold border border-emerald-900/30">
+                                <span className="text-[10px] text-violet-600 bg-violet-100/20 px-2 py-1 rounded font-semibold border border-violet-100/30">
                                   ✓ Захиалагчийг үнэлсэн
                                 </span>
                               ) : (
                                 <button
                                   type="button"
                                   onClick={() => setActiveReviewJob(job)}
-                                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
+                                  className="bg-violet-600 hover:bg-violet-500 text-white font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
                                 >
                                   Захиалагчийг Үнэлэх
                                 </button>
@@ -1158,21 +1158,21 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
                   if (job.status === 'open') {
                     statusText = 'Идэвхтэй • Жолооч хайж буй';
-                    badgeClass = 'bg-emerald-500/15 text-emerald-400 border-2 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.15)]';
+                    badgeClass = 'bg-violet-600/15 text-violet-600 border-2 border-violet-600/40 shadow-[0_0_10px_rgba(16,185,129,0.15)]';
                     statusDesc = `⏳ Хүсэлт ирүүлсэн жолооч нарын тоо: ${job.applicants.length}. Жолооч сонгох буюу ажилд томилох боломжтой.`;
                   } else if (job.status === 'in_progress') {
                     statusText = 'Идэвхтэй • Ажил явагдаж байна';
-                    badgeClass = 'bg-amber-500/15 text-amber-400 border-2 border-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.15)]';
+                    badgeClass = 'bg-violet-500/15 text-violet-400 border-2 border-violet-500/40 shadow-[0_0_10px_rgba(139,92,246,0.15)]';
                     statusDesc = `🤝 Томилогдсон жолооч: ${job.hiredOperatorName || 'Оператор'}. Ажил дууссаны дараа гүйцэтгэлийг баталгаажуулж үнэлнэ үү.`;
                   } else if (job.status === 'completed') {
                     const isReviewed = job.isReviewedByEmployer;
                     if (isReviewed) {
                       statusText = 'Үнэлгээ хийгдсэн • Хаагдсан ✓';
-                      badgeClass = 'bg-sky-500/15 text-sky-400 border-2 border-sky-500/40 shadow-[0_0_10px_rgba(14,165,233,0.15)]';
+                      badgeClass = 'bg-[rgba(34,211,238,0.15)] text-[#22d3ee] border-2 border-[rgba(34,211,238,0.4)] shadow-[0_0_10px_rgba(34,211,238,0.15)]';
                       statusDesc = `Та жолоочийг үнэлж, ажил амжилттай хаагдсан байна.`;
                     } else {
                       statusText = 'Ажил дууссан • Үнэлэх шаардлагатай ⚠️';
-                      badgeClass = 'bg-rose-500/15 text-rose-400 border-2 border-rose-500/45 shadow-[0_0_10px_rgba(244,63,94,0.15)] animate-pulse';
+                      badgeClass = 'bg-violet-500/15 text-violet-400 border-2 border-violet-500/45 shadow-[0_0_10px_rgba(139,92,246,0.15)] animate-pulse';
                       statusDesc = `✓ Ажил дууссан. Та өөрийн томилсон жолоочийг үнэлж ажлыг хаана уу.`;
                     }
                   }
@@ -1184,23 +1184,23 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                       className={`glass-card p-5 rounded-2xl transition-all flex flex-col justify-between space-y-4 text-left ${
                         activeHighlightJobId === job.id
                           ? 'highlighted-job-card'
-                          : 'border border-slate-800/80 hover:border-slate-700/80'
+                          : 'border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)]'
                       }`}
                     >
                       <div className="space-y-3">
                         <div className="flex justify-between items-start gap-1">
-                          <span className="font-mono text-[10px] text-slate-500">{formatDate(job.createdAt)}</span>
-                          <span className="text-[10px] text-gray-550 shrink-0 flex items-center space-x-1">
-                            <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                          <span className="font-mono text-[10px] text-slate-400">{formatDate(job.createdAt)}</span>
+                          <span className="text-[10px] text-slate-400 shrink-0 flex items-center space-x-1">
+                            <MapPin className="w-3.5 h-3.5 text-slate-400" />
                             <span>{job.location.split(',')[0]}</span>
                           </span>
                         </div>
 
-                        <h4 className="text-xs font-bold text-white leading-snug">{job.title}</h4>
+                        <h4 className="text-xs font-bold text-[#f1f3f8] leading-snug">{job.title}</h4>
 
                         {/* Job Image Thumbnail */}
                         {((job.imageUrls && job.imageUrls.length > 0) || job.imageUrl) && (
-                          <div className="w-full h-36 rounded-xl overflow-hidden bg-slate-950/40 border border-slate-800/80 relative shrink-0">
+                          <div className="w-full h-36 rounded-xl overflow-hidden bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] relative shrink-0">
                             <img
                               src={job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl}
                               alt={job.title}
@@ -1218,7 +1218,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
                         {/* Additional info */}
                         {job.additionalInfo && (
-                          <p className="text-[10.5px] text-slate-500 leading-relaxed italic font-sans bg-[#080d1a]/20 p-2.5 rounded-lg border border-slate-850/50">
+                          <p className="text-[10.5px] text-slate-400 leading-relaxed italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--color-glass-border)]">
                             Нэмэлт: {job.additionalInfo}
                           </p>
                         )}
@@ -1228,21 +1228,21 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                           <span className={`inline-flex px-2.5 py-0.5 rounded text-[9.5px] font-bold font-mono tracking-wide uppercase ${badgeClass}`}>
                             {statusText}
                           </span>
-                          <p className="text-[11px] text-gray-400 leading-relaxed bg-[#080d1a]/40 p-3 rounded-lg border border-slate-850/80 font-sans">
+                          <p className="text-[11px] text-slate-500 leading-relaxed bg-[rgba(255,255,255,0.04)] p-3 rounded-lg border border-[var(--color-glass-border)] font-sans">
                             {statusDesc}
                           </p>
                         </div>
 
                         {job.hiredOperatorId && (
-                          <div className="bg-slate-950/40 p-2.5 rounded-lg border border-slate-850 flex justify-between items-center text-[10.5px] mt-2">
-                            <span className="text-slate-500">Томилогдсон жолооч:</span>
+                          <div className="bg-[var(--color-glass-bg)] p-2.5 rounded-lg border border-[var(--color-glass-border)] flex justify-between items-center text-[10.5px] mt-2">
+                            <span className="text-slate-400">Томилогдсон жолооч:</span>
                             <div className="flex items-center space-x-2">
                               <button
                                 type="button"
                                 onClick={() => {
                                   window.location.href = `/profile?id=${job.hiredOperatorId}`;
                                 }}
-                                className="font-semibold text-emerald-400 hover:text-emerald-350 hover:underline cursor-pointer text-left transition-colors"
+                                className="font-semibold text-violet-600 hover:text-violet-500 hover:underline cursor-pointer text-left transition-colors"
                               >
                                 {job.hiredOperatorName}
                               </button>
@@ -1250,7 +1250,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                                 <button
                                   type="button"
                                   onClick={() => handleCancelHiring(job.id)}
-                                  className="text-slate-400 hover:text-rose-450 bg-slate-900 border border-slate-800 hover:border-slate-700 px-2 py-0.5 rounded text-[9.5px] font-bold cursor-pointer transition-colors"
+                                  className="text-slate-400 hover:text-violet-400 bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] px-2 py-0.5 rounded text-[9.5px] font-bold cursor-pointer transition-colors"
                                 >
                                   Болих
                                 </button>
@@ -1261,9 +1261,9 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
                         {/* Applicants rendering for open jobs */}
                         {job.status === 'open' && job.applicants.length > 0 && (
-                          <div className="space-y-2 pt-2 border-t border-slate-850">
+                          <div className="space-y-2 pt-2 border-t border-[var(--color-glass-border)]">
                             <span className="text-[10px] font-bold text-slate-400 uppercase font-mono tracking-wider flex items-center space-x-1.5">
-                              <Users className="w-3.5 h-3.5 text-emerald-500" />
+                              <Users className="w-3.5 h-3.5 text-violet-600" />
                               <span>Ирүүлсэн хүсэлтүүд ({job.applicants.length}):</span>
                             </span>
                             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
@@ -1273,7 +1273,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                                 return (
                                   <div
                                     key={op.id}
-                                    className="bg-slate-950/50 p-2.5 rounded-xl border border-slate-850 flex items-center justify-between text-xs"
+                                    className="bg-[var(--color-glass-bg)] p-2.5 rounded-xl border border-[var(--color-glass-border)] flex items-center justify-between text-xs"
                                   >
                                     <div
                                       onClick={() => { window.location.href = `/profile?id=${op.id}`; }}
@@ -1282,13 +1282,13 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                                       <img
                                         src={op.profileImage}
                                         alt={op.fullName}
-                                        className="w-7 h-7 rounded-full object-cover border border-slate-800"
+                                        className="w-7 h-7 rounded-full object-cover border border-[var(--color-glass-border)]"
                                         onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }}
                                       />
                                       <div>
-                                        <div className="font-bold text-white hover:text-emerald-400 hover:underline">{op.fullName}</div>
-                                        <div className="text-[10px] text-amber-400 flex items-center space-x-0.5">
-                                          <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-500" />
+                                        <div className="font-bold text-[#f1f3f8] hover:text-violet-600 hover:underline">{op.fullName}</div>
+                                        <div className="text-[10px] text-violet-400 flex items-center space-x-0.5">
+                                          <Star className="w-2.5 h-2.5 fill-violet-400 text-violet-500" />
                                           <span>{op.rating.toFixed(1)} ({op.experienceYears || 0} жил)</span>
                                         </div>
                                       </div>
@@ -1296,7 +1296,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                                     <button
                                       type="button"
                                       onClick={() => handleHireOperator(job.id, op.id)}
-                                      className="bg-emerald-600 hover:bg-emerald-555 text-white font-bold text-[10px] py-1 px-2.5 rounded-lg transition-colors cursor-pointer"
+                                      className="bg-violet-600 hover:bg-violet-600 text-white font-bold text-[10px] py-1 px-2.5 rounded-lg transition-colors cursor-pointer"
                                     >
                                       Томилох
                                     </button>
@@ -1313,7 +1313,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                             <button
                               type="button"
                               onClick={() => handleCompleteJobTrigger(job)}
-                              className="w-full bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer flex items-center justify-center space-x-1"
+                              className="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer flex items-center justify-center space-x-1"
                             >
                               <span>✓ Ажил Дууссаныг Баталгаажуулж Үнэлэх</span>
                             </button>
@@ -1328,17 +1328,17 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                             const receivedReview = displayReviews.find(r => r.jobId === job.id);
                             if (!receivedReview) return null;
                             return (
-                              <div className="bg-emerald-950/10 border border-emerald-500/20 p-3 rounded-lg text-xs space-y-1.5 mt-2">
+                              <div className="bg-violet-100/10 border border-violet-600/20 p-3 rounded-lg text-xs space-y-1.5 mt-2">
                                 <div className="flex justify-between items-center text-[10.5px]">
-                                  <span className="font-bold text-emerald-400">Жолоочийн үнэлгээ:</span>
+                                  <span className="font-bold text-violet-600">Жолоочийн үнэлгээ:</span>
                                   <div className="flex items-center space-x-0.5">
                                     {[1, 2, 3, 4, 5].map((star) => (
                                       <Star 
                                         key={star} 
-                                        className={`w-3 h-3 ${star <= receivedReview.rating ? 'fill-amber-400 text-amber-500' : 'text-slate-700'}`} 
+                                        className={`w-3 h-3 ${star <= receivedReview.rating ? 'fill-violet-400 text-violet-500' : 'text-slate-700'}`} 
                                       />
                                     ))}
-                                    <span className="font-bold font-mono ml-1 text-white">{receivedReview.rating}.0</span>
+                                    <span className="font-bold font-mono ml-1 text-[#f1f3f8]">{receivedReview.rating}.0</span>
                                   </div>
                                 </div>
                                 <p className="text-[11px] text-slate-300 italic">"{receivedReview.comment}"</p>
@@ -1351,7 +1351,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                               <button
                                 type="button"
                                 onClick={() => setActiveReviewJob(job)}
-                                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
+                                className="bg-violet-600 hover:bg-violet-500 text-white font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
                               >
                                 Жолоочийг Үнэлэх
                               </button>
@@ -1362,12 +1362,12 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
                       {/* Action buttons (Edit/Delete) relocated to the bottom of the card */}
                       {isOwnProfile && (
-                        <div className="flex space-x-2.5 pt-2 mt-auto border-t border-slate-850/50">
+                        <div className="flex space-x-2.5 pt-2 mt-auto border-t border-[var(--color-glass-border)]">
                           {job.status !== 'completed' && (
                             <button
                               type="button"
                               onClick={() => setEditingJob(job)}
-                              className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
+                              className="flex-1 border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] bg-[var(--color-glass-bg)] hover:bg-[var(--color-glass-bg)] text-slate-400 hover:text-[#f1f3f8] font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
                             >
                               Засах
                             </button>
@@ -1387,7 +1387,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                                 }
                               }
                             }}
-                            className={`${job.status === 'completed' ? 'w-full' : 'flex-1'} border border-slate-800 hover:border-slate-700 bg-slate-950 hover:bg-slate-900 text-slate-400 hover:text-white font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center`}
+                            className={`${job.status === 'completed' ? 'w-full' : 'flex-1'} border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] bg-[var(--color-glass-bg)] hover:bg-[var(--color-glass-bg)] text-slate-400 hover:text-[#f1f3f8] font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center`}
                           >
                             Устгах
                           </button>
@@ -1452,20 +1452,20 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
         <div 
           id="edit-review-modal-backdrop" 
           onClick={() => setEditingReview(null)}
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in"
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in"
         >
           <div 
             id="edit-review-modal-container" 
             onClick={(e) => e.stopPropagation()}
-            className="bg-slate-900 border border-slate-700 max-w-md w-full rounded-xl overflow-hidden shadow-2xl relative text-left animate-fade-in"
+            className="bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] max-w-md w-full rounded-xl overflow-hidden shadow-2xl relative text-left animate-fade-in"
           >
             {/* Header */}
-            <div className="flex justify-between items-center border-b border-slate-800 px-6 py-4">
-              <h3 className="text-sm font-semibold text-white">Үнэлгээ Засах</h3>
+            <div className="flex justify-between items-center border-b border-[var(--color-glass-border)] px-6 py-4">
+              <h3 className="text-sm font-semibold text-[#f1f3f8]">Үнэлгээ Засах</h3>
               <button 
                 type="button" 
                 onClick={() => setEditingReview(null)} 
-                className="text-gray-400 hover:text-white transition-colors cursor-pointer"
+                className="text-slate-500 hover:text-[#f1f3f8] transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1473,14 +1473,14 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
             {/* Form */}
             <form onSubmit={handleEditReviewSubmit} className="p-6 space-y-4">
-              <div className="bg-slate-850 p-3.5 rounded-lg border border-slate-800 space-y-1">
-                <span className="text-[10px] text-gray-400 uppercase tracking-widest block font-mono">Ажлын нэр</span>
-                <p className="text-xs font-semibold text-emerald-450">{editingReview.jobTitle}</p>
+              <div className="bg-[rgba(255,255,255,0.06)] p-3.5 rounded-lg border border-[var(--color-glass-border)] space-y-1">
+                <span className="text-[10px] text-slate-500 uppercase tracking-widest block font-mono">Ажлын нэр</span>
+                <p className="text-xs font-semibold text-violet-500">{editingReview.jobTitle}</p>
               </div>
 
               {/* Rating selection */}
-              <div className="flex flex-col items-center py-3 space-y-2 bg-[#080d1a] border border-slate-850 rounded-lg">
-                <span className="text-[10px] text-slate-450 uppercase tracking-widest font-mono">Үнэлгээ</span>
+              <div className="flex flex-col items-center py-3 space-y-2 bg-[rgba(255,255,255,0.04)] border border-[var(--color-glass-border)] rounded-lg">
+                <span className="text-[10px] text-slate-400 uppercase tracking-widest font-mono">Үнэлгээ</span>
                 <div className="flex items-center space-x-1.5">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -1494,14 +1494,14 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                       <Star
                         className={`w-7 h-7 transition-colors ${
                           star <= (editHoverRating ?? editRating)
-                            ? 'text-amber-400 fill-amber-400'
+                            ? 'text-violet-400 fill-violet-400'
                             : 'text-slate-700'
                         }`}
                       />
                     </button>
                   ))}
                 </div>
-                <span className="text-xs font-bold text-amber-455 font-mono">
+                <span className="text-xs font-bold text-violet-400 font-mono">
                   {editRating === 5 ? '5.0 / Маш сайн' : 
                    editRating === 4 ? '4.0 / Сайн' :
                    editRating === 3 ? '3.0 / Дундаж' :
@@ -1511,7 +1511,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
               {/* Comment field */}
               <div className="space-y-1.5">
-                <label htmlFor="edit-review-comment" className="block text-[10px] text-slate-450 uppercase tracking-widest font-mono">Сэтгэгдэл, тайлбар</label>
+                <label htmlFor="edit-review-comment" className="block text-[10px] text-slate-400 uppercase tracking-widest font-mono">Сэтгэгдэл, тайлбар</label>
                 <textarea
                   id="edit-review-comment"
                   required
@@ -1519,13 +1519,13 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                   value={editComment}
                   onChange={(e) => setEditComment(e.target.value)}
                   placeholder="Хамтран ажилласан сэтгэгдлээ энд бичнэ үү..."
-                  className="block w-full px-3.5 py-2.5 border border-slate-700 rounded bg-slate-850 text-white text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none placeholder-gray-500 font-sans"
+                  className="block w-full px-3.5 py-2.5 border border-[var(--color-glass-border)] rounded bg-[rgba(255,255,255,0.06)] text-[#f1f3f8] text-xs focus:ring-1 focus:ring-violet-600 focus:outline-none placeholder-slate-400 font-sans"
                 />
               </div>
 
               {/* Error */}
               {editError && (
-                <div className="text-[11px] text-rose-450 bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg text-center font-semibold">
+                <div className="text-[11px] text-violet-400 bg-violet-500/10 border border-violet-500/20 p-2.5 rounded-lg text-center font-semibold">
                   {editError}
                 </div>
               )}
@@ -1535,14 +1535,14 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                 <button
                   type="button"
                   onClick={() => setEditingReview(null)}
-                  className="flex-1 bg-slate-850 hover:bg-slate-800 border border-slate-800 text-white text-xs font-semibold py-2.5 px-4 rounded transition-colors cursor-pointer text-center"
+                  className="flex-1 bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.07)] border border-[var(--color-glass-border)] text-[#f1f3f8] text-xs font-semibold py-2.5 px-4 rounded transition-colors cursor-pointer text-center"
                 >
                   Цуцлах
                 </button>
                 <button
                   type="submit"
                   disabled={isEditSubmitting}
-                  className="flex-1 bg-emerald-500 hover:bg-emerald-450 disabled:bg-emerald-700 disabled:opacity-50 text-slate-950 text-xs font-bold py-2.5 px-4 rounded transition-colors cursor-pointer text-center"
+                  className="flex-1 bg-violet-600 hover:bg-violet-500 disabled:bg-violet-700 disabled:opacity-50 text-slate-950 text-xs font-bold py-2.5 px-4 rounded transition-colors cursor-pointer text-center"
                 >
                   {isEditSubmitting ? 'Хадгалж байна...' : 'Хадгалах'}
                 </button>

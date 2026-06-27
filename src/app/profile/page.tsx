@@ -101,9 +101,9 @@ function ProfileContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#070a13] flex items-center justify-center text-white font-sans">
+      <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center text-[var(--fg)] font-sans">
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-slate-400 text-sm">Уншиж байна...</p>
         </div>
       </div>
@@ -112,11 +112,11 @@ function ProfileContent() {
 
   if (error || !viewedUser || !currentUser) {
     return (
-      <div className="min-h-screen bg-[#070a13] flex flex-col items-center justify-center text-white font-sans p-4">
+      <div className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center text-[var(--fg)] font-sans p-4">
         <p className="text-red-400 font-bold mb-4">{error || 'Алдаа гарлаа'}</p>
         <button
           onClick={() => router.push('/')}
-          className="bg-slate-900 border border-slate-700 hover:bg-slate-800 text-emerald-400 px-6 py-2.5 rounded-xl transition-all font-semibold cursor-pointer"
+          className="bg-[var(--card)] border border-[var(--border)] hover:bg-white/10 text-violet-400 px-6 py-2.5 rounded-xl transition-all font-semibold cursor-pointer backdrop-blur-md"
         >
           Нүүр хуудас руу буцах
         </button>
@@ -127,7 +127,7 @@ function ProfileContent() {
   const isOwnProfile = currentUser.id === viewedUser.id;
 
   return (
-    <div className="bg-[#070a13] flex-grow py-8 min-h-screen">
+    <div className="bg-[var(--bg)] flex-grow py-8 min-h-screen">
       <ProfileView
         user={viewedUser}
         isOwnProfile={isOwnProfile}
@@ -147,9 +147,9 @@ function ProfileContentWrapper() {
 export default function ProfilePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#070a13] flex items-center justify-center text-white font-sans">
+      <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center text-[var(--fg)] font-sans">
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-slate-400 text-sm">Уншиж байна...</p>
         </div>
       </div>

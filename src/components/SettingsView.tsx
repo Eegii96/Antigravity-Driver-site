@@ -174,22 +174,22 @@ export default function SettingsView() {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-white flex items-center space-x-2">
-            <ShieldCheck className="w-6 h-6 text-emerald-500" />
+            <ShieldCheck className="w-6 h-6 text-violet-600" />
             <span>Аюулгүй байдал & Тохиргооны Цэс</span>
           </h2>
-          <p className="text-xs text-gray-400">Таны бүртгэл, холболт болон системийн хандалттай холбоотой тохиргоонууд</p>
+          <p className="text-xs text-slate-500">Таны бүртгэл, холболт болон системийн хандалттай холбоотой тохиргоонууд</p>
         </div>
         <button
           id="back-to-jobs-from-settings"
           onClick={() => router.push('/')}
-          className="text-xs bg-slate-800 hover:bg-slate-750 text-emerald-400 border border-slate-700 px-3 py-1.5 rounded transition-colors cursor-pointer"
+          className="text-xs bg-slate-100 hover:bg-slate-200 text-violet-600 border border-slate-200 px-3 py-1.5 rounded transition-colors cursor-pointer"
         >
           Зарын хэсэг рүү буцах
         </button>
       </div>
 
       {success && (
-        <div className="bg-emerald-500/10 border border-emerald-500 text-emerald-300 p-3 rounded text-xs flex items-center space-x-2">
+        <div className="bg-violet-600/10 border border-violet-600 text-violet-400 p-3 rounded text-xs flex items-center space-x-2">
           <Check className="w-4 h-4" />
           <span>{success}</span>
         </div>
@@ -206,39 +206,39 @@ export default function SettingsView() {
         
         {/* Left column Settings Navigator */}
         <div className="md:col-span-1 space-y-4 font-sans">
-          <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-xl space-y-4 shadow-xl backdrop-blur-sm relative overflow-hidden text-left font-sans">
+          <div className="bg-white/5 border border-[var(--color-glass-border)] p-5 rounded-xl space-y-4 shadow-xl backdrop-blur-sm relative overflow-hidden text-left font-sans">
             {/* Ambient background glow inside card */}
-            <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-20 h-20 bg-violet-600/5 rounded-full blur-2xl pointer-events-none"></div>
 
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <span className="text-xs font-semibold text-gray-300">Холболтын төлөв</span>
-              <div className="flex items-center space-x-1.5 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/25">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 absolute"></span>
-                <span className="text-[9px] text-emerald-400 font-bold tracking-wider uppercase font-mono">ONLINE</span>
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+              <span className="text-xs font-semibold text-slate-700">Холболтын төлөв</span>
+              <div className="flex items-center space-x-1.5 bg-violet-600/10 px-2 py-0.5 rounded-full border border-violet-600/25">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-600 animate-ping"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-600 absolute"></span>
+                <span className="text-[9px] text-violet-600 font-bold tracking-wider uppercase font-mono">ONLINE</span>
               </div>
             </div>
 
             <div className="text-xs space-y-2.5">
-              <div className="flex justify-between items-center text-gray-400">
+              <div className="flex justify-between items-center text-slate-500">
                 <span className="font-medium text-slate-400">Холбогдсон хаяг:</span>
                 <span className="text-[11px] text-white font-mono font-medium max-w-[130px] truncate" title={currentUser?.email || currentUser?.phone}>
                   {currentUser?.email || currentUser?.phone || 'Тодорхойгүй'}
                 </span>
               </div>
-              <div className="flex justify-between items-center text-gray-400">
+              <div className="flex justify-between items-center text-slate-500">
                 <span className="font-medium text-slate-400">Төхөөрөмж / OS:</span>
                 <span className="text-[11px] text-white font-medium text-right">
                   {deviceInfo.browser} ({deviceInfo.os})
                 </span>
               </div>
-              <div className="flex justify-between items-center text-gray-400">
+              <div className="flex justify-between items-center text-slate-500">
                 <span className="font-medium text-slate-400">IP Хаяг:</span>
-                <span className="text-[11px] text-emerald-400 font-mono font-bold">
+                <span className="text-[11px] text-violet-600 font-mono font-bold">
                   {ipAddress}
                 </span>
               </div>
-              <div className="flex justify-between items-center text-gray-400">
+              <div className="flex justify-between items-center text-slate-500">
                 <span className="font-medium text-slate-400">Хамгаалалт:</span>
                 <span className="text-[11px] text-cyan-400 font-bold flex items-center space-x-1 bg-cyan-950/20 px-2 py-0.5 rounded border border-cyan-800/30 font-mono">
                   <span>SSL (HTTPS)</span>
@@ -252,15 +252,15 @@ export default function SettingsView() {
         <div className="md:col-span-2 space-y-6">
           
           {/* Change Password Panel */}
-          <div className="bg-slate-800/20 border border-slate-700/50 p-6 rounded-xl space-y-4">
-            <h3 className="text-sm font-semibold text-white flex items-center space-x-2 border-b border-slate-800 pb-2">
-              <Key className="w-4 h-4 text-emerald-500" />
+          <div className="bg-white/5 border border-[var(--color-glass-border)] p-6 rounded-xl space-y-4">
+            <h3 className="text-sm font-semibold text-white flex items-center space-x-2 border-b border-slate-200 pb-2">
+              <Key className="w-4 h-4 text-violet-600" />
               <span>Нууц үг шинэчлэх цэс</span>
             </h3>
 
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">Одоо ашиглаж буй нууц үг</label>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Одоо ашиглаж буй нууц үг</label>
                 <div className="relative">
                   <input
                     id="current-password-input"
@@ -268,12 +268,12 @@ export default function SettingsView() {
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="******"
-                    className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-900 text-white text-xs focus:ring-1 focus:ring-emerald-550 focus:outline-none"
+                    className="block w-full px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-white/5 text-[#f1f3f8] text-xs focus:ring-1 focus:ring-violet-500 focus:outline-none"
                   />
                   <span
                     id="toggle-pass-visibility-1"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white cursor-pointer"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-white cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </span>
@@ -282,28 +282,28 @@ export default function SettingsView() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">Шинэ нууц үг</label>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Шинэ нууц үг</label>
                   <input
                     id="new-password-input"
                     type={showPassword ? 'text' : 'password'}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Шинэ нууц үгээ оруулах"
-                    className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-900 text-white text-xs focus:ring-1 focus:ring-emerald-550 focus:outline-none"
+                    className="block w-full px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-white/5 text-[#f1f3f8] text-xs focus:ring-1 focus:ring-violet-500 focus:outline-none"
                   />
-                  <p className="mt-1 text-[10px] text-gray-550 font-sans">
+                  <p className="mt-1 text-[10px] text-slate-400 font-sans">
                     * Хамгийн багадаа 8 тэмдэгт, тусгай тэмдэгт (!@#$%^&* u.g) багтсан байна.
                   </p>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">Шинэ нууц үг давтах</label>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Шинэ нууц үг давтах</label>
                   <input
                     id="confirm-password-input"
                     type={showPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="давтан оруулна уу"
-                    className="block w-full px-3 py-1.5 border border-slate-700 rounded bg-slate-900 text-white text-xs focus:ring-1 focus:ring-emerald-550 focus:outline-none"
+                    className="block w-full px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-white/5 text-[#f1f3f8] text-xs focus:ring-1 focus:ring-violet-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -312,7 +312,7 @@ export default function SettingsView() {
                 <button
                   id="submit-password-change-btn"
                   type="submit"
-                  className="bg-emerald-600 hover:bg-emerald-550 text-white px-4 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer"
+                  className="bg-violet-600 hover:bg-violet-600 text-white px-4 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer"
                 >
                   Нууц үгийг баталгаажуулж солих
                 </button>
@@ -326,7 +326,7 @@ export default function SettingsView() {
               <Trash2 className="w-4 h-4 text-rose-400" />
               <span>Бүртгэлийг устгах</span>
             </h3>
-            <p className="text-[10px] text-gray-400 leading-relaxed">
+            <p className="text-[10px] text-slate-500 leading-relaxed">
               Хэрэв та өөрийн бүртгэлийг системээс устгах гэж байгаа бол таны түүхэнд бичигдсэн ажлын тайлан болон эерэг/сөрөг үнэлгээний түүх архив болон үлдэхийг анхаарна уу. Зорилго нь харилцагч дахин бүртгүүлэх үед сайтад үнэлгээ, ажлын түүх шинээр бүртгэгдэхээс сэргийлэхэд оршино.
             </p>
             <div className="pt-2">
@@ -355,16 +355,16 @@ export default function SettingsView() {
         <div 
           id="delete-account-modal-backdrop" 
           onClick={() => setIsDeleteModalOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm p-4 animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-fade-in"
         >
           <div 
             id="delete-account-modal-container" 
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-xl shadow-2xl overflow-hidden font-sans"
+            className="relative w-full max-w-sm bg-slate-900/60 backdrop-blur-xl border border-[var(--color-glass-border)] rounded-xl shadow-2xl overflow-hidden font-sans"
           >
             
             {/* Modal Header */}
-            <div className="flex justify-between items-center border-b border-slate-850 px-5 py-4 bg-slate-950/40">
+            <div className="flex justify-between items-center border-b border-[var(--color-glass-border)] px-5 py-4 bg-slate-900/60">
               <h3 className="text-xs font-bold text-white flex items-center space-x-2 uppercase tracking-wide">
                 <Trash2 className="w-4 h-4 text-rose-400" />
                 <span>Бүртгэл устгах хүсэлт</span>
@@ -372,7 +372,7 @@ export default function SettingsView() {
               <button 
                 id="close-delete-modal-btn" 
                 onClick={() => setIsDeleteModalOpen(false)} 
-                className="text-gray-450 hover:text-white transition-colors cursor-pointer p-1 rounded hover:bg-slate-800"
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1 rounded hover:bg-white/10"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -381,12 +381,12 @@ export default function SettingsView() {
             {/* Modal Body */}
             {deleteSuccess ? (
               <div className="p-5 text-center space-y-4 animate-fade-in">
-                <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500/15 text-emerald-400">
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-violet-600/15 text-violet-600">
                   <Check className="w-5 h-5" />
                 </div>
                 <div className="space-y-1.5">
-                  <h4 className="text-xs font-bold text-emerald-400">Хүсэлтийг хүлээн авлаа</h4>
-                  <p className="text-[11px] text-gray-400 leading-relaxed font-sans">
+                  <h4 className="text-xs font-bold text-violet-600">Хүсэлтийг хүлээн авлаа</h4>
+                  <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
                     Таны бүртгэл устгах хүсэлтийг амжилттай бүртгэж авлаа. Бид таны хүсэлтийг холбогдох ажилтантай хамт хянаж, 24 цагийн дотор шийдвэрлэх болно.
                   </p>
                 </div>
@@ -394,7 +394,7 @@ export default function SettingsView() {
                   <button
                     type="button"
                     onClick={() => setIsDeleteModalOpen(false)}
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-white py-1.5 rounded text-xs font-semibold cursor-pointer transition-colors"
+                    className="w-full bg-white/10 hover:bg-white/15 text-white py-1.5 rounded text-xs font-semibold cursor-pointer transition-colors"
                   >
                     Хаах
                   </button>
@@ -402,7 +402,7 @@ export default function SettingsView() {
               </div>
             ) : (
               <div className="p-5 space-y-4">
-                <p className="text-[11px] text-gray-300 leading-relaxed font-sans">
+                <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
                   Та системээс бүртгэлээ устгах болсон шалтгаанаа сонгоно уу. Энэ нь биднийг үйлчилгээгээ сайжруулахад туслах болно:
                 </p>
 
@@ -412,8 +412,8 @@ export default function SettingsView() {
                       key={idx}
                       className={`flex items-start space-x-2.5 p-2 rounded border transition-all cursor-pointer ${
                         deleteReason === reason 
-                          ? 'bg-rose-955/15 border-rose-500/35 text-white' 
-                          : 'bg-slate-950/30 border-slate-850 text-gray-400 hover:border-slate-800 hover:bg-slate-950/50'
+                          ? 'bg-rose-500/15 border-rose-500/35 text-rose-200' 
+                          : 'bg-white/5 border-[var(--color-glass-border)] text-slate-400 hover:border-[var(--color-glass-border)] hover:bg-white/10'
                       }`}
                     >
                       <input 
@@ -425,16 +425,16 @@ export default function SettingsView() {
                           setDeleteReason(reason);
                           setDeleteError('');
                         }}
-                        className="mt-0.5 text-rose-500 focus:ring-rose-500 bg-slate-950 border-slate-800" 
+                        className="mt-0.5 text-rose-500 focus:ring-rose-500 bg-white/5 border-[var(--color-glass-border)]" 
                       />
-                      <span className="text-xs font-sans text-gray-200">{reason}</span>
+                      <span className="text-xs font-sans text-slate-300">{reason}</span>
                     </label>
                   ))}
                 </div>
 
                 {deleteReason === 'Бусад (Учрыг доор бичих)' && (
                   <div className="space-y-1.5 animate-fade-in">
-                    <label className="block text-[10px] font-medium text-gray-400 uppercase tracking-wider">Шалтгаанаа тайлбарлана уу:</label>
+                    <label className="block text-[10px] font-medium text-slate-500 uppercase tracking-wider">Шалтгаанаа тайлбарлана уу:</label>
                     <textarea
                       id="other-delete-reason-input"
                       rows={2.5}
@@ -444,7 +444,7 @@ export default function SettingsView() {
                         setDeleteError('');
                       }}
                       placeholder="Энд дэлгэрэнгүй бичнэ үү..."
-                      className="block w-full px-2.5 py-1.5 border border-slate-700 rounded bg-slate-950 text-white text-xs focus:ring-1 focus:ring-rose-500 focus:outline-none focus:border-rose-500"
+                      className="block w-full px-2.5 py-1.5 border border-[var(--color-glass-border)] rounded bg-white/5 text-[#f1f3f8] text-xs focus:ring-1 focus:ring-rose-500 focus:outline-none focus:border-rose-500"
                     />
                   </div>
                 )}
@@ -460,7 +460,7 @@ export default function SettingsView() {
                   <button
                     type="button"
                     onClick={() => setIsDeleteModalOpen(false)}
-                    className="w-1/2 bg-slate-850 hover:bg-slate-800 text-gray-300 py-1.5 rounded text-xs font-semibold cursor-pointer transition-colors border border-slate-800"
+                    className="w-1/2 bg-white/10 hover:bg-white/15 text-slate-200 py-1.5 rounded text-xs font-semibold cursor-pointer transition-colors border border-[var(--color-glass-border)]"
                   >
                     Буцах
                   </button>
@@ -477,7 +477,7 @@ export default function SettingsView() {
                       }
                       setDeleteSuccess(true);
                     }}
-                    className="w-1/2 bg-rose-600 hover:bg-rose-550 text-white py-1.5 rounded text-xs font-semibold cursor-pointer transition-colors shadow-md shadow-rose-950/30"
+                    className="w-1/2 bg-rose-600 hover:bg-rose-500 text-white py-1.5 rounded text-xs font-semibold cursor-pointer transition-colors shadow-md shadow-rose-950/30"
                   >
                     Илгээх
                   </button>
