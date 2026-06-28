@@ -61,31 +61,37 @@ The canonical source of truth for all data types is `src/types.ts`. Key rules:
 
 ## 4. Design, Styling & Mongolian Grammar Rules
 
-### Design System: "Glass Premium Violet" (Концепт D — canonical, 2026-06-27)
+### Design System: "Hi-vis Industrial" (canonical, 2026-06-28)
 
 > [!IMPORTANT]
-> This is the **single canonical design system** for Jolooch.net, chosen by the product owner after reviewing 6 design concepts (A–F). It supersedes all earlier slate/emerald/amber/sky/rose palette references. Every page, modal, header, and footer MUST converge on these tokens — no exceptions, no one-off colors.
+> This is the **single canonical design system** for Jolooch.net, chosen by the product owner to give the site a distinctive identity grounded in its actual subject — heavy machinery and earthworks — instead of a generic "premium SaaS" look. It supersedes the retired **"Glass Premium Violet"** system and every earlier slate/emerald/amber/sky/rose reference. Every page, modal, header, and footer MUST converge on these tokens — no exceptions, no one-off colors.
+>
+> **The design thesis**: this is a tool for excavator/bulldozer/crane operators and the people who hire them. It should feel like premium heavy-equipment branding (think CAT, Hilti, Liebherr nameplates) — rugged, high-contrast, utilitarian, and unmistakably about machinery. It is a LIGHT, structural, solid-surface system. It is deliberately NOT dark-mode, NOT glassmorphism, NOT neon-glow, NOT violet — those are the retired look and read as templated/AI-generated.
 
-- **Target Audience**: Jolooch.net is primarily accessed on mobile phones by users aged 30–50. All UI must be minimal, highly legible, and touch-optimized.
+- **Target Audience**: Jolooch.net is primarily accessed on mobile phones by users aged 30–50 (blue-collar operators and employers). All UI must be minimal, highly legible in daylight/outdoors, touch-optimized, and confidence-inspiring.
 - **Canonical Color Tokens** (defined in `globals.css`, consumed via Tailwind arbitrary-value classes like `bg-[var(--accent)]`):
-  - `--bg: #0c0f17` — base page background. Never use `bg-black`, `bg-gray-900`, or system defaults.
-  - `--bg2: #11151f` — secondary/alternating section background.
-  - `--card` / `--color-glass-bg: rgba(255,255,255,0.04)` — glass card fill.
-  - `--border: rgba(255,255,255,0.10)` — glass card/divider border.
-  - `--fg: #f1f3f8` — primary text. `--muted-foreground: #9aa3b5` — secondary text.
-  - `--accent: #8b5cf6` (violet) — primary brand accent: primary buttons, links, active states, headline highlight spans.
-  - `--accent-soft: rgba(139,92,246,0.14)` with `--accent-soft-foreground: #c4b5fd` — badges, soft icon backgrounds, subtle highlights.
-  - `--teal: #22d3ee` — secondary accent reserved for trust/verification signals (checkmarks, "verified" badges, salary highlights, success states). Never use teal and violet for the same semantic meaning on one screen.
-  - **Retired palette**: `amber`/`gold`/`#caa03d`, `sky-*`, and the mislabeled `--color-neon-emerald` (which was actually violet hex `#8b5cf6`) must be migrated to the violet/teal tokens above. Do not introduce new ad-hoc Tailwind color utilities for brand/trust/CTA meaning — always reference the CSS variables.
-  - **Exception — destructive & hard-warning states**: `rose-*`/`red-*` remain valid ONLY for genuinely destructive actions (delete account, cancel hiring, remove applicant) and hard error/validation states — these are not brand colors and must stay visually distinct from violet/teal. `amber-*` remains valid ONLY for true blacklist/compliance warning banners (e.g. "согтуу ажиллах... хар дансанд бүртгэгдэнэ") and "needs review/in-progress" workflow-attention badges that must stand apart from the violet=open/teal=completed status pair. Do not use rose/amber for brand, CTA, or trust signals.
-- **Glassmorphism Panels (preserved)**: Use `backdrop-blur-md`/`backdrop-blur-xl`, `bg-[var(--card)]`, and `border border-[var(--border)]` for panel cards. The existing `.glass-panel`, `.glass-card`, `.glass-input` utility classes in `globals.css` remain valid — only their underlying color variables are being consolidated, not the blur/glow visual effect itself. Avoid flat opaque surfaces for primary content panels.
-- **Ambient glow**: Radial violet/teal gradient blobs (`.glow-blob`) behind hero/section headers are part of the canonical look — keep them, but source their colors from `--accent`/`--teal`, not hardcoded hex.
+  - `--bg: #F4F5F2` — base page background (steel white). Never use `bg-black`, `bg-gray-900`, dark surfaces, or system defaults.
+  - `--bg2: #EBEDE8` — secondary/alternating section background.
+  - `--card: #FFFFFF` — solid card/panel fill. Surfaces are SOLID and opaque — no translucency, no `backdrop-blur` for content panels.
+  - `--border: #D5D7D1` — default hairline divider/card border (1px). `--border-strong: #1A1C1E` — crisp graphite border (1–1.5px) for emphasis/"machined" panels.
+  - `--fg: #1A1C1E` — primary text (graphite). `--muted-foreground: #5A5D58` — secondary text (must keep ≥4.5:1 contrast on `--bg`). `--concrete: #9A9C98` — decorative/disabled gray ONLY, never body text.
+  - `--accent: #FFC400` (hi-vis yellow) — primary brand accent: primary CTA buttons, active states, key highlights, the hazard-stripe signature. **Yellow is a FILL/accent color only — never use it for text or thin lines.** Text/icons placed on `--accent` MUST be `--accent-foreground: #1A1C1E` (graphite), never white.
+  - `--accent-soft: rgba(255,196,0,0.16)` with `--accent-soft-foreground: #8A6A00` — soft yellow badge/icon backgrounds and subtle highlights (the dark amber foreground keeps text legible).
+  - `--verify: #1F8A4C` (safety green) — secondary accent reserved for trust/verification/success signals: "verified" badges, checkmarks, salary highlights, and the **completed** job status. Never use green and yellow for the same semantic meaning on one screen.
+  - `--alert: #FF5C28` (safety orange) — workflow-attention only: "needs review / in-progress" badges and non-destructive warnings that must stand apart from the yellow=open / green=completed status pair.
+  - **Status semantics (strict)**: open job = `--accent` (hi-vis yellow), completed job = `--verify` (green), in-progress/needs-review = `--alert` (orange). Keep the `Нийт зар` / `Дууссан зар` tab partition (AGENTS.md §3) mapped to yellow/green respectively.
+  - **Retired palette**: violet `#8b5cf6`, teal `#22d3ee`, the mislabeled `--color-neon-emerald`/`--color-neon-violet`, all `--bg: #0c0f17`-era dark surfaces, `sky-*`, and `gold`/`#caa03d` must all be migrated to the tokens above. Do not introduce new ad-hoc Tailwind color utilities for brand/trust/CTA/status meaning — always reference the CSS variables.
+  - **Exception — destructive states**: `rose-*`/`red-*` remain valid ONLY for genuinely destructive actions (delete account, cancel hiring, remove applicant) and hard error/validation states. They are not brand colors and must stay visually distinct from yellow/green/orange. The amber/blacklist compliance-warning banner (e.g. "согтуу ажиллах... хар дансанд бүртгэгдэнэ") now uses `--alert` (safety orange), not a separate amber.
+- **Surfaces & Panels (solid, structural)**: Primary content panels are SOLID white (`bg-[var(--card)]`) with a crisp `border border-[var(--border)]` and a tight, low, hard shadow (e.g. `0 1px 2px rgba(26,28,30,0.08)`) — NOT large soft blurred shadows. Use the `.panel` and `.panel-machined` utility classes in `globals.css`. The retired `.glass-panel`/`.glass-card`/`.glass-input` (translucent + `backdrop-blur`) classes and all `.glow-blob`/neon `text-shadow`/`box-shadow` glow effects must NOT be used and should be removed during migration.
+- **Corner radius (restrained)**: Industrial = crisp, not pill-soft. Use small radii (`rounded-md` ≈ 6px for cards/inputs, `rounded` for buttons). Avoid `rounded-full`/`rounded-2xl` on content surfaces; reserve full radius for avatars and small status dots only.
+- **Signature element — hazard stripe**: A 45° repeating yellow/graphite caution stripe (`.hazard-stripe` utility) is the single memorable signature. Use it SPARINGLY and with discipline: a thin strip (≈6–8px) at the top edge of the hero and as a key section/divider accent — never as a large fill or behind text. This is where the design spends its boldness (frontend-design skill: "spend your boldness in one place"); keep everything else quiet.
 - **No Placeholder Images**: Never use `<img src="placeholder.jpg">`. Use Lucide React icons or styled SVG avatars instead.
 - **Typography**:
-  - Headings (`h1`–`h3`, hero copy, section titles): `Fraunces` (serif display font), loaded via `next/font/google` in `layout.tsx`, wired to `--font-display`/`font-display` utility.
+  - Headings (`h1`–`h3`, hero copy, section titles): a **condensed grotesque** display face (`Saira Condensed`, with `Archivo`/`Oswald` as acceptable alternates) loaded via `next/font/google` in `layout.tsx`, wired to `--font-display`/`font-display`. Evokes stamped equipment serial-plates; set key headings in uppercase with tight tracking for the nameplate feel — but not every heading. The retired `Fraunces` serif must be removed.
   - Body text, UI labels, buttons: `Inter`, loaded via `next/font/google`, wired to `--font-sans`/`font-sans`.
-  - Numbers, codes, phone numbers, dates: keep `font-mono` (Geist Mono) — unchanged.
-  - Do NOT hardcode `'Inter'` as a raw `font-family` string anywhere — it must always resolve through the `next/font` CSS variable so it is actually self-hosted at build time, not silently falling back to system fonts.
+  - Numbers, codes, phone numbers, salaries, dates: keep `font-mono` (Geist Mono) — reinforces the spec-sheet feel.
+  - Do NOT hardcode `'Inter'`, `'Saira Condensed'`, or any raw `font-family` string anywhere — it must always resolve through the `next/font` CSS variable so fonts are self-hosted at build time, not silently falling back to system fonts.
+- **Motion (disciplined)**: Prefer crisp, short, functional transitions (hover lift on cards, fade-in). NO ambient floating blobs, NO pulsing neon glows — the retired animated glow effects read as AI-generated and must go. Respect `prefers-reduced-motion`.
 
 ### Mongolian Grammar & SEO Rules
 - **Location Suffixes**: Always append correct Mongolian location suffixes:
