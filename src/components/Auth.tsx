@@ -424,12 +424,12 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
   };
 
   return (
-    <div className="flex-grow bg-[var(--color-brand-bg)] relative overflow-hidden flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="flex-grow bg-[var(--bg)] relative overflow-hidden flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
       {/* Back to Homepage Button */}
       <div className="absolute top-6 left-6 right-6 flex justify-between items-center z-20">
         <button
           onClick={() => router.push('/')}
-          className="text-slate-400 hover:text-[#f1f3f8] text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer bg-[var(--color-glass-bg)] backdrop-blur border border-[var(--color-glass-border)] px-3.5 py-2 rounded-xl"
+          className="text-[var(--muted-foreground)] hover:text-[var(--fg)] text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer bg-[var(--card)] border border-[var(--color-glass-border)] px-3.5 py-2 rounded-md"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Нүүр хуудас</span>
@@ -437,33 +437,30 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       </div>
 
       {/* Ambient background glow blobs */}
-      <div className="glow-blob bg-violet-600 w-[400px] h-[400px] -top-40 -left-40 opacity-10"></div>
-      <div className="glow-blob bg-cyan-500 w-[500px] h-[500px] -bottom-60 -right-40 opacity-10" style={{ animationDelay: '-5s' }}></div>
-      <div className="glow-blob bg-violet-600 w-[300px] h-[300px] top-1/2 left-1/3 opacity-5" style={{ animationDelay: '-10s' }}></div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-xl relative z-10 text-center">
         {/* Premium Custom Excavator SVG Icon */}
         <div className="flex justify-center mb-3">
-          <div className="w-24 h-24 rounded-3xl bg-[#26282d] border-2 border-violet-500/30 flex items-center justify-center relative overflow-hidden group hover:border-violet-400/50 transition-all duration-500 shadow-2xl shadow-violet-950/20">
+          <div className="w-24 h-24 rounded-md bg-[var(--bg2)] border-2 border-[var(--accent)] flex items-center justify-center relative overflow-hidden group hover:border-[var(--accent)] transition-all duration-500 shadow-md ">
             <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" />
           </div>
         </div>
 
-        <h2 className="mt-4 text-center text-3xl font-black tracking-tight text-[#f1f3f8] font-sans">
+        <h2 className="mt-4 text-center text-3xl font-black tracking-tight text-[var(--fg)] font-sans">
           Хүнд машин, механизм & Газар шорооны ажлын сайт
         </h2>
-        <p className="mt-2.5 text-center text-sm text-slate-400 font-sans tracking-wide max-w-md mx-auto leading-relaxed">
+        <p className="mt-2.5 text-center text-sm text-[var(--muted-foreground)] font-sans tracking-wide max-w-md mx-auto leading-relaxed">
           Үнэлгээ өгөх, ажлын түүх үүсгэх системээр хариуцлагатай жолооч, оператор болон найдвартай ажил олгогчдыг үүсгэх платформ
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl relative z-10">
-        <div className="glass-panel py-8 px-4 shadow-2xl rounded-2xl sm:px-10 border border-[var(--color-glass-border)]">
+        <div className="panel py-8 px-4 shadow-md rounded-md sm:px-10 border border-[var(--color-glass-border)]">
           {/* Alerts are now rendered locally below form action buttons for optimal mobile UX */}
 
           {/* Tab buttons for Login / Register */}
           {!isForgotMode && (
-            <div className="flex border-b border-slate-200 mb-6 pb-1">
+            <div className="flex border-b border-[var(--border)] mb-6 pb-1">
               <button
                 id="switch-login-tab"
                 onClick={() => {
@@ -472,8 +469,8 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                   setSuccessMsg('');
                 }}
                 className={`flex-1 text-center py-2.5 font-medium text-sm transition-all border-b-2 cursor-pointer ${isLogin
-                    ? 'text-violet-600 border-violet-600 font-semibold'
-                    : 'text-slate-400 border-transparent hover:text-[#f1f3f8]'
+                    ? 'text-[var(--accent-soft-foreground)] border-[var(--accent)] font-semibold'
+                    : 'text-[var(--muted-foreground)] border-transparent hover:text-[var(--fg)]'
                   }`}
               >
                 Нэвтрэх хэсэг
@@ -486,8 +483,8 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                   setSuccessMsg('');
                 }}
                 className={`flex-1 text-center py-2.5 font-medium text-sm transition-all border-b-2 cursor-pointer ${!isLogin
-                    ? 'text-violet-600 border-violet-600 font-semibold'
-                    : 'text-slate-400 border-transparent hover:text-[#f1f3f8]'
+                    ? 'text-[var(--accent-soft-foreground)] border-[var(--accent)] font-semibold'
+                    : 'text-[var(--muted-foreground)] border-transparent hover:text-[var(--fg)]'
                   }`}
               >
                 Бүртгүүлэх хэсэг
@@ -499,8 +496,8 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
             isForgotMode ? (
               /* PASSWORD RECOVERY FORM IN LOGIN */
               <form onSubmit={recoveryStep === 1 ? handleVerifyAccount : handleForgotPasswordSubmit} className="space-y-4 text-xs">
-                <div className="flex justify-between items-center pb-2 border-b border-slate-200">
-                  <span className="font-semibold text-violet-600 text-xs">Нууц үг сэргээх цэс</span>
+                <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
+                  <span className="font-semibold text-[var(--accent-soft-foreground)] text-xs">Нууц үг сэргээх цэс</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -515,7 +512,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                       setError('');
                       setSuccessMsg('');
                     }}
-                    className="text-slate-500 hover:text-[#f1f3f8] underline cursor-pointer"
+                    className="text-[var(--muted-foreground)] hover:text-[var(--fg)] underline cursor-pointer"
                   >
                     Буцах
                   </button>
@@ -525,12 +522,12 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                   /* STEP 1: Email or Phone Search */
                   <div className="animate-fade-in space-y-3.5">
                     <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1">
+                      <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">
                         Бүртгэлтэй имэйл хаяг эсвэл Утасны дугаар
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <UserIcon className="h-4 w-4 text-slate-500" />
+                          <UserIcon className="h-4 w-4 text-[var(--muted-foreground)]" />
                         </div>
                         <input
                           id="forgot-input"
@@ -539,7 +536,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                           value={forgotInput}
                           onChange={(e) => setForgotInput(e.target.value)}
                           placeholder=""
-                          className="block w-full pl-9 pr-3 py-2 glass-input text-xs text-white focus:ring-1 focus:ring-violet-600 focus:outline-none"
+                          className="block w-full pl-9 pr-3 py-2 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -549,8 +546,8 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                   <div className="space-y-3.5 animate-fade-in">
                     {/* Security Question 1 */}
                     <div className="bg-[var(--color-glass-bg)] p-3 rounded-lg border border-[var(--color-glass-border)] font-sans space-y-2 text-left">
-                      <span className="text-[11px] font-semibold text-violet-600 block">🔒 Аюулгүй байдлын асуулт 1:</span>
-                      <p className="text-xs text-[#f1f3f8] leading-relaxed font-sans">{securityQ1}</p>
+                      <span className="text-[11px] font-semibold text-[var(--accent-soft-foreground)] block">🔒 Аюулгүй байдлын асуулт 1:</span>
+                      <p className="text-xs text-[var(--fg)] leading-relaxed font-sans">{securityQ1}</p>
                       <input
                         id="security-a1-input"
                         type="text"
@@ -558,14 +555,14 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                         value={securityA1Input}
                         onChange={(e) => setSecurityA1Input(e.target.value)}
                         placeholder="Асуулт 1-ийн хариулт"
-                        className="block w-full px-3 py-1.5 glass-input text-xs text-white focus:ring-1 focus:ring-violet-600 focus:outline-none font-sans"
+                        className="block w-full px-3 py-1.5 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
                       />
                     </div>
 
                     {/* Security Question 2 */}
                     <div className="bg-[var(--color-glass-bg)] p-3 rounded-lg border border-[var(--color-glass-border)] font-sans space-y-2 text-left">
-                      <span className="text-[11px] font-semibold text-violet-600 block">🔒 Аюулгүй байдлын асуулт 2:</span>
-                      <p className="text-xs text-[#f1f3f8] leading-relaxed font-sans">{securityQ2}</p>
+                      <span className="text-[11px] font-semibold text-[var(--accent-soft-foreground)] block">🔒 Аюулгүй байдлын асуулт 2:</span>
+                      <p className="text-xs text-[var(--fg)] leading-relaxed font-sans">{securityQ2}</p>
                       <input
                         id="security-a2-input"
                         type="text"
@@ -573,14 +570,14 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                         value={securityA2Input}
                         onChange={(e) => setSecurityA2Input(e.target.value)}
                         placeholder="Асуулт 2-ийн хариулт"
-                        className="block w-full px-3 py-1.5 glass-input text-xs text-white focus:ring-1 focus:ring-violet-600 focus:outline-none font-sans"
+                        className="block w-full px-3 py-1.5 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
                       />
                     </div>
 
                     {/* Password Inputs */}
-                    <div className="border-t border-slate-200 pt-3.5 space-y-3.5 text-left">
+                    <div className="border-t border-[var(--border)] pt-3.5 space-y-3.5 text-left">
                       <div>
-                        <label className="block text-xs font-medium text-slate-300 mb-1">
+                        <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">
                           Шинэ нууц код оруулах
                         </label>
                         <div className="relative">
@@ -591,11 +588,11 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                             value={forgotNewPassword}
                             onChange={(e) => setForgotNewPassword(e.target.value)}
                             placeholder=""
-                            className="block w-full pl-3 pr-10 py-2 glass-input text-xs text-white focus:ring-1 focus:ring-violet-600 focus:outline-none font-sans"
+                            className="block w-full pl-3 pr-10 py-2 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
                           />
                           <span
                             onClick={() => setShowForgotNewPassword(!showForgotNewPassword)}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-[#f1f3f8] cursor-pointer"
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-[var(--muted-foreground)] hover:text-[var(--fg)] cursor-pointer"
                           >
                             {showForgotNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </span>
@@ -615,7 +612,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-medium text-slate-300 mb-1">
+                        <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">
                           Шинэ нууц код давтах
                         </label>
                         <div className="relative">
@@ -626,11 +623,11 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                             value={forgotConfirmNewPassword}
                             onChange={(e) => setForgotConfirmNewPassword(e.target.value)}
                             placeholder=""
-                            className="block w-full pl-3 pr-10 py-2 glass-input text-xs text-white focus:ring-1 focus:ring-violet-600 focus:outline-none font-sans"
+                            className="block w-full pl-3 pr-10 py-2 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
                           />
                           <span
                             onClick={() => setShowForgotConfirmNewPassword(!showForgotConfirmNewPassword)}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-white cursor-pointer"
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-[var(--muted-foreground)] hover:text-[var(--accent-foreground)] cursor-pointer"
                           >
                             {showForgotConfirmNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </span>
@@ -651,13 +648,13 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                     id="submit-forgot-btn"
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg bg-violet-600 hover:bg-violet-600 text-white font-semibold text-sm transition-all shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-semibold text-sm transition-all shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? 'Түр хүлээнэ үү...' : (recoveryStep === 1 ? 'Шалгах' : 'Нууц кодыг шинэчлэх')}
                   </button>
                   {successMsg && (
-                    <div className="mt-3.5 bg-violet-600/10 border border-violet-600/40 text-violet-400 px-4 py-2.5 rounded-lg text-xs flex items-center justify-center space-x-2 animate-fade-in font-sans">
-                      <span className="w-2 h-2 rounded-full bg-violet-600 animate-ping shrink-0"></span>
+                    <div className="mt-3.5 bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] px-4 py-2.5 rounded-lg text-xs flex items-center justify-center space-x-2 animate-fade-in font-sans">
+                      <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping shrink-0"></span>
                       <span className="text-left">{successMsg}</span>
                     </div>
                   )}
@@ -672,12 +669,12 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
               /* LOGIN FORM */
               <form onSubmit={handleLogin} className="space-y-5">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="login-email">
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="login-email">
                     Имэйл хаяг эсвэл Утасны дугаар
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-4.5 w-4.5 text-slate-400" />
+                      <Mail className="h-4.5 w-4.5 text-[var(--muted-foreground)]" />
                     </div>
                     <input
                       id="login-email"
@@ -686,17 +683,17 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder=""
-                      className="block w-full pl-10 pr-3 py-2.5 glass-input text-sm text-white placeholder-slate-400 focus:outline-none"
+                      className="block w-full pl-10 pr-3 py-2.5 input text-sm text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="login-password">
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="login-password">
                     Нууц код
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none font-sans text-slate-400 font-extrabold text-xs">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none font-sans text-[var(--muted-foreground)] font-extrabold text-xs">
                       ***
                     </div>
                     <input
@@ -706,12 +703,12 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder=""
-                      className="block w-full pl-10 pr-10 py-2.5 glass-input text-sm text-white placeholder-slate-400 focus:outline-none"
+                      className="block w-full pl-10 pr-10 py-2.5 input text-sm text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none"
                     />
                     <span
                       id="toggle-login-pass-visibility"
                       onClick={() => setShowLoginPassword(!showLoginPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-white cursor-pointer"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-[var(--muted-foreground)] hover:text-[var(--accent-foreground)] cursor-pointer"
                     >
                       {showLoginPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
                     </span>
@@ -726,7 +723,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                       setError('');
                       setSuccessMsg('');
                     }}
-                    className="text-xs text-slate-400 hover:text-violet-500 transition-colors underline cursor-pointer font-sans"
+                    className="text-xs text-[var(--muted-foreground)] hover:text-[var(--accent-soft-foreground)] transition-colors underline cursor-pointer font-sans"
                   >
                     Нууц үг сэргээх холбоос
                   </button>
@@ -737,13 +734,13 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                     id="submit-login-btn"
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg bg-violet-600 hover:bg-violet-600 text-white font-semibold text-sm transition-all shadow-lg shadow-violet-500/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-semibold text-sm transition-all shadow-lg  cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? 'Нэвтэрч байна...' : 'Нэвтрэх'}
                   </button>
                   {successMsg && (
-                    <div className="mt-3.5 bg-violet-600/10 border border-violet-600/40 text-violet-400 px-4 py-2.5 rounded-lg text-xs flex items-center justify-center space-x-2 animate-fade-in font-sans">
-                      <span className="w-2 h-2 rounded-full bg-violet-600 animate-ping shrink-0"></span>
+                    <div className="mt-3.5 bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] px-4 py-2.5 rounded-lg text-xs flex items-center justify-center space-x-2 animate-fade-in font-sans">
+                      <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping shrink-0"></span>
                       <span className="text-left">{successMsg}</span>
                     </div>
                   )}
@@ -752,11 +749,11 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                       <span>{error}</span>
                     </div>
                   )}
-                  <p className="mt-3 text-[10.5px] text-slate-400 text-center font-sans">
+                  <p className="mt-3 text-[10.5px] text-[var(--muted-foreground)] text-center font-sans">
                     Та нэвтэрснээр манай{' '}
-                    <button type="button" onClick={() => setShowTerms(true)} className="text-violet-600 hover:text-violet-500 underline transition-colors cursor-pointer bg-transparent border-none p-0 font-medium">Үйлчилгээний нөхцөл</button>
+                    <button type="button" onClick={() => setShowTerms(true)} className="text-[var(--accent-soft-foreground)] hover:text-[var(--accent-soft-foreground)] underline transition-colors cursor-pointer bg-transparent border-none p-0 font-medium">Үйлчилгээний нөхцөл</button>
                     {' '}болон{' '}
-                    <button type="button" onClick={() => setShowPrivacy(true)} className="text-teal-400 hover:text-teal-300 underline transition-colors cursor-pointer bg-transparent border-none p-0 font-medium">Нууцлалын бодлого</button>
+                    <button type="button" onClick={() => setShowPrivacy(true)} className="text-[var(--verify)] hover:text-[var(--verify)] underline transition-colors cursor-pointer bg-transparent border-none p-0 font-medium">Нууцлалын бодлого</button>
                     -ыг зөвшөөрсөнд тооцогдоно.
                   </p>
                 </div>
@@ -767,7 +764,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
             <form onSubmit={handleRegister} className="space-y-5">
               {/* Role Selector */}
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-2">Хэрэглэгчийн тохиргоо сонгох</label>
+                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-2">Хэрэглэгчийн тохиргоо сонгох</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     id="select-role-operator"
@@ -780,8 +777,8 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                       setHasOptimized(false);
                     }}
                     className={`flex items-center justify-center space-x-2 py-2.5 px-3 border rounded text-xs transition-colors cursor-pointer ${userType === 'operator'
-                        ? 'border-violet-600 bg-violet-600/10 text-violet-600 font-semibold'
-                        : 'border-slate-600 hover:border-slate-500 text-slate-500'
+                        ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] font-semibold'
+                        : 'border-[var(--border)] hover:border-[var(--border)] text-[var(--muted-foreground)]'
                       }`}
                   >
                     <Truck className="w-4 h-4" />
@@ -798,8 +795,8 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                       setHasOptimized(false);
                     }}
                     className={`flex items-center justify-center space-x-2 py-2.5 px-3 border rounded text-xs transition-colors cursor-pointer ${userType === 'employer'
-                        ? 'border-violet-600 bg-violet-600/10 text-violet-600 font-semibold'
-                        : 'border-slate-600 hover:border-slate-500 text-slate-500'
+                        ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] font-semibold'
+                        : 'border-[var(--border)] hover:border-[var(--border)] text-[var(--muted-foreground)]'
                       }`}
                   >
                     <UserIcon className="w-4 h-4" />
@@ -811,7 +808,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
               {/* General details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="reg-lastname">
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="reg-lastname">
                     Овог
                   </label>
                   <input
@@ -821,11 +818,11 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder=""
-                    className="block w-full px-3 py-1.5 glass-input text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-violet-600 font-sans"
+                    className="block w-full px-3 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="reg-firstname">
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="reg-firstname">
                     Нэр
                   </label>
                   <input
@@ -835,7 +832,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder=""
-                    className="block w-full px-3 py-1.5 glass-input text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-violet-600 font-sans"
+                    className="block w-full px-3 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
                   />
                 </div>
               </div>
@@ -843,7 +840,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {userType === 'employer' ? (
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="reg-companyname">
+                    <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="reg-companyname">
                       Компанийн нэр (Заавал биш)
                     </label>
                     <input
@@ -852,12 +849,12 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
                       placeholder=""
-                      className="block w-full px-3 py-1.5 glass-input text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-violet-600 font-sans"
+                      className="block w-full px-3 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
                     />
                   </div>
                 ) : null}
                 <div className={userType === 'employer' ? '' : 'md:col-span-2'}>
-                  <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="reg-email">
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="reg-email">
                     Имэйл хаяг (Заавал биш)
                   </label>
                   <input
@@ -866,7 +863,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder=""
-                    className="block w-full px-3 py-1.5 glass-input text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-violet-600 font-sans"
+                    className="block w-full px-3 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
                   />
                 </div>
               </div>
@@ -874,12 +871,12 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
               {/* Phone field */}
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="reg-phone">
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="reg-phone">
                     Утасны дугаар
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Phone className="h-4 w-4 text-slate-500" />
+                      <Phone className="h-4 w-4 text-[var(--muted-foreground)]" />
                     </div>
                     <input
                       id="reg-phone"
@@ -888,18 +885,18 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder=""
-                      className="block w-full pl-9 pr-3 py-1.5 glass-input text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-violet-600"
+                      className="block w-full pl-9 pr-3 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="reg-address">
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="reg-address">
                     Гэрийн/Байгууллагын хаяг
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <MapPin className="h-4 w-4 text-slate-500" />
+                      <MapPin className="h-4 w-4 text-[var(--muted-foreground)]" />
                     </div>
                     <input
                       id="reg-address"
@@ -908,13 +905,13 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       placeholder=""
-                      className="block w-full pl-9 pr-3 py-1.5 glass-input text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-violet-600"
+                      className="block w-full pl-9 pr-3 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="reg-password">
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="reg-password">
                     Нэвтрэх нууц код
                   </label>
                   <div className="relative">
@@ -925,12 +922,12 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                       value={regPassword}
                       onChange={(e) => setRegPassword(e.target.value)}
                       placeholder=""
-                      className="block w-full pl-3 pr-10 py-1.5 glass-input text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-violet-600 font-sans"
+                      className="block w-full pl-3 pr-10 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
                     />
                     <span
                       id="toggle-reg-pass-visibility"
                       onClick={() => setShowRegPassword(!showRegPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-white cursor-pointer"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-[var(--muted-foreground)] hover:text-[var(--accent-foreground)] cursor-pointer"
                     >
                       {showRegPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
                     </span>
@@ -950,7 +947,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="reg-confirm-password">
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="reg-confirm-password">
                     Нэвтрэх нууц код давтах
                   </label>
                   <div className="relative">
@@ -961,12 +958,12 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                       value={regConfirmPassword}
                       onChange={(e) => setRegConfirmPassword(e.target.value)}
                       placeholder=""
-                      className="block w-full pl-3 pr-10 py-1.5 glass-input text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-violet-600 font-sans"
+                      className="block w-full pl-3 pr-10 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
                     />
                     <span
                       id="toggle-reg-confirm-pass-visibility"
                       onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-[#f1f3f8] cursor-pointer"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-[var(--muted-foreground)] hover:text-[var(--fg)] cursor-pointer"
                     >
                       {showRegConfirmPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
                     </span>
@@ -981,17 +978,17 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
 
                 {/* Live Password Checklist */}
                 <div className="bg-[var(--color-glass-bg)] p-3 rounded-lg border border-[var(--color-glass-border)] space-y-1.5 font-sans">
-                  <span className="text-[10px] font-semibold text-slate-500 block mb-1">Нууц үгэнд тавих шаардлага:</span>
+                  <span className="text-[10px] font-semibold text-[var(--muted-foreground)] block mb-1">Нууц үгэнд тавих шаардлага:</span>
 
                   {/* Rule 1: Min length 8 */}
                   <div className="flex items-center space-x-2 text-[10.5px]">
                     <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${regPassword.length >= 8
-                        ? 'bg-violet-600/10 text-violet-600 border-violet-600/30'
+                        ? 'bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] border-[var(--accent)]'
                         : 'bg-red-500/10 text-red-400 border-red-500/30'
                       }`}>
                       {regPassword.length >= 8 ? <Check className="w-2.5 h-2.5" /> : <X className="w-2.5 h-2.5" />}
                     </div>
-                    <span className={regPassword.length >= 8 ? 'text-violet-600 font-medium' : 'text-slate-400'}>
+                    <span className={regPassword.length >= 8 ? 'text-[var(--accent-soft-foreground)] font-medium' : 'text-[var(--muted-foreground)]'}>
                       Хамгийн багадаа 8 тэмдэгт (Одоогийн урт: {regPassword.length})
                     </span>
                   </div>
@@ -999,12 +996,12 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                   {/* Rule 2: Special character */}
                   <div className="flex items-center space-x-2 text-[10.5px]">
                     <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword)
-                        ? 'bg-violet-600/10 text-violet-600 border-violet-600/30'
+                        ? 'bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] border-[var(--accent)]'
                         : 'bg-red-500/10 text-red-400 border-red-500/30'
                       }`}>
                       {/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) ? <Check className="w-2.5 h-2.5" /> : <X className="w-2.5 h-2.5" />}
                     </div>
-                    <span className={/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) ? 'text-violet-600 font-medium' : 'text-slate-400'}>
+                    <span className={/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) ? 'text-[var(--accent-soft-foreground)] font-medium' : 'text-[var(--muted-foreground)]'}>
                       Дор хаяж нэг тусгай тэмдэгт (!@#$%^&* гэх мэт)
                     </span>
                   </div>
@@ -1012,12 +1009,12 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                   {/* Rule 3: Passwords match */}
                   <div className="flex items-center space-x-2 text-[10.5px]">
                     <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${(regPassword === regConfirmPassword && regConfirmPassword !== '')
-                        ? 'bg-violet-600/10 text-violet-600 border-violet-600/30'
+                        ? 'bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] border-[var(--accent)]'
                         : 'bg-red-500/10 text-red-400 border-red-500/30'
                       }`}>
                       {(regPassword === regConfirmPassword && regConfirmPassword !== '') ? <Check className="w-2.5 h-2.5" /> : <X className="w-2.5 h-2.5" />}
                     </div>
-                    <span className={(regPassword === regConfirmPassword && regConfirmPassword !== '') ? 'text-violet-600 font-medium' : 'text-slate-400'}>
+                    <span className={(regPassword === regConfirmPassword && regConfirmPassword !== '') ? 'text-[var(--accent-soft-foreground)] font-medium' : 'text-[var(--muted-foreground)]'}>
                       Хоёр нууц үг хоорондоо тохирох
                     </span>
                   </div>
@@ -1026,7 +1023,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
 
               {/* Avatar Picker */}
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5 font-sans">Профайл зураг сонгох</label>
+                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 font-sans">Профайл зураг сонгох</label>
                 <div className="flex items-center space-x-6">
                   <div className="flex space-x-3 items-center">
                     {AVATAR_PRESETS.map((avatar, idx) => (
@@ -1035,21 +1032,21 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                         key={idx}
                         type="button"
                         onClick={() => { setSelectedAvatar(avatar); }}
-                        className={`relative rounded-full overflow-hidden w-12 h-12 border-2 transition-colors cursor-pointer ${selectedAvatar === avatar ? 'border-violet-600' : 'border-transparent'
+                        className={`relative rounded-full overflow-hidden w-12 h-12 border-2 transition-colors cursor-pointer ${selectedAvatar === avatar ? 'border-[var(--accent)]' : 'border-transparent'
                           }`}
                       >
                         <img src={avatar} alt={`Avatar Preset ${idx + 1}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                         {selectedAvatar === avatar && (
-                          <div className="absolute inset-0 bg-violet-600/10 flex items-center justify-center">
-                            <Check className="w-4 h-4 text-violet-600" />
+                          <div className="absolute inset-0 bg-[var(--accent-soft)] flex items-center justify-center">
+                            <Check className="w-4 h-4 text-[var(--accent-soft-foreground)]" />
                           </div>
                         )}
                       </button>
                     ))}
                   </div>
 
-                  <div className="border-l border-slate-200 pl-4 py-1.5 flex flex-col justify-center">
-                    <label className="text-xs text-violet-600 hover:text-violet-400 underline cursor-pointer font-sans inline-flex items-center space-x-1">
+                  <div className="border-l border-[var(--border)] pl-4 py-1.5 flex flex-col justify-center">
+                    <label className="text-xs text-[var(--accent-soft-foreground)] hover:text-[var(--accent-soft-foreground)] underline cursor-pointer font-sans inline-flex items-center space-x-1">
                       <span>Эсвэл өөрийн зургийг хуулах (Upload)</span>
                       <input
                         type="file"
@@ -1061,8 +1058,8 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                     {/* Show a mini preview of uploaded custom image if it is not one of presets */}
                     {!AVATAR_PRESETS.includes(selectedAvatar) && (
                       <div className="mt-1 flex items-center space-x-2">
-                        <img src={selectedAvatar} alt="Custom upload" className="w-7 h-7 rounded-full object-cover border border-violet-600" referrerPolicy="no-referrer" />
-                        <span className="text-[10px] text-violet-600">Зургийг сонголоо!</span>
+                        <img src={selectedAvatar} alt="Custom upload" className="w-7 h-7 rounded-full object-cover border border-[var(--accent)]" referrerPolicy="no-referrer" />
+                        <span className="text-[10px] text-[var(--accent-soft-foreground)]">Зургийг сонголоо!</span>
                       </div>
                     )}
                   </div>
@@ -1072,14 +1069,14 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
               {/* Bio */}
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-medium text-slate-300" htmlFor="reg-bio">
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)]" htmlFor="reg-bio">
                     Нэмэлт Мэдээлэл / Био (Туршлага, ажлын чиглэл, товч танилцуулга г.м)
                   </label>
                   <button
                     type="button"
                     onClick={handleOptimizeBio}
                     disabled={isOptimizing}
-                    className="text-[10px] text-violet-600 hover:text-violet-400 flex items-center space-x-1 border border-violet-600/30 bg-violet-600/5 px-2.5 py-0.5 rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-sans"
+                    className="text-[10px] text-[var(--accent-soft-foreground)] hover:text-[var(--accent-soft-foreground)] flex items-center space-x-1 border border-[var(--accent)] bg-[var(--accent-soft)] px-2.5 py-0.5 rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-sans"
                   >
                     <Sparkles className={`w-3 h-3 ${isOptimizing ? 'animate-spin' : ''}`} />
                     <span>{isOptimizing ? 'AI сайжруулж байна...' : (hasOptimized ? 'Өөр загвар гаргах' : 'AI-аар сайжруулах')}</span>
@@ -1099,15 +1096,15 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                     setHasOptimized(false);
                   }}
                   placeholder=""
-                  className="block w-full px-3 py-2.5 glass-input text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-violet-600 font-sans min-h-[140px] leading-relaxed"
+                  className="block w-full px-3 py-2.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans min-h-[140px] leading-relaxed"
                 />
               </div>
 
               {/* Operator specific fields */}
               {userType === 'operator' && (
-                <div className="border-t border-slate-200 pt-4 space-y-4">
+                <div className="border-t border-[var(--border)] pt-4 space-y-4">
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="reg-experience">
+                    <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="reg-experience">
                       Ажилласан туршлага (Жилээр)
                     </label>
                     <input
@@ -1126,12 +1123,12 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                         }
                       }}
                       onFocus={(e) => e.target.select()}
-                      className="block w-[100px] px-3 py-1.5 glass-input text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-violet-600"
+                      className="block w-[100px] px-3 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                    <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5">
                       Мэргэшсэн Хүнд Машин Механизмууд (Сонгоно уу)
                     </label>
                     <div className="grid grid-cols-2 gap-2 text-xs font-sans">
@@ -1142,8 +1139,8 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                           key={id}
                           onClick={() => toggleMachine(item)}
                           className={`flex items-center space-x-1.5 py-1 px-2.5 rounded transition-colors text-left border cursor-pointer ${selectedMachines.includes(item)
-                              ? 'border-violet-600 bg-violet-600/10 text-violet-400'
-                              : 'border-[var(--color-glass-border)] bg-[var(--color-glass-bg)] text-slate-400 hover:border-slate-500'
+                              ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)]'
+                              : 'border-[var(--color-glass-border)] bg-[var(--color-glass-bg)] text-[var(--muted-foreground)] hover:border-[var(--border)]'
                             }`}
                         >
                           <span className="text-xs">{item}</span>
@@ -1152,8 +1149,8 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                     </div>
 
                     {/* Hand-written custom machine entry box */}
-                    <div className="mt-3.5 pt-3 border-t border-slate-200">
-                      <label className="block text-[11px] font-medium text-slate-500 mb-1">
+                    <div className="mt-3.5 pt-3 border-t border-[var(--border)]">
+                      <label className="block text-[11px] font-medium text-[var(--muted-foreground)] mb-1">
                         Бусад машин механизм нэмэх (Гараар бичих)
                       </label>
                       <div className="flex space-x-2">
@@ -1175,7 +1172,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                               }
                             }
                           }}
-                          className="flex-1 px-2.5 py-1.5 glass-input text-xs text-white focus:outline-none focus:ring-1 focus:ring-violet-600 placeholder-slate-400 font-sans"
+                          className="flex-1 px-2.5 py-1.5 input text-xs text-[var(--accent-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] placeholder-[var(--muted-foreground)] font-sans"
                         />
                         <button
                           id="add-custom-machine-reg-btn"
@@ -1189,7 +1186,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                               setCustomRegMachine('');
                             }
                           }}
-                          className="px-3 bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] hover:bg-slate-700 text-violet-400 rounded text-xs font-semibold transition-colors cursor-pointer"
+                          className="px-3 bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] hover:bg-[var(--bg2)] text-[var(--accent-soft-foreground)] rounded text-xs font-semibold transition-colors cursor-pointer"
                         >
                           Нэмэх
                         </button>
@@ -1199,18 +1196,18 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                     {/* Selected machines not in standard MACHINE_OPTIONS */}
                     {selectedMachines.some(m => !MACHINE_OPTIONS.includes(m)) && (
                       <div className="mt-2.5 space-y-1">
-                        <span className="text-[10px] text-slate-500 block font-sans">Нэмэлтээр оруулсан хүнд техникүүд:</span>
+                        <span className="text-[10px] text-[var(--muted-foreground)] block font-sans">Нэмэлтээр оруулсан хүнд техникүүд:</span>
                         <div className="flex flex-wrap gap-1.5">
                           {selectedMachines.filter(m => !MACHINE_OPTIONS.includes(m)).map((item, idx) => (
                             <span
                               key={idx}
-                              className="inline-flex items-center space-x-1.5 py-1 px-2 rounded-md bg-violet-600/10 border border-violet-600/40 text-violet-400 text-[10.5px]"
+                              className="inline-flex items-center space-x-1.5 py-1 px-2 rounded-md bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] text-[10.5px]"
                             >
                               <span>{item}</span>
                               <button
                                 type="button"
                                 onClick={() => toggleMachine(item)}
-                                className="text-slate-500 hover:text-red-400 font-bold ml-1 text-xs cursor-pointer focus:outline-none"
+                                className="text-[var(--muted-foreground)] hover:text-red-400 font-bold ml-1 text-xs cursor-pointer focus:outline-none"
                                 title="Устгах"
                               >
                                 ×
@@ -1231,7 +1228,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                     <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                     <span>Бүртгүүлэхийн тулд дараах мэдээллүүдийг гүйцээнэ үү:</span>
                   </div>
-                  <ul className="list-disc pl-4.5 space-y-1 text-[10.5px] text-slate-500">
+                  <ul className="list-disc pl-4.5 space-y-1 text-[10.5px] text-[var(--muted-foreground)]">
                     {lastName.trim() === '' && <li>Овгоо оруулна уу.</li>}
                     {firstName.trim() === '' && <li>Нэрээ оруулна уу.</li>}
                     {email.trim() !== '' && !email.includes('@') && <li>Зөв имэйл хаяг оруулна уу.</li>}
@@ -1255,13 +1252,13 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                   type="checkbox"
                   checked={isAgreedToTerms}
                   onChange={(e) => setIsAgreedToTerms(e.target.checked)}
-                  className="w-4.5 h-4.5 rounded text-violet-600 bg-[var(--color-glass-bg)] border-[var(--color-glass-border)] focus:ring-violet-600 focus:ring-offset-slate-900 accent-violet-600 shrink-0 mt-0.5 cursor-pointer"
+                  className="w-4.5 h-4.5 rounded text-[var(--accent-soft-foreground)] bg-[var(--color-glass-bg)] border-[var(--color-glass-border)] focus:ring-[var(--accent)] focus:ring-offset-[var(--card)] accent-[var(--accent)] shrink-0 mt-0.5 cursor-pointer"
                 />
-                <label htmlFor="agree-terms-checkbox" className="text-xs text-slate-500 leading-normal select-none font-sans">
+                <label htmlFor="agree-terms-checkbox" className="text-xs text-[var(--muted-foreground)] leading-normal select-none font-sans">
                   Би энэхүү платформын{' '}
-                  <button type="button" onClick={() => setShowTerms(true)} className="text-violet-600 hover:text-violet-500 underline font-semibold transition-colors cursor-pointer bg-transparent border-none p-0">Үйлчилгээний нөхцөл</button>
+                  <button type="button" onClick={() => setShowTerms(true)} className="text-[var(--accent-soft-foreground)] hover:text-[var(--accent-soft-foreground)] underline font-semibold transition-colors cursor-pointer bg-transparent border-none p-0">Үйлчилгээний нөхцөл</button>
                   {' '}болон{' '}
-                  <button type="button" onClick={() => setShowPrivacy(true)} className="text-teal-400 hover:text-teal-300 underline font-semibold transition-colors cursor-pointer bg-transparent border-none p-0">Нууцлалын бодлого</button>
+                  <button type="button" onClick={() => setShowPrivacy(true)} className="text-[var(--verify)] hover:text-[var(--verify)] underline font-semibold transition-colors cursor-pointer bg-transparent border-none p-0">Нууцлалын бодлого</button>
                   -той бүрэн танилцаж, хүлээн зөвшөөрч байна.
                 </label>
               </div>
@@ -1271,16 +1268,16 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
                   id="submit-register-btn"
                   type="submit"
                   disabled={isSubmitting || firstName.trim() === '' || lastName.trim() === '' || (email.trim() !== '' && !email.includes('@')) || phone.trim() === '' || phone.trim().length < 8 || address.trim() === '' || regPassword.length < 8 || !/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) || regPassword !== regConfirmPassword || !isAgreedToTerms}
-                  className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded text-white font-medium text-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${!isSubmitting && firstName.trim() !== '' && lastName.trim() !== '' && (email.trim() === '' || email.includes('@')) && phone.trim() !== '' && phone.trim().length >= 8 && address.trim() !== '' && regPassword.length >= 8 && /[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) && regPassword === regConfirmPassword && isAgreedToTerms
-                      ? 'bg-violet-600 hover:bg-violet-600 shadow-lg shadow-violet-500/20'
-                      : 'bg-slate-700 text-slate-400 cursor-not-allowed opacity-50'
+                  className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded text-[var(--accent-foreground)] font-medium text-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${!isSubmitting && firstName.trim() !== '' && lastName.trim() !== '' && (email.trim() === '' || email.includes('@')) && phone.trim() !== '' && phone.trim().length >= 8 && address.trim() !== '' && regPassword.length >= 8 && /[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) && regPassword === regConfirmPassword && isAgreedToTerms
+                      ? 'bg-[var(--accent)] hover:brightness-95 shadow-lg '
+                      : 'bg-[var(--bg2)] text-[var(--muted-foreground)] cursor-not-allowed opacity-50'
                     }`}
                 >
                   {isSubmitting ? 'Бүртгэж байна...' : 'Бүртгүүлэх'}
                 </button>
                 {successMsg && (
-                  <div className="mt-3.5 bg-violet-600/10 border border-violet-600/40 text-violet-400 px-4 py-2.5 rounded-lg text-xs flex items-center justify-center space-x-2 animate-fade-in font-sans">
-                    <span className="w-2 h-2 rounded-full bg-violet-600 animate-ping shrink-0"></span>
+                  <div className="mt-3.5 bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] px-4 py-2.5 rounded-lg text-xs flex items-center justify-center space-x-2 animate-fade-in font-sans">
+                    <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping shrink-0"></span>
                     <span className="text-left">{successMsg}</span>
                   </div>
                 )}
@@ -1302,64 +1299,64 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       {showTerms && (
         <div 
           onClick={() => setShowTerms(false)}
-          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in text-left"
+          className="fixed inset-0 bg-[var(--bg2)] flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in text-left"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-[var(--color-brand-bg2)] border border-[var(--color-glass-border)] rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl relative"
+            className="bg-[var(--card)] border border-[var(--color-glass-border)] rounded-md max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
           >
             {/* Header */}
-            <div className="sticky top-0 bg-[var(--color-brand-bg2)] border-b border-[var(--color-glass-border)] px-6 py-4 flex items-center justify-between z-10">
+            <div className="sticky top-0 bg-[var(--card)] border-b border-[var(--color-glass-border)] px-6 py-4 flex items-center justify-between z-10">
               <div className="flex items-center space-x-2.5">
-                <FileText className="w-5 h-5 text-violet-400" />
-                <h3 className="text-sm font-bold text-[#f1f3f8] font-sans">Үйлчилгээний нөхцөл (Terms of Service)</h3>
+                <FileText className="w-5 h-5 text-[var(--accent-soft-foreground)]" />
+                <h3 className="text-sm font-bold text-[var(--fg)] font-sans">Үйлчилгээний нөхцөл (Terms of Service)</h3>
               </div>
               <button
                 onClick={() => setShowTerms(false)}
-                className="text-slate-500 hover:text-[#f1f3f8] transition-colors cursor-pointer p-1 rounded-lg hover:bg-white/5"
+                className="text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer p-1 rounded-lg hover:bg-[var(--bg2)]"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-5 text-xs text-slate-300 leading-relaxed font-sans">
-              <div className="bg-violet-500/5 border border-violet-500/20 p-4 rounded-xl space-y-1.5">
-                <p className="font-bold text-violet-400 text-sm">Хэрэглэгчийн аюулгүй байдлын баталгаа</p>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+            <div className="p-6 space-y-5 text-xs text-[var(--muted-foreground)] leading-relaxed font-sans">
+              <div className="bg-[var(--accent-soft)] border border-[var(--accent)] p-4 rounded-md space-y-1.5">
+                <p className="font-bold text-[var(--accent-soft-foreground)] text-sm">Хэрэглэгчийн аюулгүй байдлын баталгаа</p>
+                <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
                   Энэхүү үйлчилгээний нөхцөл нь Монгол Улсын Иргэний хууль, Хэрэглэгчийн эрхийг хамгаалах тухай хууль болон бусад холбогдох хууль тогтоомжийн дагуу боловсруулагдсан болно.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-bold text-[#f1f3f8] text-sm">1. Ерөнхий нөхцөл</h4>
+                <h4 className="font-bold text-[var(--fg)] text-sm">1. Ерөнхий нөхцөл</h4>
                 <p>1.1. Энэхүү платформ нь хүнд машин механизм, газар шорооны ажлын чиглэлээр ажиллаж буй жолооч, оператор болон ажил олгогч нарыг холбох, ажлын түүх, үнэлгээгээр баталгаажсан найдвартай хамтын ажиллагааг үүсгэх зорилготой.</p>
                 <p>1.2. Хэрэглэгч системд бүртгүүлснээр энэхүү үйлчилгээний нөхцөлийг бүрэн хүлээн зөвшөөрсөнд тооцогдоно.</p>
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-bold text-[#f1f3f8] text-sm">2. Хэрэглэгчийн хариуцлага ба Үнэлгээний систем</h4>
+                <h4 className="font-bold text-[var(--fg)] text-sm">2. Хэрэглэгчийн хариуцлага ба Үнэлгээний систем</h4>
                 <p>2.1. Хэрэглэгч өөрийн бүртгэлийн мэдээлэл (нэр, утас, хаяг г.м)-ийн үнэн зөв байдлыг бүрэн хариуцна.</p>
                 <p>2.2. Жолооч болон ажил олгогч нар ажлын гүйцэтгэлийн дараа нөгөө талдаа бодитой, үнэн зөв үнэлгээ өгөх үүрэгтэй.</p>
                 <p className="text-red-400 font-semibold">2.3. Ажлын хариуцлага алдаж шалтгаангүй ажил хаясан, техникт санаатай хохирол учруулсан, ажлын байранд архидан согтуурсан, цалин хөлс олгоогүй гэх мэт ноцтой зөрчил гаргасан тохиолдолд хэрэглэгчийн мэдээллийг хар дансанд бүртгэж, цаашид системийг ашиглах болон дахин үйлчилгээ авах боломжгүй болох эрсдэлтэйг анхаарна уу.</p>
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-bold text-[#f1f3f8] text-sm">3. Платформын хариуцлагын хязгаарлалт</h4>
+                <h4 className="font-bold text-[var(--fg)] text-sm">3. Платформын хариуцлагын хязгаарлалт</h4>
                 <p>3.1. Платформ нь мэдээлэл дамжуулах, зуучлах, баталгаажуулах үүргийг гүйцэтгэх бөгөөд талуудын хоорондох хөдөлмөрийн болон санхүүгийн шууд маргааныг хариуцахгүй. Гэвч маргаан гарсан тохиобдолд ажлын түүх болон үнэлгээний мэдээллээр дэмжлэг үзүүлнэ.</p>
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-bold text-[#f1f3f8] text-sm">4. Үйлчилгээний нөхцөлийн өөрчлөлт</h4>
+                <h4 className="font-bold text-[var(--fg)] text-sm">4. Үйлчилгээний нөхцөлийн өөрчлөлт</h4>
                 <p>4.1. Үйлчилгээний нөхцөл шинэчлэгдэх бүрт хэрэглэгчдэд нээлттэй мэдээлэгдэх бөгөөд үйлчилгээг үргэлжлүүлэн ашиглах нь шинэ нөхцөлийг зөвшөөрсөнд тооцогдоно.</p>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="border-t border-[var(--color-glass-border)] px-6 py-4 flex justify-end bg-[var(--color-brand-bg2)]">
+            <div className="border-t border-[var(--color-glass-border)] px-6 py-4 flex justify-end bg-[var(--card)]">
               <button
                 onClick={() => setShowTerms(false)}
-                className="bg-violet-600 hover:bg-violet-600 text-white font-semibold px-5 py-2 rounded-xl transition-all cursor-pointer text-xs font-sans"
+                className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-semibold px-5 py-2 rounded-md transition-all cursor-pointer text-xs font-sans"
               >
                 Ойлголоо, зөвшөөрөв
               </button>
@@ -1374,64 +1371,64 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       {showPrivacy && (
         <div 
           onClick={() => setShowPrivacy(false)}
-          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in text-left"
+          className="fixed inset-0 bg-[var(--bg2)] flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in text-left"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-[var(--color-brand-bg2)] border border-[var(--color-glass-border)] rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl relative"
+            className="bg-[var(--card)] border border-[var(--color-glass-border)] rounded-md max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
           >
             {/* Header */}
-            <div className="sticky top-0 bg-[var(--color-brand-bg2)] border-b border-[var(--color-glass-border)] px-6 py-4 flex items-center justify-between z-10">
+            <div className="sticky top-0 bg-[var(--card)] border-b border-[var(--color-glass-border)] px-6 py-4 flex items-center justify-between z-10">
               <div className="flex items-center space-x-2.5">
-                <Lock className="w-5 h-5 text-teal-400" />
-                <h3 className="text-sm font-bold text-[#f1f3f8] font-sans">Нууцлалын бодлого (Privacy Policy)</h3>
+                <Lock className="w-5 h-5 text-[var(--verify)]" />
+                <h3 className="text-sm font-bold text-[var(--fg)] font-sans">Нууцлалын бодлого (Privacy Policy)</h3>
               </div>
               <button
                 onClick={() => setShowPrivacy(false)}
-                className="text-slate-500 hover:text-[#f1f3f8] transition-colors cursor-pointer p-1 rounded-lg hover:bg-white/5"
+                className="text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer p-1 rounded-lg hover:bg-[var(--bg2)]"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-5 text-xs text-slate-300 leading-relaxed font-sans">
-              <div className="bg-teal-500/5 border border-teal-500/20 p-4 rounded-xl space-y-1.5">
-                <p className="font-bold text-teal-400 text-sm">Хувь хүний мэдээллийн аюулгүй байдал</p>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+            <div className="p-6 space-y-5 text-xs text-[var(--muted-foreground)] leading-relaxed font-sans">
+              <div className="bg-[rgba(31,138,76,0.1)] border border-[var(--verify)] p-4 rounded-md space-y-1.5">
+                <p className="font-bold text-[var(--verify)] text-sm">Хувь хүний мэдээллийн аюулгүй байдал</p>
+                <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
                   Энэхүү нууцлалын бодлого нь Монгол Улсын Хувь хүний мэдээлэл хамгаалах тухай хуульд бүрэн нийцсэн бөгөөд таны хувийн мэдээллийг цуглуулах, боловсруулах, хамгаалахад баримтлах үндсэн зарчмыг тодорхойлно.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-bold text-[#f1f3f8] text-sm">1. Candy мэдээлэл цуглуулах</h4>
+                <h4 className="font-bold text-[var(--fg)] text-sm">1. Candy мэдээлэл цуглуулах</h4>
                 <p>1.1. Бид хэрэглэгчийн үйлчилгээ авах зорилгоор оруулсан дараах мэдээллүүдийг цуглуулна: Овог нэр / Компанийн нэр, утасны дугаар, хаяг байршил, мэргэшсэн техникийн төрөл, ажлын түүх болон танилцуулга намтар (bio).</p>
                 <p>1.2. Нэвтрэх нууц кодыг систем шифрлэн (encrypted) хадгалах бөгөөд ямар ч администратор, гуравдагч этгээд харах боломжгүйгээр хамгаалагдсан болно.</p>
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-bold text-[#f1f3f8] text-sm">2. Мэдээллийн ашиглалт ба Зорилго</h4>
+                <h4 className="font-bold text-[var(--fg)] text-sm">2. Мэдээллийн ашиглалт ба Зорилго</h4>
                 <p>2.1. Таны оруулсан мэдээллийг зөвхөн ажил олгогч болон операторыг холбох, үнэлгээ өгөх, системийн найдвартай ажиллагааг хангахад ашиглана.</p>
-                <p className="text-violet-400">2.2. Систем нь хэрэглэгчийн утасны дугаар болон бусад хувийн мэдээллийг зар сурталчилгаанд худалдах, бусдад зөвшөөрөлгүйгээр шилжүүлэхийг хатуу хориглоно.</p>
+                <p className="text-[var(--accent-soft-foreground)]">2.2. Систем нь хэрэглэгчийн утасны дугаар болон бусад хувийн мэдээллийг зар сурталчилгаанд худалдах, бусдад зөвшөөрөлгүйгээр шилжүүлэхийг хатуу хориглоно.</p>
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-bold text-[#f1f3f8] text-sm">3. Хэрэглэгчийн эрх болон Профайл нууцлал</h4>
+                <h4 className="font-bold text-[var(--fg)] text-sm">3. Хэрэглэгчийн эрх болон Профайл нууцлал</h4>
                 <p>3.1. Хэрэглэгч өөрийн профайлыг бусдад харагдуулахгүй байх (isPublic тохиргоо) эрхтэй.</p>
                 <p>3.2. Хэрэглэгч өөрийн мэдээллийг хэдийд ч засах, системээс өөрийн бүртгэлийг бүрэн устгах (Аюулгүй байдлын цэсээр) эрхтэй.</p>
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-bold text-[#f1f3f8] text-sm">4. Мэдээллийн аюулгүй байдал</h4>
+                <h4 className="font-bold text-[var(--fg)] text-sm">4. Мэдээллийн аюулгүй байдал</h4>
                 <p>4.1. Систем нь таны мэдээллийг хамгаалах сүүлийн үеийн SSL шифрлэлт болон аюулгүй байдлын стандартыг ашиглаж байна.</p>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="border-t border-[var(--color-glass-border)] px-6 py-4 flex justify-end bg-[var(--color-brand-bg2)]">
+            <div className="border-t border-[var(--color-glass-border)] px-6 py-4 flex justify-end bg-[var(--card)]">
               <button
                 onClick={() => setShowPrivacy(false)}
-                className="bg-teal-600 hover:bg-teal-500 text-white font-semibold px-5 py-2 rounded-xl transition-all cursor-pointer text-xs font-sans"
+                className="bg-[var(--verify)] hover:brightness-95 text-[var(--accent-foreground)] font-semibold px-5 py-2 rounded-md transition-all cursor-pointer text-xs font-sans"
               >
                 Ойлголоо, хүлээн зөвшөөрөв
               </button>
