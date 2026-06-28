@@ -90,7 +90,12 @@ function ProfileContent() {
     };
 
     loadUser();
-  }, [queryId, pathname, router, currentUser, authLoading, setCurrentUser]);
+    // Depend on the stable user *id*, not the currentUser object: the own-profile
+    // branch calls setCurrentUser(fetched) with a fresh object each time, so
+    // depending on the object (or the unstable setter) re-triggers this effect
+    // forever ("Maximum update depth exceeded"). The id is stable across syncs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryId, pathname, currentUser?.id, authLoading]);
 
   const handleUserUpdatedProfile = (updated: User) => {
     setCurrentUser(updated);

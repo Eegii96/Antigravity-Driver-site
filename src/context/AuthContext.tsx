@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User } from '../types';
 import { auth, db } from '../lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -20,11 +20,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentUser, setCurrentUserState] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Sync state update to state and localStorage
-  const handleSetCurrentUser = (user: User | null) => {
+  // Sync state update to state and localStorage. Stable reference (useCallback)
+  // so consumers can safely list it in effect dependency arrays without causing
+  // re-run loops.
+  const handleSetCurrentUser = useCallback((user: User | null) => {
     setCurrentUserState(user);
     setLocalUser(user);
-  };
+  }, []);
 
   useEffect(() => {
     // 1. Initially load from localStorage for instant UI rendering
