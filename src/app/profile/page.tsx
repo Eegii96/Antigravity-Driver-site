@@ -103,8 +103,8 @@ function ProfileContent() {
     return (
       <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center text-[var(--fg)] font-sans">
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-400 text-sm">Уншиж байна...</p>
+          <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-[var(--muted-foreground)] text-sm">Уншиж байна...</p>
         </div>
       </div>
     );
@@ -113,10 +113,10 @@ function ProfileContent() {
   if (error || !viewedUser || !currentUser) {
     return (
       <div className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center text-[var(--fg)] font-sans p-4">
-        <p className="text-red-400 font-bold mb-4">{error || 'Алдаа гарлаа'}</p>
+        <p className="text-rose-600 font-bold mb-4">{error || 'Алдаа гарлаа'}</p>
         <button
           onClick={() => router.push('/')}
-          className="bg-[var(--card)] border border-[var(--border)] hover:bg-white/10 text-violet-400 px-6 py-2.5 rounded-xl transition-all font-semibold cursor-pointer backdrop-blur-md"
+          className="bg-[var(--card)] border border-[var(--border)] hover:bg-[var(--bg2)] text-[var(--fg)] px-6 py-2.5 rounded-md transition-all font-semibold cursor-pointer"
         >
           Нүүр хуудас руу буцах
         </button>
@@ -149,8 +149,8 @@ export default function ProfilePage() {
     <Suspense fallback={
       <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center text-[var(--fg)] font-sans">
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-400 text-sm">Уншиж байна...</p>
+          <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-[var(--muted-foreground)] text-sm">Уншиж байна...</p>
         </div>
       </div>
     }>

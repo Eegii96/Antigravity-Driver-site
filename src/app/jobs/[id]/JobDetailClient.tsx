@@ -106,8 +106,8 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
     return (
       <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center text-[var(--fg)] font-sans">
         <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="w-12 h-12 text-violet-600 animate-spin" />
-          <p className="text-slate-400 text-sm">Уншиж байна...</p>
+          <Loader2 className="w-12 h-12 text-[var(--accent-soft-foreground)] animate-spin" />
+          <p className="text-[var(--muted-foreground)] text-sm">Уншиж байна...</p>
         </div>
       </div>
     );
@@ -115,14 +115,10 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
 
   return (
     <div className="flex-grow bg-[var(--bg)] text-[var(--fg)] font-sans flex flex-col justify-between relative overflow-hidden">
-      {/* Background ambient glow */}
-      <div className="glow-blob bg-violet-600 w-[400px] h-[400px] -top-40 -left-40 opacity-10"></div>
-      <div className="glow-blob bg-cyan-500 w-[500px] h-[500px] -bottom-60 -right-40 opacity-10"></div>
-
       {/* Premium Header */}
-      <header className="sticky top-0 z-40 bg-[var(--bg)]/85 backdrop-blur-md border-b border-[var(--border)] px-6 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-[var(--card)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <button 
+          <button
             onClick={() => {
               if (typeof document !== 'undefined' && document.referrer && document.referrer.includes(window.location.host)) {
                 window.history.back();
@@ -130,13 +126,13 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 window.location.href = '/';
               }
             }}
-            className="p-2 bg-[var(--card)] border border-[var(--border)] rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-2 bg-[var(--card)] border border-[var(--border)] rounded-md hover:bg-[var(--bg2)] transition-colors cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4 text-violet-600" />
+            <ArrowLeft className="w-4 h-4 text-[var(--fg)]" />
           </button>
           <div>
             <h1 className="text-sm font-black tracking-wide text-[var(--fg)] uppercase text-left font-display">Antigravity Driver</h1>
-            <p className="text-[10px] text-slate-400 font-medium">Хүнд машин, механизм & Газар шорооны ажлын сайт</p>
+            <p className="text-[10px] text-[var(--muted-foreground)] font-medium">Хүнд машин, механизм & Газар шорооны ажлын сайт</p>
           </div>
         </div>
 
@@ -147,45 +143,45 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
             onMouseLeave={() => setShowProfileMenu(false)}
           >
             <button
-              className="flex items-center space-x-2 bg-white/5 p-1.5 pl-3 rounded-full hover:bg-white/10 transition-colors border border-[var(--border)] text-left cursor-pointer"
+              className="flex items-center space-x-2 bg-[var(--card)] p-1.5 pl-3 rounded-full hover:bg-[var(--bg2)] transition-colors border border-[var(--border)] text-left cursor-pointer"
             >
               <div className="hidden md:block">
                 <p className="text-xs font-semibold text-[var(--fg)] leading-none">{getFirstName(currentUser)}</p>
-                <span className="text-[9px] text-violet-600 font-mono">
+                <span className="text-[9px] text-[var(--muted-foreground)] font-mono">
                   {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} • {currentUser.rating}⭐
                 </span>
               </div>
               <img
                 src={currentUser.profileImage}
                 alt="user avatar"
-                className="w-8 h-8 rounded-full object-cover border-2 border-violet-600"
+                className="w-8 h-8 rounded-full object-cover border-2 border-[var(--accent)]"
                 onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }}
               />
-              <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+              <ChevronDown className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
             </button>
 
             {showProfileMenu && (
               <div className="absolute right-0 top-full pt-1.5 w-48 z-50 animate-fade-in">
-                <div className="bg-[var(--bg2)] border border-[var(--border)] rounded-xl shadow-2xl py-2 backdrop-blur-xl">
+                <div className="bg-[var(--card)] border border-[var(--border)] rounded-md shadow-md py-2">
                   <button
                     onClick={() => router.push('/profile')}
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-[var(--muted-foreground)] hover:text-[var(--fg)] flex items-center space-x-2.5 cursor-pointer"
+                    className="w-full text-left px-4 py-2 text-xs hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 cursor-pointer"
                   >
-                    <UserIcon className="w-4 h-4 text-violet-600" />
+                    <UserIcon className="w-4 h-4 text-[var(--muted-foreground)]" />
                     <span>Миний профайл</span>
                   </button>
                   <button
                     onClick={() => router.push('/applications')}
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-[var(--muted-foreground)] hover:text-[var(--fg)] flex items-center space-x-2.5 cursor-pointer"
+                    className="w-full text-left px-4 py-2 text-xs hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 cursor-pointer"
                   >
-                    <Briefcase className="w-4 h-4 text-violet-600" />
+                    <Briefcase className="w-4 h-4 text-[var(--muted-foreground)]" />
                     <span>Миний зарууд, хүсэлтүүд</span>
                   </button>
                   <button
                     onClick={() => router.push('/settings')}
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-[var(--muted-foreground)] hover:text-[var(--fg)] flex items-center space-x-2.5 cursor-pointer"
+                    className="w-full text-left px-4 py-2 text-xs hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 cursor-pointer"
                   >
-                    <SettingsIcon className="w-4 h-4 text-violet-600" />
+                    <SettingsIcon className="w-4 h-4 text-[var(--muted-foreground)]" />
                     <span>Тохиргоо</span>
                   </button>
                   <div className="border-t border-[var(--border)] my-1"></div>
@@ -194,7 +190,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                       await logout();
                       router.push('/auth');
                     }}
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-red-400 flex items-center space-x-2.5 cursor-pointer"
+                    className="w-full text-left px-4 py-2 text-xs hover:bg-rose-50 text-rose-600 hover:text-rose-700 flex items-center space-x-2.5 cursor-pointer"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Системээс гарах</span>
@@ -204,9 +200,9 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
             )}
           </div>
         ) : (
-          <button 
+          <button
             onClick={() => router.push('/auth')}
-            className="text-xs bg-violet-600 hover:bg-violet-600 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-md cursor-pointer"
+            className="text-xs bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold px-4 py-2 rounded transition-all shadow-sm cursor-pointer"
           >
             Нэвтрэх / Бүртгүүлэх
           </button>
@@ -216,7 +212,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
       {/* Main Content */}
       <main className="flex-grow max-w-3xl mx-auto w-full px-6 py-10 relative z-10">
         {error && (
-          <div className="bg-red-500/10 border border-red-500/40 text-red-400 p-4 rounded-xl text-xs flex items-center space-x-2.5 mb-6 text-left">
+          <div className="bg-rose-50 border border-rose-300 text-rose-600 p-4 rounded-md text-xs flex items-center space-x-2.5 mb-6 text-left">
             <AlertCircle className="w-5 h-5 shrink-0" />
             <span>{error}</span>
           </div>
@@ -225,7 +221,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
 
 
         {job && (
-          <div className="bg-[var(--card)] border border-[var(--border)] p-6 md:p-8 rounded-2xl space-y-6 shadow-2xl backdrop-blur-md">
+          <div className="bg-[var(--card)] border border-[var(--border)] p-6 md:p-8 rounded-md space-y-6 shadow-sm">
             {/* Header info */}
             <div className="border-b border-[var(--border)] pb-5 space-y-3">
               {employer && (
@@ -240,9 +236,9 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                     }}
                     className="flex items-center space-x-2 text-left focus:outline-none hover:opacity-80 transition-opacity bg-transparent border-0 p-0 cursor-pointer"
                   >
-                    <UserIcon className="w-4 h-4 text-violet-600 shrink-0" />
-                    <span className={`text-xs font-bold font-sans ${
-                      !currentUser ? 'text-violet-600 filter blur-[5px] select-none cursor-pointer' : 'text-violet-600 hover:underline'
+                    <UserIcon className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
+                    <span className={`text-xs font-bold font-sans text-[var(--accent-soft-foreground)] ${
+                      !currentUser ? 'filter blur-[5px] select-none cursor-pointer' : 'hover:underline'
                     }`}>
                       {!currentUser ? getMockEmployerName(job.id) : (employer.companyName || employer.fullName)}
                     </span>
@@ -255,8 +251,8 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                     }}
                     className={`flex items-center space-x-1.5 ${ !currentUser ? 'cursor-pointer' : '' }`}
                   >
-                    <Phone className="w-3.5 h-3.5 text-violet-600" />
-                    <span className={`font-mono text-xs font-bold text-violet-600 ${
+                    <Phone className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
+                    <span className={`font-mono text-xs font-bold text-[var(--fg)] ${
                       !currentUser ? 'filter blur-[5px] select-none' : ''
                     }`}>
                       {!currentUser ? getMockEmployerPhone(job.id) : (employer.phone || 'Утасгүй')}
@@ -290,7 +286,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                         alt={`Slide ${idx + 1}`}
                         className="w-full h-full object-contain"
                       />
-                      <div className="absolute bottom-2.5 right-2.5 bg-[var(--bg2)]/90 backdrop-blur-md text-[var(--fg)] text-[9.5px] font-bold px-2 py-0.5 rounded-full border border-[var(--border)] font-sans">
+                      <div className="absolute bottom-2.5 right-2.5 bg-[var(--fg)]/75 text-[var(--card)] text-[9.5px] font-bold px-2 py-0.5 rounded-full font-sans">
                         {idx + 1} / {job.imageUrls?.length}
                       </div>
                     </div>
@@ -314,13 +310,13 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
 
             {/* Quick Details Card Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-left">
-              <div className="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)]">
+              <div className="bg-[var(--bg2)] p-4 rounded-md border border-[var(--border)]">
                 <span className="text-[10px] text-[var(--muted-foreground)] block font-mono">ТӨЛБӨРИЙН ХЭМЖЭЭ</span>
-                <span className="font-bold text-lg text-[#22d3ee] block font-mono mt-1">
+                <span className="font-bold text-lg text-[var(--verify)] block font-mono mt-1">
                   {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString('mn-MN')} ₮`}
                 </span>
               </div>
-              <div className="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)]">
+              <div className="bg-[var(--bg2)] p-4 rounded-md border border-[var(--border)]">
                 <span className="text-[10px] text-[var(--muted-foreground)] block font-mono">АЖЛЫН ХУГАЦАА</span>
                 <span className="font-bold text-lg text-[var(--fg)] block mt-1">
                   {job.duration}
@@ -331,7 +327,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
             {/* Description */}
             <div className="space-y-2 text-left">
               <span className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-wide">Ажлын дэлгэрэнгүй тодорхойлолт</span>
-              <p className="text-xs text-[var(--fg)]/90 leading-relaxed bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] whitespace-pre-wrap">
+              <p className="text-xs text-[var(--fg)] leading-relaxed bg-[var(--bg2)] p-4 rounded-md border border-[var(--border)] whitespace-pre-wrap">
                 {job.description}
               </p>
             </div>
@@ -339,10 +335,10 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
             {/* Requirements */}
             <div className="space-y-3 text-left">
               <span className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-wide">Шаардлага</span>
-              <ul className="space-y-2 text-xs text-[var(--fg)]/90">
+              <ul className="space-y-2 text-xs text-[var(--fg)]">
                 {job.requirements.map((req, idx) => (
                   <li key={idx} className="flex items-start">
-                    <span className="text-violet-600 mr-2.5 font-bold">•</span>
+                    <span className="text-[var(--accent-soft-foreground)] mr-2.5 font-bold">•</span>
                     <span>{req}</span>
                   </li>
                 ))}
@@ -356,9 +352,9 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 currentUser.id === job.employerId ? (
                   <div className="space-y-3">
                     <p className="font-semibold text-[var(--fg)] text-left">Таны оруулсан зар байна.</p>
-                    <button 
+                    <button
                       onClick={() => router.push(`/profile?id=${currentUser.id}`)}
-                      className="w-full bg-white/5 hover:bg-white/10 text-violet-400 border border-[var(--border)] py-2 px-4 rounded-xl text-xs cursor-pointer transition-colors"
+                      className="w-full bg-[var(--bg2)] hover:bg-[var(--border)] text-[var(--fg)] border border-[var(--border)] py-2 px-4 rounded-md text-xs cursor-pointer transition-colors"
                     >
                       Хүсэлт ирүүлсэн харилцагчдыг хянах
                     </button>
@@ -366,13 +362,13 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 ) : (
                   job.applicants.includes(currentUser.id) ? (
                     <div className="space-y-3">
-                      <div className="bg-[#22d3ee]/5 border border-[#22d3ee]/20 p-4 rounded-xl text-center text-xs text-[#22d3ee] font-semibold flex items-center justify-center space-x-2">
-                        <CheckCircle className="w-5 h-5 text-[#22d3ee]" />
+                      <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] p-4 rounded-md text-center text-xs text-[var(--verify)] font-semibold flex items-center justify-center space-x-2">
+                        <CheckCircle className="w-5 h-5 text-[var(--verify)]" />
                         <span>Та энэ заранд хүсэлтээ амжилттай илгээсэн байна. Захиалагчийн хариуг хүлээж байна.</span>
                       </div>
                       {successMessage && (
-                        <div className="bg-[#22d3ee]/10 border border-[#22d3ee]/30 text-[#22d3ee] p-3.5 rounded-xl text-xs flex items-start space-x-2 animate-fade-in text-left">
-                          <CheckCircle className="w-4.5 h-4.5 text-[#22d3ee] shrink-0 mt-0.5" />
+                        <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] text-[var(--verify)] p-3.5 rounded-md text-xs flex items-start space-x-2 animate-fade-in text-left">
+                          <CheckCircle className="w-4.5 h-4.5 text-[var(--verify)] shrink-0 mt-0.5" />
                           <span className="font-sans leading-normal text-[11px]">{successMessage}</span>
                         </div>
                       )}
@@ -381,7 +377,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                     <button
                       onClick={handleApply}
                       disabled={isApplying || job.status !== 'open'}
-                      className="w-full bg-violet-600 hover:bg-violet-600 text-white py-3 px-6 rounded-xl font-bold text-xs transition-colors cursor-pointer flex items-center justify-center space-x-2 shadow-lg"
+                      className="w-full bg-[var(--accent)] hover:brightness-95 disabled:opacity-50 text-[var(--accent-foreground)] py-3 px-6 rounded-md font-bold text-xs transition-all cursor-pointer flex items-center justify-center space-x-2 shadow-sm"
                     >
                       {isApplying ? (
                         <>
@@ -399,7 +395,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 )
               ) : (
                 /* Guest User Call To Action */
-                <div className="bg-[var(--card)] p-5 rounded-xl border border-[var(--border)] text-center space-y-4">
+                <div className="bg-[var(--bg2)] p-5 rounded-md border border-[var(--border)] text-center space-y-4">
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-[var(--fg)]">Та энэ заранд хүсэлт илгээх үү?</p>
                     <p className="text-[10.5px] text-[var(--muted-foreground)]">
@@ -408,7 +404,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                   </div>
                   <button
                     onClick={() => router.push('/auth')}
-                    className="inline-flex items-center space-x-2 bg-violet-600 hover:bg-violet-600 text-white font-bold text-xs px-6 py-2.5 rounded-xl transition-all shadow-md cursor-pointer"
+                    className="inline-flex items-center space-x-2 bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-xs px-6 py-2.5 rounded transition-all shadow-sm cursor-pointer"
                   >
                     <span>Нэвтэрч ороод хүсэлт илгээх</span>
                   </button>
@@ -423,24 +419,22 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
         <div 
           id="blur-warning-modal-backdrop" 
           onClick={() => setShowBlurWarningModal(false)}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in"
+          className="fixed inset-0 bg-[var(--fg)]/40 flex items-center justify-center p-4 z-50 animate-fade-in"
         >
-          <div 
-            id="blur-warning-modal-container" 
+          <div
+            id="blur-warning-modal-container"
             onClick={(e) => e.stopPropagation()}
-            className="bg-[var(--bg2)] border border-[var(--border)] max-w-sm w-full rounded-2xl overflow-hidden shadow-2xl relative p-6 space-y-4 backdrop-blur-xl"
+            className="bg-[var(--card)] border border-[var(--border-strong)] max-w-sm w-full rounded-md overflow-hidden shadow-md relative p-6 space-y-4"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-violet-600/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
-            
             {/* Header */}
             <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
               <div className="flex items-center space-x-2">
-                <span className="flex h-2.5 w-2.5 rounded-full bg-violet-600 animate-pulse"></span>
-                <h3 className="text-sm font-semibold text-[var(--fg)] tracking-wide">Дэлгэрэнгүй харах</h3>
+                <span className="flex h-2.5 w-2.5 rounded-full bg-[var(--accent)] animate-pulse"></span>
+                <h3 className="text-sm font-display font-bold uppercase text-[var(--fg)] tracking-wide">Дэлгэрэнгүй харах</h3>
               </div>
-              <button 
-                onClick={() => setShowBlurWarningModal(false)} 
-                className="text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer p-1 rounded-lg hover:bg-white/10"
+              <button
+                onClick={() => setShowBlurWarningModal(false)}
+                className="text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer p-1 rounded hover:bg-[var(--bg2)]"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -448,7 +442,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
 
             {/* Description */}
             <div className="space-y-3 text-left font-sans">
-              <p className="text-xs text-[var(--fg)]/90 leading-relaxed">
+              <p className="text-xs text-[var(--fg)] leading-relaxed">
                 Ажлын зар байршуулсан хэрэглэгч болон утасны дугаар зэрэг дэлгэрэнгүй мэдээлэл нь зөвхөн системд нэвтэрсэн хэрэглэгчдэд харагдах боломжтой.
               </p>
               <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
@@ -464,14 +458,14 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                   setShowBlurWarningModal(false);
                   router.push('/auth?tab=login');
                 }}
-                className="w-full py-2.5 bg-gradient-to-r from-violet-600 to-teal-600 hover:from-violet-500 hover:to-teal-500 text-white text-xs font-semibold rounded-xl transition-all shadow-lg shadow-violet-900/25 cursor-pointer font-sans text-center"
+                className="w-full py-2.5 bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] text-xs font-bold rounded transition-all shadow-sm cursor-pointer font-sans text-center"
               >
                 Нэвтрэх хэсэг рүү очих
               </button>
               <button
                 type="button"
                 onClick={() => setShowBlurWarningModal(false)}
-                className="w-full py-2.5 border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--fg)] text-xs font-medium rounded-xl hover:bg-white/10 transition-colors cursor-pointer font-sans"
+                className="w-full py-2.5 border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--fg)] text-xs font-medium rounded hover:bg-[var(--bg2)] transition-colors cursor-pointer font-sans"
               >
                 Хаах
               </button>

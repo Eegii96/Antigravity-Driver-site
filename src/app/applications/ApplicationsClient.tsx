@@ -26,8 +26,8 @@ function ApplicationsContent() {
     return (
       <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center text-[var(--fg)] font-sans">
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-slate-400 text-sm">Уншиж байна...</p>
+          <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-[var(--muted-foreground)] text-sm">Уншиж байна...</p>
         </div>
       </div>
     );
@@ -55,8 +55,8 @@ export default function ApplicationsClient() {
       <Suspense fallback={
         <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center text-[var(--fg)] font-sans">
           <div className="flex flex-col items-center space-y-4">
-            <div className="w-12 h-12 border-4 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-slate-400 text-sm">Уншиж байна...</p>
+            <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-[var(--muted-foreground)] text-sm">Уншиж байна...</p>
           </div>
         </div>
       }>
