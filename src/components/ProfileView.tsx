@@ -8,6 +8,8 @@ import { Star, ShieldAlert, Award, Phone, Mail, MapPin, Calendar, CheckCircle, C
 import ProfileEditModal from './ProfileEditModal';
 import ReviewModal from './ReviewModal';
 import JobPostModal from './JobPostModal';
+import { formatDate, formatReviewDate, parseReviewDateToTimestamp } from '../lib/job-format';
+import GivenReviewsList from './profile/GivenReviewsList';
 
 interface ProfileViewProps {
   user: User; // User being viewed
@@ -77,45 +79,6 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
   useEffect(() => {
     setProfileUser(user);
   }, [user]);
-
-  const parseReviewDateToTimestamp = (dateStr?: string): number => {
-    if (!dateStr) return 0;
-    try {
-      if (dateStr.includes('.')) {
-        const parts = dateStr.split('.');
-        if (parts.length === 3) {
-          const year = parseInt(parts[0], 10);
-          const month = parseInt(parts[1], 10) - 1;
-          const day = parseInt(parts[2], 10);
-          return new Date(year, month, day).getTime();
-        }
-      }
-      const d = new Date(dateStr);
-      if (!isNaN(d.getTime())) return d.getTime();
-    } catch (e) {}
-    return 0;
-  };
-
-  const formatReviewDate = (dateStr?: string): string => {
-    if (!dateStr) return '';
-    try {
-      if (dateStr.includes('.')) {
-        const parts = dateStr.split('.');
-        if (parts.length === 3) {
-          const year = parseInt(parts[0], 10);
-          const month = parseInt(parts[1], 10) - 1;
-          const day = parseInt(parts[2], 10);
-          const d = new Date(year, month, day);
-          return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
-        }
-      }
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return dateStr;
-      return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
-    } catch (e) {
-      return dateStr || '';
-    }
-  };
 
   const loadProfileData = async () => {
     setIsLoading(true);
@@ -261,20 +224,6 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
     } catch (err) {
       console.error('Error hiring operator:', err);
       alert('Алдаа гарлаа. Дахин оролдоно уу.');
-    }
-  };
-
-  const formatDate = (isoString?: string) => {
-    if (!isoString) return '';
-    try {
-      const d = new Date(isoString);
-      if (isNaN(d.getTime())) return isoString;
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${year}.${month}.${day}`;
-    } catch (e) {
-      return isoString || '';
     }
   };
 
@@ -811,109 +760,16 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
       {/* Reviews I Have Given section */}
       {isOwnProfile && (
-        <div className="mt-8 space-y-4 relative z-10 text-left">
-          <h3 className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-widest border-b border-[var(--color-glass-border)] pb-2.5 flex items-center space-x-2">
-            <Star className="w-4.5 h-4.5 text-[var(--accent-soft-foreground)] drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
-            <span>Миний өгсөн үнэлгээнүүд ({givenReviews.length})</span>
-          </h3>
-
-          {givenReviews.length === 0 ? (
-            <div className="panel p-6 rounded-md border border-[var(--color-glass-border)] text-center text-xs text-[var(--muted-foreground)] font-sans">
-              Та одоогоор өөр хэрэглэгчид үнэлгээ өгөөгүй байна.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[32rem] overflow-y-auto pr-1">
-              {givenReviews.map((rev) => {
-                const job = allJobs.find(j => j.id === rev.jobId);
-                let targetId = '';
-                let targetName = '';
-                if (job) {
-                  if (rev.reviewerType === 'employer') {
-                    targetId = job.hiredOperatorId || '';
-                    targetName = job.hiredOperatorName || 'Жолооч';
-                  } else {
-                    targetId = job.employerId || '';
-                    targetName = job.employerName || 'Ажил олгогч';
-                  }
-                } else {
-                  targetName = rev.reviewerType === 'employer' ? 'Жолооч' : 'Ажил олгогч';
-                }
-
-                return (
-                  <div key={rev.id} className="panel p-4 rounded-md border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] space-y-3 relative overflow-hidden group">
-                    <div className="flex justify-between items-start">
-                      <div className="flex flex-col space-y-1.5 text-left">
-                        {targetId ? (
-                          <span 
-                            onClick={() => { window.location.href = `/profile?id=${targetId}`; }}
-                            className="text-xs font-semibold text-[var(--fg)] hover:text-[var(--accent-soft-foreground)] active:text-[var(--accent-soft-foreground)] transition-colors cursor-pointer select-none flex items-center gap-1.5"
-                          >
-                            <Users className="w-3.5 h-3.5 text-[var(--muted-foreground)] shrink-0" />
-                            <span>{targetName}</span>
-                          </span>
-                        ) : (
-                          <span className="text-xs font-semibold text-[var(--muted-foreground)] flex items-center gap-1.5">
-                            <Users className="w-3.5 h-3.5 text-[var(--muted-foreground)] shrink-0" />
-                            <span>{targetName}</span>
-                          </span>
-                        )}
-                        <span 
-                          onClick={() => { window.location.href = `/applications?jobId=${rev.jobId}`; }}
-                          className="text-xs font-semibold text-[var(--fg)] hover:text-[var(--accent-soft-foreground)] active:text-[var(--accent-soft-foreground)] transition-colors cursor-pointer select-none flex items-center gap-1.5"
-                        >
-                          <Briefcase className="w-3.5 h-3.5 text-[var(--muted-foreground)] shrink-0" />
-                          <span>{rev.jobTitle}</span>
-                        </span>
-                      </div>
-
-                      <div className="flex flex-col items-end space-y-2 shrink-0">
-                        {/* Stars */}
-                        <div className="flex items-center space-x-0.5 bg-[rgba(255,255,255,0.04)] px-2 py-1 rounded-lg border border-[var(--color-glass-border)] shadow-sm">
-                          {[1, 2, 3, 4, 5].map((s) => (
-                            <Star key={s} className={`w-2.5 h-2.5 ${s <= rev.rating ? 'text-[var(--accent-soft-foreground)] fill-[var(--accent)]' : 'text-[var(--muted-foreground)]'}`} />
-                          ))}
-                          <span className="text-[10px] text-[var(--fg)] font-bold ml-1 font-mono">{rev.rating}.0</span>
-                        </div>
-
-                        {/* Edit/Delete Actions */}
-                        <div className="flex items-center space-x-2">
-                          <button 
-                            type="button"
-                            onClick={() => {
-                              setEditingReview(rev);
-                              setEditRating(rev.rating);
-                              setEditComment(rev.comment);
-                            }} 
-                            className="text-[10px] bg-[var(--color-glass-bg)] hover:bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] text-[var(--muted-foreground)] hover:text-[var(--fg)] px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
-                          >
-                            <Edit className="w-2.5 h-2.5 text-[var(--accent-soft-foreground)]" />
-                            <span>Засах</span>
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={() => handleDeleteReview(rev.id)} 
-                            className="text-[10px] bg-[var(--color-glass-bg)] hover:bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] text-[var(--muted-foreground)] hover:text-[var(--accent-soft-foreground)] px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
-                          >
-                            <Trash2 className="w-2.5 h-2.5 text-[var(--accent-soft-foreground)]" />
-                            <span>Устгах</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <p className="text-xs leading-relaxed text-[var(--muted-foreground)] italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--color-glass-border)] text-left">
-                      "{rev.comment}"
-                    </p>
-
-                    <div className="flex justify-end items-center text-[10px] text-[var(--muted-foreground)] font-mono border-t border-[var(--color-glass-border)] pt-2">
-                      <span className="text-[var(--muted-foreground)]">{formatReviewDate(rev.createdAt)}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <GivenReviewsList
+          givenReviews={givenReviews}
+          allJobs={allJobs}
+          onEditReview={(rev) => {
+            setEditingReview(rev);
+            setEditRating(rev.rating);
+            setEditComment(rev.comment);
+          }}
+          onDeleteReview={handleDeleteReview}
+        />
       )}
         </>
       )}

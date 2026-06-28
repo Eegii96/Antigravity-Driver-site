@@ -69,6 +69,52 @@ export const formatDate = (isoString?: string): string => {
   }
 };
 
+/**
+ * Parse a review date (either `YYYY.MM.DD` or a Date-parseable string) into a
+ * timestamp for sorting. Returns 0 when unparseable.
+ */
+export const parseReviewDateToTimestamp = (dateStr?: string): number => {
+  if (!dateStr) return 0;
+  try {
+    if (dateStr.includes('.')) {
+      const parts = dateStr.split('.');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        return new Date(year, month, day).getTime();
+      }
+    }
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) return d.getTime();
+  } catch {
+    /* ignore */
+  }
+  return 0;
+};
+
+/** Format a review date as `M/D/YYYY` (per AGENTS.md §5 review-date rule). */
+export const formatReviewDate = (dateStr?: string): string => {
+  if (!dateStr) return '';
+  try {
+    if (dateStr.includes('.')) {
+      const parts = dateStr.split('.');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        const d = new Date(year, month, day);
+        return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+      }
+    }
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+  } catch {
+    return dateStr || '';
+  }
+};
+
 /** Format a notification timestamp (any supported format) as `YYYY.MM.DD HH:mm`. */
 export const formatNotificationDate = (isoString?: string): string => {
   if (!isoString) return '';
