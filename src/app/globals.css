@@ -1,15 +1,34 @@
 @import "tailwindcss";
 
 @theme {
-  /* === Glass Premium Violet (Концепт D) — canonical design system === */
-  --color-brand-bg: #0c0f17;
-  --color-brand-bg2: #11151f;
-  --color-glass-bg: rgba(255, 255, 255, 0.04);
-  --color-glass-border: rgba(255, 255, 255, 0.10);
-  --color-neon-cyan: #22d3ee;
-  --color-neon-emerald: #8b5cf6;
-  --color-neon-violet: #8b5cf6;
-  --color-neon-teal: #22d3ee;
+  /* ============================================================
+     Glass Premium Violet (Концепт D) — CANONICAL design tokens.
+     These names are the single source of truth and match AGENTS.md §4.
+     Consume them as Tailwind arbitrary values, e.g. bg-[var(--accent)],
+     text-[var(--muted-foreground)], border-[var(--border)].
+     ============================================================ */
+  --bg: #0c0f17;                 /* base page background */
+  --bg2: #11151f;                /* secondary/alternating section background */
+  --card: rgba(255, 255, 255, 0.04);    /* glass card fill */
+  --border: rgba(255, 255, 255, 0.10);  /* glass card/divider border */
+  --fg: #f1f3f8;                 /* primary text */
+  --muted-foreground: #9aa3b5;   /* secondary text */
+  --accent: #8b5cf6;             /* violet — primary brand accent */
+  --accent-foreground: #ffffff;  /* text/icon on top of --accent */
+  --accent-soft: rgba(139, 92, 246, 0.14);   /* soft violet badge/icon bg */
+  --accent-soft-foreground: #c4b5fd;          /* text on --accent-soft */
+  --teal: #22d3ee;               /* secondary accent — trust/verification */
+
+  /* --- Legacy aliases (kept so existing var(--color-*) usages keep working).
+     Migrate these to the canonical tokens above over time, then delete. --- */
+  --color-brand-bg: var(--bg);
+  --color-brand-bg2: var(--bg2);
+  --color-glass-bg: var(--card);
+  --color-glass-border: var(--border);
+  --color-neon-cyan: var(--teal);
+  --color-neon-emerald: var(--accent);   /* was mislabeled emerald; is violet */
+  --color-neon-violet: var(--accent);
+  --color-neon-teal: var(--teal);
 
   /* Font tokens — Fraunces for headings, Inter for body/UI, Geist Mono for
      numbers/codes/dates. Wired from next/font variables set in layout.tsx. */
@@ -24,26 +43,26 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0c0f17;
+  background: var(--bg);
 }
 ::-webkit-scrollbar-thumb {
   background: #2a2f3d;
   border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #8b5cf6;
+  background: var(--accent);
 }
 
 /* Firefox scrollbar support */
 * {
-  scrollbar-color: #2a2f3d #0c0f17;
+  scrollbar-color: #2a2f3d var(--bg);
   scrollbar-width: thin;
 }
 
 /* Base custom resets and animations */
 body {
-  background-color: #0c0f17;
-  color: #f1f3f8;
+  background-color: var(--bg);
+  color: var(--fg);
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
 }

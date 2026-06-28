@@ -11,6 +11,9 @@ import {
   completeJob,
   getUsers,
   getNotifications,
+  subscribeToJobs,
+  subscribeToUsers,
+  subscribeToNotifications,
   parseNotificationDateString,
   markNotificationAsRead,
   markAllNotificationsAsRead,
@@ -57,6 +60,7 @@ import JobPostModal from './JobPostModal';
 import ReviewModal from './ReviewModal';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
+import { getMockEmployerName, getMockEmployerPhone } from '../lib/mock-employer';
 
 interface JobBoardProps {
   currentUser: User | null;
@@ -167,20 +171,6 @@ export default function JobBoard({
   const getEmployerPhone = (job: Job) => {
     const emp = users.find(u => u.id === job.employerId);
     return emp ? emp.phone : '';
-  };
-
-  const getMockEmployerName = (jobId: string) => {
-    const mockNames = ['Бат-Эрдэнэ', 'Лхагвасүрэн', 'Энхбат', 'Ганзориг', 'Мөнх-Эрдэнэ', 'Болдбаатар', 'Төмөрхүү', 'Алтанхуяг'];
-    const charCodeSum = jobId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    return mockNames[charCodeSum % mockNames.length];
-  };
-
-  const getMockEmployerPhone = (jobId: string) => {
-    const prefixes = ['9911', '8811', '9909', '8010', '9511', '9400', '8515', '9922'];
-    const charCodeSum = jobId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    const prefix = prefixes[charCodeSum % prefixes.length];
-    const lastFour = (charCodeSum * 17) % 9000 + 1000;
-    return `${prefix}${lastFour}`;
   };
 
   const formatDate = (isoString?: string) => {
@@ -295,12 +285,30 @@ export default function JobBoard({
     setNotifications(freshNotifs);
   };
 
+  // Real-time subscription to jobs — replaces full-collection polling.
   useEffect(() => {
-    const load = async () => {
-      await Promise.all([refreshJobs(), refreshUsers(), refreshNotifications()]);
-    };
-    load();
+    const unsub = subscribeToJobs((allJobs) => {
+      setJobs(allJobs);
+      // Keep an expanded/selected job card in sync (or collapse it if removed).
+      setSelectedJob(prev => prev ? (allJobs.find(j => j.id === prev.id) || null) : prev);
+    });
+    return () => unsub();
   }, []);
+
+  // Real-time subscription to users — replaces full-collection polling.
+  useEffect(() => {
+    const unsub = subscribeToUsers(setUsers);
+    return () => unsub();
+  }, []);
+
+  // One-time notification seeding/migration (welcome & security). Live updates
+  // arrive via the subscribeToNotifications listener below.
+  useEffect(() => {
+    if (currentUser) {
+      refreshNotifications().catch(err => console.error('Error seeding notifications:', err));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id]);
 
   // Track the mouse coordinates of the last click to position toasts locally
   useEffect(() => {
@@ -353,43 +361,29 @@ export default function JobBoard({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [selectedJob]);
 
-  // Polling for real-time feel (4 seconds)
+  // Real-time subscription to the current user's notifications — replaces the
+  // 4-second polling loop. Newly-arrived unread notifications still raise a toast.
   useEffect(() => {
-    const timer = setInterval(async () => {
-      try {
-        if (currentUser) {
-          // Sync in background
-          const freshNotifs = await getNotifications(currentUser.id);
-          const freshUnreads = freshNotifs.filter(n => !n.isRead);
-          const prevUnreadIds = notificationsRef.current.filter(n => !n.isRead).map(n => n.id);
-          
-          let hasNew = false;
-          freshUnreads.forEach(newNotif => {
-            if (!prevUnreadIds.includes(newNotif.id)) {
-              hasNew = true;
-              setToasts(prev => [newNotif, ...prev]);
-              setTimeout(() => {
-                setToasts(prev => prev.filter(t => t.id !== newNotif.id));
-              }, 4500);
-            }
-          });
-          
-          if (hasNew || freshNotifs.length !== notificationsRef.current.length) {
-            setNotifications(freshNotifs);
+    if (!currentUser) {
+      setNotifications([]);
+      return;
+    }
+    const unsub = subscribeToNotifications(currentUser.id, (freshNotifs) => {
+      // Only toast once we already have a baseline, so the initial load is silent.
+      if (notificationsRef.current.length > 0) {
+        const prevUnreadIds = notificationsRef.current.filter(n => !n.isRead).map(n => n.id);
+        freshNotifs.filter(n => !n.isRead).forEach(newNotif => {
+          if (!prevUnreadIds.includes(newNotif.id)) {
+            setToasts(prev => [newNotif, ...prev]);
+            setTimeout(() => {
+              setToasts(prev => prev.filter(t => t.id !== newNotif.id));
+            }, 4500);
           }
-        }
-
-        // Sync jobs & users in background
-        const allJobs = await getJobs();
-        setJobs(allJobs);
-        const allUsers = await getUsers();
-        setUsers(allUsers);
-      } catch (err) {
-        console.error('Error in polling loop:', err);
+        });
       }
-    }, 4000);
-
-    return () => clearInterval(timer);
+      setNotifications(freshNotifs);
+    });
+    return () => unsub();
   }, [currentUser?.id]);
 
   const toggleNotificationsMenu = () => {

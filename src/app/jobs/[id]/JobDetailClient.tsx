@@ -8,6 +8,7 @@ import {
   Phone
 } from 'lucide-react';
 import { getSingleJob, getSingleUser, saveSingleUser, applyForJob } from '../../../lib/db';
+import { getMockEmployerName, getMockEmployerPhone } from '../../../lib/mock-employer';
 import { Job, User } from '../../../types';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -36,20 +37,6 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
       };
     }
   }, [showBlurWarningModal]);
-
-  const getMockEmployerName = (jobId: string) => {
-    const mockNames = ['Бат-Эрдэнэ', 'Лхагвасүрэн', 'Энхбат', 'Ганзориг', 'Мөнх-Эрдэнэ', 'Болдбаатар', 'Төмөрхүү', 'Алтанхуяг'];
-    const charCodeSum = jobId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    return mockNames[charCodeSum % mockNames.length];
-  };
-
-  const getMockEmployerPhone = (jobId: string) => {
-    const prefixes = ['9911', '8811', '9909', '8010', '9511', '9400', '8515', '9922'];
-    const charCodeSum = jobId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    const prefix = prefixes[charCodeSum % prefixes.length];
-    const lastFour = (charCodeSum * 17) % 9000 + 1000;
-    return `${prefix}${lastFour}`;
-  };
 
   useEffect(() => {
     // Fetch job details

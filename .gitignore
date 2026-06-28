@@ -1,5 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# claude personal settings
+.claude/settings.local.json
+
 # dependencies
 /node_modules
 /.pnp
@@ -44,3 +47,12 @@ next-env.d.ts
 /vite_backup/
 /dist/
 /.firebase/
+/src_backup_*/
+
+# scratch / junk files
+yt_page.html
+deploy.bat
+
+# test artifacts
+/playwright-report/
+/test-results/
