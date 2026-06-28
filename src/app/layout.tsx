@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, Geist_Mono } from "next/font/google";
+import { Saira_Condensed, Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "../components/Footer";
 import { AuthProvider } from "../context/AuthContext";
 import InAppBrowserGuard from "../components/InAppBrowserGuard";
 
-// Glass Premium Violet (Концепт D) canonical fonts:
-// Fraunces for headings/display, Inter for body/UI text.
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+// "Hi-vis Industrial" canonical fonts:
+// Saira Condensed (condensed grotesque, nameplate feel) for headings/display,
+// Inter for body/UI text, Geist Mono for numbers/codes/dates.
+const saira = Saira_Condensed({
+  variable: "--font-saira",
   subsets: ["latin"],
   weight: ["500", "600", "700"],
 });
@@ -38,7 +39,7 @@ export default function RootLayout({
   return (
     <html
       lang="mn"
-      className={`${fraunces.variable} ${inter.variable} ${geistMono.variable} antialiased`}
+      className={`${saira.variable} ${inter.variable} ${geistMono.variable} antialiased`}
     >
       <head>
         <script

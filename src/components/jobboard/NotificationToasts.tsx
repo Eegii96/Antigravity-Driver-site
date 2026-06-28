@@ -20,21 +20,21 @@ export default function NotificationToasts({ toasts, onToastClick, onDismiss }: 
         <div
           key={t.id}
           onClick={() => onToastClick(t)}
-          className={`pointer-events-auto bg-[var(--color-brand-bg2)] backdrop-blur-md border-l-4 ${
-            t.type === 'alert' ? 'border-rose-500' : 'border-teal-400'
-          } text-[#f1f3f8] px-5 py-4 rounded-xl shadow-2xl border border-[var(--color-glass-border)] flex items-start space-x-3 w-full animate-slide-in relative cursor-pointer hover:bg-white/5 transition-colors`}
+          className={`pointer-events-auto bg-[var(--card)] border-l-4 ${
+            t.type === 'alert' ? 'border-rose-500' : 'border-[var(--verify)]'
+          } text-[var(--fg)] px-5 py-4 rounded-md shadow-md border border-[var(--border)] flex items-start space-x-3 w-full animate-slide-in relative cursor-pointer hover:bg-[var(--bg2)] transition-colors`}
         >
           <div className="flex-1 text-left pr-4">
             <div className="flex justify-between items-start">
               <span className={`text-xs font-bold ${
-                t.type === 'alert' ? 'text-rose-400' : 'text-teal-300'
+                t.type === 'alert' ? 'text-rose-600' : 'text-[var(--verify)]'
               } font-mono`}>
                 {t.type === 'alert' ? 'Алдаа ⚠️' : 'Амжилттай 🎉'}
               </span>
-              <span className="text-[9px] text-[#9aa3b5] font-mono mr-2">{formatNotificationDate(t.createdAt)}</span>
+              <span className="text-[9px] text-[var(--muted-foreground)] font-mono mr-2">{formatNotificationDate(t.createdAt)}</span>
             </div>
-            <h4 className="text-xs font-bold text-[#f1f3f8] mt-1 leading-snug">{t.title}</h4>
-            <p className="text-[10px] text-[#c8cbe0] leading-relaxed mt-0.5">{t.message}</p>
+            <h4 className="text-xs font-bold text-[var(--fg)] mt-1 leading-snug">{t.title}</h4>
+            <p className="text-[10px] text-[var(--muted-foreground)] leading-relaxed mt-0.5">{t.message}</p>
           </div>
 
           {/* Close Button */}
@@ -44,7 +44,7 @@ export default function NotificationToasts({ toasts, onToastClick, onDismiss }: 
               e.stopPropagation();
               onDismiss(t.id);
             }}
-            className="absolute top-3 right-3 text-[#9aa3b5] hover:text-[#f1f3f8] transition-colors cursor-pointer p-0.5 rounded-full hover:bg-white/10 flex items-center justify-center"
+            className="absolute top-3 right-3 text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer p-0.5 rounded-full hover:bg-[var(--bg2)] flex items-center justify-center"
             aria-label="Хаах"
           >
             <X className="w-3.5 h-3.5" />

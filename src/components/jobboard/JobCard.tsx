@@ -73,23 +73,23 @@ export default function JobCard({
                     <div
                       id={`job-card-expanded-${job.id}`}
                       key={`expanded-${job.id}`}
-                      className="bg-[var(--color-glass-bg)] backdrop-blur-md border-2 border-violet-600 p-5 rounded-2xl text-left space-y-4 shadow-2xl transition-all duration-300 w-full self-start"
+                      className="bg-[var(--card)] border border-[var(--border-strong)] p-5 rounded-md text-left space-y-4 shadow-sm transition-all duration-200 w-full self-start"
                     >
                       {/* ── HEADER: back button + date ── */}
-                      <div className="flex items-center justify-between pb-3 border-b border-[var(--color-glass-border)]">
+                      <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
                         <button
                           onClick={(e) => { e.stopPropagation(); onCollapse(); }}
-                          className="p-1.5 -ml-1 rounded-lg hover:bg-white/10 text-[#9aa3b5] hover:text-[#f1f3f8] transition-colors cursor-pointer flex items-center space-x-1"
+                          className="p-1.5 -ml-1 rounded hover:bg-[var(--bg2)] text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer flex items-center space-x-1"
                           title="Буцах"
                         >
                           <ChevronLeft className="w-4 h-4" />
-                          <span className="text-xs text-[#9aa3b5]">Буцах</span>
+                          <span className="text-xs text-[var(--muted-foreground)]">Буцах</span>
                         </button>
-                        <span className="font-mono text-[10px] text-[#9aa3b5]">{formatDate(job.createdAt)}</span>
+                        <span className="font-mono text-[10px] text-[var(--muted-foreground)]">{formatDate(job.createdAt)}</span>
                       </div>
 
                       {/* ── CREATOR INFO ROW (Name on left, Phone on right) ── */}
-                      <div className="flex justify-between items-center pb-2 border-b border-[var(--color-glass-border)]" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]" onClick={(e) => e.stopPropagation()}>
                         {/* Creator name */}
                         <button
                           type="button"
@@ -101,9 +101,9 @@ export default function JobCard({
                           }}
                           className="flex items-center space-x-2 text-left focus:outline-none hover:opacity-80 transition-opacity bg-transparent border-0 p-0 cursor-pointer"
                         >
-                          <UserIcon className="w-4 h-4 text-violet-400 shrink-0" />
-                          <span className={`text-xs font-bold font-sans ${
-                            !currentUser ? 'text-violet-400 filter blur-[5px] select-none cursor-pointer' : 'text-violet-400 hover:underline'
+                          <UserIcon className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
+                          <span className={`text-xs font-bold font-sans text-[var(--accent-soft-foreground)] ${
+                            !currentUser ? 'filter blur-[5px] select-none cursor-pointer' : 'hover:underline'
                           }`}>
                             {!currentUser ? getMockEmployerName(job.id) : getEmployerDisplayName(job)}
                           </span>
@@ -116,8 +116,8 @@ export default function JobCard({
                           }}
                           className={`flex items-center space-x-1.5 ${ !currentUser ? 'cursor-pointer' : '' }`}
                         >
-                          <Phone className="w-3.5 h-3.5 text-violet-400" />
-                          <span className={`font-mono text-xs font-bold text-violet-400 ${
+                          <Phone className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
+                          <span className={`font-mono text-xs font-bold text-[var(--fg)] ${
                             !currentUser ? 'filter blur-[5px] select-none' : ''
                           }`}>
                             {!currentUser ? getMockEmployerPhone(job.id) : (getEmployerPhone(job) || 'Утасгүй')}
@@ -127,10 +127,10 @@ export default function JobCard({
 
                       {/* ── TITLE + DESCRIPTION ── */}
                       <div className="space-y-2">
-                        <h3 className="text-base font-extrabold text-[#f1f3f8] leading-snug">{job.title}</h3>
-                        <p className="text-[12px] text-[#9aa3b5] leading-relaxed">{job.description}</p>
+                        <h3 className="text-base font-display font-extrabold uppercase tracking-tight text-[var(--fg)] leading-snug">{job.title}</h3>
+                        <p className="text-[12px] text-[var(--muted-foreground)] leading-relaxed">{job.description}</p>
                         {job.additionalInfo && (
-                          <p className="text-[11px] text-[#9aa3b5] italic bg-white/5 p-2.5 rounded-lg border border-[var(--color-glass-border)] leading-relaxed">
+                          <p className="text-[11px] text-[var(--muted-foreground)] italic bg-[var(--bg2)] p-2.5 rounded-md border border-[var(--border)] leading-relaxed">
                             {job.additionalInfo}
                           </p>
                         )}
@@ -141,26 +141,26 @@ export default function JobCard({
                         <div className="w-full space-y-1">
                           <div className="flex overflow-x-auto gap-2 snap-x snap-mandatory scrollbar-none py-1">
                             {job.imageUrls.map((url, idx) => (
-                              <div key={idx} className="shrink-0 w-full snap-center h-48 md:h-64 overflow-hidden rounded-xl border border-[var(--color-glass-border)] bg-white/5 flex items-center justify-center relative">
+                              <div key={idx} className="shrink-0 w-full snap-center h-48 md:h-64 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--bg2)] flex items-center justify-center relative">
                                 <img
                                   src={url}
                                   alt={`Slide ${idx + 1}`}
                                   className="w-full h-full object-contain"
                                 />
-                                <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full border border-white/10 font-sans">
+                                <div className="absolute bottom-2 right-2 bg-[var(--fg)]/75 text-[var(--card)] text-[9px] font-bold px-2 py-0.5 rounded-full font-sans">
                                   {idx + 1} / {job.imageUrls?.length}
                                 </div>
                               </div>
                             ))}
                           </div>
                           {job.imageUrls.length > 1 && (
-                            <p className="text-[9px] text-[#9aa3b5] text-center font-sans select-none">
+                            <p className="text-[9px] text-[var(--muted-foreground)] text-center font-sans select-none">
                               ↔️ Хажуу тийш гүйлгэж үзнэ үү
                             </p>
                           )}
                         </div>
                       ) : (job.imageUrl && (
-                        <div className="w-full h-48 md:h-64 overflow-hidden rounded-xl border border-[var(--color-glass-border)] bg-white/5 flex items-center justify-center">
+                        <div className="w-full h-48 md:h-64 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--bg2)] flex items-center justify-center">
                           <img
                             src={job.imageUrl}
                             alt={job.title}
@@ -171,19 +171,19 @@ export default function JobCard({
 
                       {/* ── SALARY + LOCATION 2-column grid ── */}
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-white/5 p-3.5 rounded-xl border border-[var(--color-glass-border)]">
-                          <span className="text-[9.5px] text-[#9aa3b5] uppercase tracking-wider font-bold block mb-1">Цалин / Төлбөр</span>
-                          <span className="font-mono font-bold text-teal-300 text-sm">
+                        <div className="bg-[var(--bg2)] p-3.5 rounded-md border border-[var(--border)]">
+                          <span className="text-[9.5px] text-[var(--muted-foreground)] uppercase tracking-wider font-bold block mb-1">Цалин / Төлбөр</span>
+                          <span className="font-mono font-bold text-[var(--verify)] text-sm">
                             {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
                           </span>
                           {job.salaryUnit && job.salaryUnit !== 'Өдрөөр' && (
-                            <span className="text-[9px] text-[#9aa3b5] block mt-0.5">{job.salaryUnit}</span>
+                            <span className="text-[9px] text-[var(--muted-foreground)] block mt-0.5">{job.salaryUnit}</span>
                           )}
                         </div>
-                        <div className="bg-white/5 p-3.5 rounded-xl border border-[var(--color-glass-border)]">
-                          <span className="text-[9.5px] text-[#9aa3b5] uppercase tracking-wider font-bold block mb-1">Байршил</span>
-                          <span className="font-semibold text-[#f1f3f8] text-xs flex items-start gap-1">
-                            <MapPin className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />
+                        <div className="bg-[var(--bg2)] p-3.5 rounded-md border border-[var(--border)]">
+                          <span className="text-[9.5px] text-[var(--muted-foreground)] uppercase tracking-wider font-bold block mb-1">Байршил</span>
+                          <span className="font-semibold text-[var(--fg)] text-xs flex items-start gap-1">
+                            <MapPin className="w-3.5 h-3.5 text-[var(--muted-foreground)] shrink-0 mt-0.5" />
                             {job.location}
                           </span>
                         </div>
@@ -194,15 +194,15 @@ export default function JobCard({
                         {(() => {
                           if (job.status === 'open') {
                             return (
-                              <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full border-2 border-violet-500/40 bg-violet-500/10 text-violet-300">
-                                <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-violet-400 animate-pulse" />
+                              <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-sm border border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)]">
+                                <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-[var(--accent)] animate-pulse" />
                                 Нээлттэй (Идэвхтэй)
                               </span>
                             );
                           } else if (job.status === 'in_progress') {
                             return (
-                              <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full border-2 border-amber-500/40 bg-amber-500/10 text-amber-400">
-                                <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-amber-400 animate-pulse" />
+                              <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)]">
+                                <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-[var(--alert)] animate-pulse" />
                                 Ажиллаж байгаа
                               </span>
                             );
@@ -210,14 +210,14 @@ export default function JobCard({
                             const isReviewed = job.isReviewedByEmployer;
                             if (isReviewed) {
                               return (
-                                <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full border-2 border-teal-500/40 bg-teal-500/10 text-teal-300">
+                                <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-sm border border-[var(--verify)] bg-[rgba(31,138,76,0.1)] text-[var(--verify)]">
                                   Үнэлэгдсэн • Хаагдсан ✓
                                 </span>
                               );
                             } else {
                               return (
-                                <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full border-2 border-amber-500/40 bg-amber-500/10 text-amber-400 animate-pulse">
-                                  <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-amber-400" />
+                                <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)] animate-pulse">
+                                  <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-[var(--alert)]" />
                                   Ажил дууссан • Үнэлэх шаардлагатай ⚠️
                                 </span>
                               );
@@ -229,17 +229,17 @@ export default function JobCard({
 
 
                       {/* ── WORKFLOW ACTIONS ── */}
-                      <div className="border-t border-[var(--color-glass-border)] pt-3 space-y-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="border-t border-[var(--border)] pt-3 space-y-3" onClick={(e) => e.stopPropagation()}>
                         {!currentUser ? (
-                          <div className="bg-white/5 p-4 border border-[var(--color-glass-border)] rounded-xl text-center space-y-3">
-                            <p className="text-xs text-[#c8cbe0] font-sans">
+                          <div className="bg-[var(--bg2)] p-4 border border-[var(--border)] rounded-md text-center space-y-3">
+                            <p className="text-xs text-[var(--muted-foreground)] font-sans">
                               Та энэхүү заранд хүсэлт илгээх эсвэл зар тавихын тулд системд нэвтэрсэн байх шаардлагатай.
                             </p>
                             <div className="flex justify-center space-x-3">
-                              <button onClick={() => onNavigate('/auth?tab=login')} className="bg-white/10 hover:bg-white/20 text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors cursor-pointer">
+                              <button onClick={() => onNavigate('/auth?tab=login')} className="border border-[var(--border)] hover:border-[var(--border-strong)] bg-[var(--card)] hover:bg-[var(--bg2)] text-[var(--fg)] font-semibold text-xs px-4 py-2 rounded transition-colors cursor-pointer">
                                 Нэвтрэх
                               </button>
-                              <button onClick={() => onNavigate('/auth?tab=register')} className="bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors cursor-pointer">
+                              <button onClick={() => onNavigate('/auth?tab=register')} className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-xs px-4 py-2 rounded transition-all cursor-pointer">
                                 Бүртгүүлэх
                               </button>
                             </div>
@@ -250,37 +250,37 @@ export default function JobCard({
                               <>
                                 {currentUser.id === job.employerId ? (
                                   <div className="space-y-3">
-                                    <div className="bg-white/5 p-3.5 rounded-xl border border-[var(--color-glass-border)] space-y-3">
-                                      <span className="text-[10px] text-[#9aa3b5] block uppercase font-mono tracking-wider">Зарын Тохиргоо:</span>
+                                    <div className="bg-[var(--bg2)] p-3.5 rounded-md border border-[var(--border)] space-y-3">
+                                      <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-mono tracking-wider">Зарын Тохиргоо:</span>
                                       <div className="flex space-x-2.5">
-                                        <button type="button" onClick={() => onEdit(job)} className="flex-1 border border-[var(--color-glass-border)] hover:border-white/20 bg-white/5 hover:bg-white/10 text-[#9aa3b5] hover:text-[#f1f3f8] font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center">
+                                        <button type="button" onClick={() => onEdit(job)} className="flex-1 border border-[var(--border)] hover:border-[var(--border-strong)] bg-[var(--card)] hover:bg-[var(--bg2)] text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold text-[10.5px] py-1.5 px-2.5 rounded transition-colors cursor-pointer text-center">
                                           Засах
                                         </button>
                                         <button
                                           type="button"
                                           onClick={() => onDelete(job)}
-                                          className="flex-1 border border-[var(--color-glass-border)] hover:border-white/20 bg-white/5 hover:bg-white/10 text-[#9aa3b5] hover:text-[#f1f3f8] font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
+                                          className="flex-1 border border-rose-300 hover:border-rose-400 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 font-semibold text-[10.5px] py-1.5 px-2.5 rounded transition-colors cursor-pointer text-center"
                                         >
                                           Устгах
                                         </button>
                                       </div>
                                     </div>
-                                    <div className="flex items-center justify-between text-xs border-b border-[var(--color-glass-border)] pb-2">
-                                      <span className="font-bold text-[#e3e6ee]">Хүсэлт ирүүлсэн харилцагч ({job.applicants.length})</span>
+                                    <div className="flex items-center justify-between text-xs border-b border-[var(--border)] pb-2">
+                                      <span className="font-bold text-[var(--fg)]">Хүсэлт ирүүлсэн харилцагч ({job.applicants.length})</span>
                                     </div>
                                     {job.applicants.length === 0 ? (
-                                      <p className="text-[11px] text-[#9aa3b5] text-center py-2">Ирүүлсэн хүсэлт байхгүй байна.</p>
+                                      <p className="text-[11px] text-[var(--muted-foreground)] text-center py-2">Ирүүлсэн хүсэлт байхгүй байна.</p>
                                     ) : (
-                                      <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                                      <div className="space-y-2 max-h-48 overflow-y-auto pr-1 overscroll-contain">
                                         {job.applicants.map((opId) => {
                                           const op = users.find(u => u.id === opId);
                                           if (!op) return null;
                                           return (
-                                            <div key={opId} className="flex items-center justify-between bg-white/5 p-2.5 rounded-lg border border-[var(--color-glass-border)]">
-                                              <button type="button" onClick={() => onNavigate(`/profile?id=${op.id}`)} className="text-xs text-[#f1f3f8] font-medium hover:underline hover:text-violet-400 text-left focus:outline-none">
+                                            <div key={opId} className="flex items-center justify-between bg-[var(--bg2)] p-2.5 rounded-md border border-[var(--border)]">
+                                              <button type="button" onClick={() => onNavigate(`/profile?id=${op.id}`)} className="text-xs text-[var(--fg)] font-medium hover:underline hover:text-[var(--accent-soft-foreground)] text-left focus:outline-none">
                                                 {op.fullName} {op.type === 'operator' && `(${op.experienceYears || 0} жил)`}
                                               </button>
-                                              <button onClick={() => onHire(job.id, op.id)} className="bg-violet-600 hover:bg-violet-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
+                                              <button onClick={() => onHire(job.id, op.id)} className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] text-[10px] font-bold px-3 py-1.5 rounded transition-all cursor-pointer">
                                                 Сонгох
                                               </button>
                                             </div>
@@ -292,18 +292,18 @@ export default function JobCard({
                                 ) : (
                                   job.applicants.includes(currentUser.id) ? (
                                     <div className="space-y-2.5">
-                                      <button disabled className="w-full bg-white/5 text-[#9aa3b5] text-xs font-bold py-3 px-4 rounded-xl cursor-not-allowed border border-[var(--color-glass-border)] text-center">
+                                      <button disabled className="w-full bg-[var(--bg2)] text-[var(--muted-foreground)] text-xs font-bold py-3 px-4 rounded-md cursor-not-allowed border border-[var(--border)] text-center">
                                         Хүсэлт илгээсэн
                                       </button>
                                       {successMessage && successMessage.includes('хүсэлт') && (
-                                        <div className="bg-violet-500/10 border border-violet-500/30 text-violet-300 p-3.5 rounded-xl text-xs flex items-start space-x-2 animate-fade-in text-left">
-                                          <CheckCircle className="w-4 h-4 text-teal-300 shrink-0 mt-0.5" />
+                                        <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] text-[var(--verify)] p-3.5 rounded-md text-xs flex items-start space-x-2 animate-fade-in text-left">
+                                          <CheckCircle className="w-4 h-4 text-[var(--verify)] shrink-0 mt-0.5" />
                                           <span className="font-sans leading-normal text-[11px]">{successMessage}</span>
                                         </div>
                                       )}
                                     </div>
                                   ) : (
-                                    <button onClick={() => onApply(job.id)} className="w-full bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold py-3 px-4 rounded-xl transition-all shadow-md shadow-violet-600/10 cursor-pointer text-center">
+                                    <button onClick={() => onApply(job.id)} className="w-full bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] text-xs font-bold py-3 px-4 rounded-md transition-all shadow-sm cursor-pointer text-center">
                                       Хүсэлт илгээх
                                     </button>
                                   )
@@ -312,10 +312,10 @@ export default function JobCard({
                             )}
 
                             {job.status === 'in_progress' && (
-                              <div className="bg-white/5 p-3.5 rounded-xl border border-[var(--color-glass-border)] space-y-3">
-                                <div className="text-xs text-[#c8cbe0] flex items-center justify-between">
+                              <div className="bg-[var(--bg2)] p-3.5 rounded-md border border-[var(--border)] space-y-3">
+                                <div className="text-xs text-[var(--fg)] flex items-center justify-between">
                                   <span>Хамтран ажиллаж буй оператор:</span>
-                                  <span className="font-bold text-[#f1f3f8]">
+                                  <span className="font-bold text-[var(--fg)]">
                                     {(() => {
                                       const op = users.find(u => u.id === job.hiredOperatorId);
                                       return op ? getFirstName(op) : getFirstName(job.hiredOperatorName);
@@ -323,44 +323,44 @@ export default function JobCard({
                                   </span>
                                 </div>
                                 {successMessage && successMessage.includes('томиллоо') && (
-                                  <div className="bg-violet-500/10 border border-violet-500/30 text-violet-300 p-3 rounded-xl text-[11px] flex items-start space-x-2 animate-fade-in text-left">
-                                    <CheckCircle className="w-4 h-4 text-teal-300 shrink-0 mt-0.5" />
+                                  <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] text-[var(--verify)] p-3 rounded-md text-[11px] flex items-start space-x-2 animate-fade-in text-left">
+                                    <CheckCircle className="w-4 h-4 text-[var(--verify)] shrink-0 mt-0.5" />
                                     <span className="font-sans leading-normal">{successMessage}</span>
                                   </div>
                                 )}
                                 {currentUser.id === job.employerId && (
-                                  <button id="employer-complete-job-btn" onClick={() => onCompleteAndReview(job)} className="w-full bg-violet-600 hover:bg-violet-700 text-white py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer text-center">
+                                  <button id="employer-complete-job-btn" onClick={() => onCompleteAndReview(job)} className="w-full bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] py-2 px-3 rounded text-xs font-bold transition-all cursor-pointer text-center">
                                     ✓ Ажил дууссаныг баталгаажуулж үнэлэх
                                   </button>
                                 )}
                                 {currentUser.id !== job.employerId && (
-                                  <p className="text-[10px] text-[#9aa3b5]">Ажил олгогч ажлыг дууссаныг тэмдэглэсний дараа та үнэлгээ өгөх боломжтой болно.</p>
+                                  <p className="text-[10px] text-[var(--muted-foreground)]">Ажил олгогч ажлыг дууссаныг тэмдэглэсний дараа та үнэлгээ өгөх боломжтой болно.</p>
                                 )}
                               </div>
                             )}
 
                             {job.status === 'completed' && (
-                              <div className="bg-white/5 p-4 border border-[var(--color-glass-border)] rounded-xl space-y-3">
-                                <div className="flex items-center space-x-1.5 text-xs text-teal-300 font-bold">
+                              <div className="bg-[var(--bg2)] p-4 border border-[var(--border)] rounded-md space-y-3">
+                                <div className="flex items-center space-x-1.5 text-xs text-[var(--verify)] font-bold">
                                   <CheckCircle className="w-4 h-4" />
                                   <span>ЭНЭХҮҮ АЖИЛ АМЖИЛТТАЙ ГҮЙЦЭТГЭГДЭЖ ДУУССАН</span>
                                 </div>
 
                                 {currentUser.type === 'operator' && job.hiredOperatorId === currentUser.id && !job.isReviewedByOperator && (
-                                  <button id="op-review-employer-btn" onClick={() => onReview(job)} className="w-full bg-violet-600 hover:bg-violet-500 text-white py-1.5 px-3 rounded-lg text-xs font-bold cursor-pointer transition-colors">
+                                  <button id="op-review-employer-btn" onClick={() => onReview(job)} className="w-full bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] py-1.5 px-3 rounded text-xs font-bold cursor-pointer transition-all">
                                     Захиалагчийг Үнэлэх (Цалингийн мурилт эсвэл харилцаа)
                                   </button>
                                 )}
 
                                 {currentUser.type === 'employer' && job.employerId === currentUser.id && !job.isReviewedByEmployer && (
                                   <div className="space-y-2">
-                                    <button id="emp-review-operator-btn" onClick={() => onReview(job)} className="w-full bg-violet-600 hover:bg-violet-500 text-white py-1.5 px-3 rounded-lg text-xs font-bold cursor-pointer transition-colors">
+                                    <button id="emp-review-operator-btn" onClick={() => onReview(job)} className="w-full bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] py-1.5 px-3 rounded text-xs font-bold cursor-pointer transition-all">
                                       Жолоочийг Үнэлэх (Согтууруулах ундаа, Ажилдаа эзэн болсон байдал)
                                     </button>
                                     <button
                                       type="button"
                                       onClick={() => onCancelHiring(job)}
-                                      className="w-full text-center py-1.5 text-xs border border-[var(--color-glass-border)] hover:border-white/20 bg-white/5 hover:bg-white/10 text-[#9aa3b5] hover:text-[#f1f3f8] rounded-lg transition-colors cursor-pointer font-bold"
+                                      className="w-full text-center py-1.5 text-xs border border-rose-300 hover:border-rose-400 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 rounded transition-colors cursor-pointer font-bold"
                                     >
                                       Сонгосон жолоочийг болих
                                     </button>
@@ -369,7 +369,7 @@ export default function JobCard({
 
                                 {((currentUser.type === 'operator' && job.isReviewedByOperator) ||
                                   (currentUser.type === 'employer' && job.isReviewedByEmployer)) && (
-                                  <div className="text-[11px] text-[#9aa3b5] text-center italic">
+                                  <div className="text-[11px] text-[var(--muted-foreground)] text-center italic">
                                     Таны үнэлгээ системд хэдийн бүртгэгдсэн байна. Таны хариуцлагатай оролцоонд баярлалаа!
                                   </div>
                                 )}
@@ -380,7 +380,7 @@ export default function JobCard({
                       </div>
 
                       {/* ── SHARE BUTTON ── */}
-                      <div className="relative border-t border-[var(--color-glass-border)] pt-3">
+                      <div className="relative border-t border-[var(--border)] pt-3">
                         <button
                           type="button"
                           onClick={async (e) => {
@@ -404,7 +404,7 @@ export default function JobCard({
                               onToggleShareMenu(shareMenuJob === job.id ? null : job.id);
                             }
                           }}
-                          className="flex items-center space-x-1.5 text-[11px] text-[#9aa3b5] hover:text-violet-400 transition-colors cursor-pointer"
+                          className="flex items-center space-x-1.5 text-[11px] text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer"
                         >
                           <Share2 className="w-3.5 h-3.5" />
                           <span>Хуваалцах</span>
@@ -413,10 +413,10 @@ export default function JobCard({
                         {/* Desktop-only dropdown (shown only when Web Share API is not available) */}
                         {shareMenuJob === job.id && (
                           <div
-                            className="absolute bottom-full left-0 mb-2 bg-[var(--color-brand-bg2)] border border-[var(--color-glass-border)] rounded-xl shadow-2xl p-3 z-50 w-64 animate-fade-in"
+                            className="absolute bottom-full left-0 mb-2 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-md p-3 z-50 w-64 animate-fade-in"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <p className="text-[9.5px] text-[#9aa3b5] uppercase font-bold tracking-wider mb-2">Хуваалцах платформ</p>
+                            <p className="text-[9.5px] text-[var(--muted-foreground)] uppercase font-bold tracking-wider mb-2">Хуваалцах платформ</p>
                             <div className="grid grid-cols-3 gap-2">
                               {(() => {
                                 const jobUrl = typeof window !== 'undefined' ? `${window.location.origin}/jobs/${job.id}` : '';
@@ -485,7 +485,7 @@ export default function JobCard({
                                     await action();
                                     onToggleShareMenu(null);
                                   }}
-                                  className="flex flex-col items-center justify-center bg-white/5 hover:bg-white/10 border border-[var(--color-glass-border)] hover:border-white/20 rounded-lg p-2 text-[10px] text-[#c8cbe0] hover:text-[#f1f3f8] transition-colors cursor-pointer gap-1"
+                                  className="flex flex-col items-center justify-center bg-[var(--bg2)] hover:bg-[var(--border)] border border-[var(--border)] hover:border-[var(--border-strong)] rounded p-2 text-[10px] text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer gap-1"
                                 >
                                   <span className="text-base">{emoji}</span>
                                   <span>{label}</span>
@@ -503,40 +503,40 @@ export default function JobCard({
                       id={`job-card-collapsed-${job.id}`}
                       key={`collapsed-${job.id}`}
                       onClick={() => onSelect(job)}
-                      className="w-full bg-[var(--color-glass-bg)] hover:bg-white/[0.06] backdrop-blur-md transition-all border border-[var(--color-glass-border)] hover:border-violet-500/40 border-l-4 border-l-violet-500 p-5 rounded-2xl cursor-pointer flex flex-col justify-between space-y-4 text-left group shadow-sm hover:shadow-md self-start"
+                      className="w-full bg-[var(--card)] hover:bg-[var(--bg2)] transition-all border border-[var(--border)] hover:border-[var(--border-strong)] border-l-4 border-l-[var(--accent)] p-5 rounded-md cursor-pointer flex flex-col justify-between space-y-4 text-left group shadow-sm hover:shadow-md self-start"
                     >
                       <div className="space-y-3">
                         {/* Employer name and Date */}
-                        <div className="flex justify-between items-center text-[11px] text-[#9aa3b5]">
+                        <div className="flex justify-between items-center text-[11px] text-[var(--muted-foreground)]">
                           {!currentUser ? (
                             <span
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onShowBlurWarning();
                               }}
-                              className="font-semibold text-violet-400 font-sans filter blur-[5px] select-none cursor-pointer"
+                              className="font-semibold text-[var(--accent-soft-foreground)] font-sans filter blur-[5px] select-none cursor-pointer"
                               title="Дэлгэрэнгүйг нэвтэрч харна уу"
                             >
                               {getMockEmployerName(job.id)}
                             </span>
                           ) : (
-                            <span className="font-semibold text-violet-400 font-sans">
+                            <span className="font-semibold text-[var(--accent-soft-foreground)] font-sans">
                               {getEmployerDisplayName(job)}
                             </span>
                           )}
-                          <span className="font-mono text-[#9aa3b5]">
+                          <span className="font-mono text-[var(--muted-foreground)]">
                             {formatDate(job.createdAt)}
                           </span>
                         </div>
 
                         {/* Title */}
-                        <h4 className="text-sm font-bold text-[#f1f3f8] group-hover:text-violet-300 transition-colors leading-snug">
+                        <h4 className="text-sm font-display font-bold uppercase tracking-tight text-[var(--fg)] transition-colors leading-snug">
                           {job.title}
                         </h4>
 
                         {/* Job Image Thumbnail */}
                         {((job.imageUrls && job.imageUrls.length > 0) || job.imageUrl) && (
-                          <div className="w-full h-36 rounded-xl overflow-hidden bg-white/5 border border-[var(--color-glass-border)] relative shrink-0">
+                          <div className="w-full h-36 rounded-md overflow-hidden bg-[var(--bg2)] border border-[var(--border)] relative shrink-0">
                             <img
                               src={job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl}
                               alt={job.title}
@@ -546,12 +546,12 @@ export default function JobCard({
                         )}
 
                         {/* Short description preview */}
-                        <p className="text-xs text-[#9aa3b5] line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-[var(--muted-foreground)] line-clamp-2 leading-relaxed">
                           {job.description}
                         </p>
                       </div>
 
-                      <div className="border-t border-[var(--color-glass-border)] pt-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+                      <div className="border-t border-[var(--border)] pt-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
                         {/* Phone Number */}
                         <div
                           onClick={(e) => {
@@ -560,33 +560,33 @@ export default function JobCard({
                               onShowBlurWarning();
                             }
                           }}
-                          className={`flex items-center space-x-1.5 text-[#9aa3b5] ${!currentUser ? 'cursor-pointer' : ''}`}
+                          className={`flex items-center space-x-1.5 text-[var(--muted-foreground)] ${!currentUser ? 'cursor-pointer' : ''}`}
                         >
-                          <Phone className="w-3.5 h-3.5 text-[#9aa3b5]" />
-                          <span className={`font-mono font-medium text-[#9aa3b5] ${!currentUser ? 'filter blur-[5px] select-none' : ''}`}>
+                          <Phone className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
+                          <span className={`font-mono font-medium text-[var(--muted-foreground)] ${!currentUser ? 'filter blur-[5px] select-none' : ''}`}>
                             {!currentUser ? getMockEmployerPhone(job.id) : (getEmployerPhone(job) || 'Утасгүй')}
                           </span>
                         </div>
 
                         {/* Salary and Status */}
                         <div className="flex flex-col items-end space-y-2 shrink-0">
-                          <span className="font-sans font-bold text-[#f1f3f8] flex items-center gap-1.5">
-                            <span className="text-[9px] text-[#9aa3b5] font-semibold uppercase tracking-wider">Цалин / Төлбөр:</span>
-                            <span className="font-mono text-xs text-teal-300">{job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}</span>
+                          <span className="font-sans font-bold text-[var(--fg)] flex items-center gap-1.5">
+                            <span className="text-[9px] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">Цалин / Төлбөр:</span>
+                            <span className="font-mono text-xs text-[var(--verify)]">{job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}</span>
                           </span>
 
                           {(() => {
                             if (job.status === 'open') {
                               return (
-                                <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border border-violet-500/40 bg-violet-500/10 text-violet-300">
-                                  <span className="w-1 h-1 rounded-full mr-1 bg-violet-400 animate-pulse" />
+                                <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)]">
+                                  <span className="w-1 h-1 rounded-full mr-1 bg-[var(--accent)] animate-pulse" />
                                   <span>Нээлттэй</span>
                                 </span>
                               );
                             } else if (job.status === 'in_progress') {
                               return (
-                                <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-400">
-                                  <span className="w-1 h-1 rounded-full mr-1 bg-amber-400 animate-pulse" />
+                                <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)]">
+                                  <span className="w-1 h-1 rounded-full mr-1 bg-[var(--alert)] animate-pulse" />
                                   <span>Ажиллаж байгаа</span>
                                 </span>
                               );
@@ -594,14 +594,14 @@ export default function JobCard({
                               const isReviewed = job.isReviewedByEmployer;
                               if (isReviewed) {
                                 return (
-                                  <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border border-teal-500/40 bg-teal-500/10 text-teal-300">
+                                  <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--verify)] bg-[rgba(31,138,76,0.1)] text-[var(--verify)]">
                                     <span>Хаагдсан ✓</span>
                                   </span>
                                 );
                               } else {
                                 return (
-                                  <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-400 animate-pulse">
-                                    <span className="w-1 h-1 rounded-full mr-1 bg-amber-400" />
+                                  <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)] animate-pulse">
+                                    <span className="w-1 h-1 rounded-full mr-1 bg-[var(--alert)]" />
                                     <span>Ажил дууссан ⚠️</span>
                                   </span>
                                 );

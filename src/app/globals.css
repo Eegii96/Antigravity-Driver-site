@@ -2,64 +2,75 @@
 
 @theme {
   /* ============================================================
-     Glass Premium Violet (Концепт D) — CANONICAL design tokens.
-     These names are the single source of truth and match AGENTS.md §4.
-     Consume them as Tailwind arbitrary values, e.g. bg-[var(--accent)],
+     "Hi-vis Industrial" — CANONICAL design tokens (AGENTS.md §4).
+     LIGHT, structural, solid-surface system grounded in heavy-equipment
+     branding (CAT / Hilti / Liebherr). NOT dark, NOT glass, NOT neon.
+     Consume as Tailwind arbitrary values, e.g. bg-[var(--card)],
      text-[var(--muted-foreground)], border-[var(--border)].
      ============================================================ */
-  --bg: #0c0f17;                 /* base page background */
-  --bg2: #11151f;                /* secondary/alternating section background */
-  --card: rgba(255, 255, 255, 0.04);    /* glass card fill */
-  --border: rgba(255, 255, 255, 0.10);  /* glass card/divider border */
-  --fg: #f1f3f8;                 /* primary text */
-  --muted-foreground: #9aa3b5;   /* secondary text */
-  --accent: #8b5cf6;             /* violet — primary brand accent */
-  --accent-foreground: #ffffff;  /* text/icon on top of --accent */
-  --accent-soft: rgba(139, 92, 246, 0.14);   /* soft violet badge/icon bg */
-  --accent-soft-foreground: #c4b5fd;          /* text on --accent-soft */
-  --teal: #22d3ee;               /* secondary accent — trust/verification */
+  --bg: #F4F5F2;                 /* base page background (steel white) */
+  --bg2: #EBEDE8;                /* secondary/alternating section bg */
+  --card: #FFFFFF;              /* solid card/panel fill (opaque) */
+  --border: #D5D7D1;            /* default hairline divider/card border */
+  --border-strong: #1A1C1E;    /* crisp graphite border for emphasis */
+  --fg: #1A1C1E;               /* primary text (graphite) */
+  --muted-foreground: #5A5D58;  /* secondary text (≥4.5:1 on --bg) */
+  --concrete: #9A9C98;         /* decorative/disabled gray ONLY */
 
-  /* --- Legacy aliases (kept so existing var(--color-*) usages keep working).
-     Migrate these to the canonical tokens above over time, then delete. --- */
+  --accent: #FFC400;            /* hi-vis yellow — CTA/brand + open status */
+  --accent-foreground: #1A1C1E; /* text/icon on --accent (graphite, never white) */
+  --accent-soft: rgba(255, 196, 0, 0.16);   /* soft yellow badge/icon bg */
+  --accent-soft-foreground: #8A6A00;         /* dark amber text on --accent-soft */
+
+  --verify: #1F8A4C;            /* safety green — trust/verified/completed */
+  --alert: #FF5C28;             /* safety orange — in-progress/needs-review */
+
+  /* --- Legacy aliases: many components still reference these var(--color-*)
+     / --teal / --muted names (200+ usages). Map them onto the canonical
+     hi-vis tokens so they migrate automatically. Remove once code is clean. --- */
+  --muted: var(--muted-foreground);
+  --teal: var(--verify);                  /* old "trust" accent → safety green */
   --color-brand-bg: var(--bg);
   --color-brand-bg2: var(--bg2);
-  --color-glass-bg: var(--card);
+  --color-glass-bg: var(--card);          /* glass surfaces → solid white */
   --color-glass-border: var(--border);
-  --color-neon-cyan: var(--teal);
-  --color-neon-emerald: var(--accent);   /* was mislabeled emerald; is violet */
+  --color-neon-cyan: var(--verify);
+  --color-neon-emerald: var(--accent);
   --color-neon-violet: var(--accent);
-  --color-neon-teal: var(--teal);
+  --color-neon-teal: var(--verify);
 
-  /* Font tokens — Fraunces for headings, Inter for body/UI, Geist Mono for
-     numbers/codes/dates. Wired from next/font variables set in layout.tsx. */
+  /* Font tokens — Saira Condensed for display/headings (nameplate feel),
+     Inter for body/UI, Geist Mono for numbers/codes/dates. Wired from
+     next/font variables set in layout.tsx. */
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
-  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-saira), "Arial Narrow", system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-/* Custom premium scrollbar */
+/* Industrial scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg);
+  background: var(--bg2);
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2f3d;
-  border-radius: 99px;
+  background: var(--concrete);
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+  background: var(--fg);
 }
 
 /* Firefox scrollbar support */
 * {
-  scrollbar-color: #2a2f3d var(--bg);
+  scrollbar-color: var(--concrete) var(--bg2);
   scrollbar-width: thin;
 }
 
-/* Base custom resets and animations */
+/* Base resets */
 body {
   background-color: var(--bg);
   color: var(--fg);
@@ -67,124 +78,96 @@ body {
   overflow-x: hidden;
 }
 
-/* Ambient glow blobs */
-.glow-blob {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(100px);
-  opacity: 0.18;
-  mix-blend-mode: screen;
-  pointer-events: none;
-  animation: float-slow 20s infinite ease-in-out;
+/* ============================================================
+   Surfaces & panels — SOLID, structural (AGENTS.md §4).
+   ============================================================ */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(26, 28, 30, 0.08);
 }
 
-/* Glassmorphism panel definitions — dark violet/teal glass theme */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+/* "Machined" panel — crisp graphite border for emphasis */
+.panel-machined {
+  background: var(--card);
+  border: 1.5px solid var(--border-strong);
+  box-shadow: 0 1px 2px rgba(26, 28, 30, 0.12);
 }
 
+/* Signature element — 45° hi-vis caution stripe. Use SPARINGLY (thin strip). */
+.hazard-stripe {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--accent) 0,
+    var(--accent) 14px,
+    var(--fg) 14px,
+    var(--fg) 28px
+  );
+}
+
+/* ============================================================
+   Legacy bridge utilities — retired glass/glow classes are still
+   referenced in components (~72 usages). Redefine them as solid
+   industrial equivalents so the migration is non-breaking; remove
+   the class usages incrementally, then delete these bridges.
+   ============================================================ */
+.glass-panel,
 .glass-card {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.2);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(26, 28, 30, 0.08);
+  transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
 }
 
-.glass-card:hover {
-  border-color: rgba(139, 92, 246, 0.35);
-  box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.25);
+.glass-card:hover,
+.glass-card-emerald:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 4px 12px -4px rgba(26, 28, 30, 0.18);
   transform: translateY(-2px);
 }
 
-.glass-card-emerald:hover {
-  border-color: rgba(34, 211, 238, 0.35);
-  box-shadow: 0 10px 30px -10px rgba(34, 211, 238, 0.25);
-}
-
 .glass-input {
-  background: rgba(8, 12, 24, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 0.375rem;
-  color: #f1f3f8;
-  transition: all 0.2s ease-in-out;
+  color: var(--fg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .glass-input:focus {
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+  border-color: var(--fg);
+  box-shadow: 0 0 0 3px var(--accent-soft);
   outline: none;
 }
 
-/* Neon text & border glow effects */
-.text-neon-cyan {
-  text-shadow: 0 0 8px rgba(34, 211, 238, 0.5), 0 0 20px rgba(34, 211, 238, 0.2);
+/* Retired neon glow + ambient blob effects — neutralized to no-ops. */
+.glow-blob {
+  display: none !important;
 }
-
+.text-neon-cyan,
 .text-neon-emerald {
-  text-shadow: 0 0 8px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.2);
+  text-shadow: none;
 }
-
-.neon-border-cyan {
-  box-shadow: 0 0 15px rgba(34, 211, 238, 0.1), inset 0 0 10px rgba(34, 211, 238, 0.05);
-}
-
-.neon-border-emerald {
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.1), inset 0 0 10px rgba(139, 92, 246, 0.05);
-}
-
+.neon-border-cyan,
+.neon-border-emerald,
 .neon-border-amber {
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.1), inset 0 0 10px rgba(139, 92, 246, 0.05);
+  box-shadow: none;
 }
-
-.glow-btn-cyan {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.glow-btn-cyan::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.2), transparent);
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
-}
-
-.glow-btn-cyan:hover::after {
-  transform: translateX(100%);
-}
-
+.glow-btn-cyan,
 .glow-btn-emerald {
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
-
+.glow-btn-cyan::after,
 .glow-btn-emerald::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.2), transparent);
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
+  content: none;
 }
 
-.glow-btn-emerald:hover::after {
-  transform: translateX(100%);
-}
-
-/* Timeline vertical line */
+/* Timeline vertical line — graphite */
 .timeline-line {
   position: relative;
 }
-
 .timeline-line::before {
   content: '';
   position: absolute;
@@ -192,43 +175,10 @@ body {
   bottom: 0;
   left: 15px;
   width: 2px;
-  background: linear-gradient(to bottom, #8b5cf6 30%, #2a2f3d 80%);
+  background: var(--border);
 }
 
-/* Animations */
-@keyframes float-slow {
-  0%, 100% {
-    transform: translateY(0px) scale(1);
-  }
-  50% {
-    transform: translateY(-20px) scale(1.1);
-  }
-}
-
-@keyframes pulse-soft {
-  0%, 100% {
-    opacity: 0.8;
-  }
-  50% {
-    opacity: 0.4;
-  }
-}
-
-.animate-pulse-soft {
-  animation: pulse-soft 3s infinite ease-in-out;
-}
-
-@keyframes slide-in {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
+/* Animations (disciplined — no ambient float/pulse-glow) */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -244,30 +194,48 @@ body {
   animation: fade-in 0.2s ease-out forwards;
 }
 
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 .animate-slide-in {
   animation: slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Soft pulse retained for non-glow uses (e.g. live dots), but gentle. */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.animate-pulse-soft {
+  animation: pulse-soft 2.4s infinite ease-in-out;
+}
+
+/* Highlighted job card (deep-link target) — hi-vis yellow emphasis */
 .highlighted-job-card {
-  border: 2px solid #8b5cf6 !important;
-  box-shadow: 0 0 25px rgba(139, 92, 246, 0.35) !important;
-  animation: pulse-border-emerald 2s infinite alternate ease-in-out !important;
-  background: rgba(139, 92, 246, 0.08) !important;
+  border: 2px solid var(--accent) !important;
+  box-shadow: 0 0 0 4px var(--accent-soft) !important;
+  background: var(--accent-soft) !important;
 }
 
-@keyframes pulse-border-emerald {
-  from {
-    box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
-    border-color: rgba(139, 92, 246, 0.6) !important;
-  }
-  to {
-    box-shadow: 0 0 35px rgba(139, 92, 246, 0.45);
-    border-color: rgba(139, 92, 246, 1) !important;
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
-/* Dark theme select options */
+/* Light select options */
 select option {
-  background-color: #0f172a !important;
-  color: #ffffff !important;
+  background-color: var(--card);
+  color: var(--fg);
 }

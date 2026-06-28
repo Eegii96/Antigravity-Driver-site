@@ -634,24 +634,24 @@ export default function JobBoard({
   const unreadNotifs = notifications.filter(n => !n.isRead);
 
   return (
-    <div id="job-board-root" className="flex-grow bg-[var(--color-brand-bg)] text-[#f1f3f8] font-sans flex flex-col relative overflow-x-hidden">
-      {/* Warning Banner — alert semantic strip (genuine warning, kept amber) */}
-      <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-200 px-4 py-2 text-center text-[10px] md:text-xs font-medium flex items-center justify-center gap-2 z-50">
-        <AlertTriangle className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400 shrink-0" />
+    <div id="job-board-root" className="flex-grow bg-[var(--bg)] text-[var(--fg)] font-sans flex flex-col relative overflow-x-hidden">
+      {/* Warning Banner — safety-orange alert strip (blacklist compliance warning) */}
+      <div className="bg-[rgba(255,92,40,0.1)] border-b border-[rgba(255,92,40,0.25)] text-[var(--alert)] px-4 py-2 text-center text-[10px] md:text-xs font-medium flex items-center justify-center gap-2 z-50">
+        <AlertTriangle className="w-3.5 h-3.5 md:w-4 md:h-4 text-[var(--alert)] shrink-0" />
         <span>
-          <span className="font-semibold text-amber-100">Анхаар:</span> Ажил таслах, цалин олгохгүй байх, согтуу ажиллах зэрэг ноцтой зөрчил гаргасан хэрэглэгч хар дансанд бүртгэгдэж, системийн эрх хаагдаж болзошгүй.
+          <span className="font-bold text-[var(--alert)]">Анхаар:</span> Ажил таслах, цалин олгохгүй байх, согтуу ажиллах зэрэг ноцтой зөрчил гаргасан хэрэглэгч хар дансанд бүртгэгдэж, системийн эрх хаагдаж болзошгүй.
         </span>
       </div>
 
       {/* Nav bar */}
-      <header className="bg-[var(--color-glass-bg)] backdrop-blur-xl border-b border-[var(--color-glass-border)] sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-sm shadow-black/20">
+      <header className="bg-[var(--card)] border-b border-[var(--border)] sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-lg bg-[#26282d] border border-violet-500/30 flex items-center justify-center relative overflow-hidden shrink-0 shadow-md">
+          <div className="w-10 h-10 rounded-md bg-[var(--bg2)] border border-[var(--border-strong)] flex items-center justify-center relative overflow-hidden shrink-0 shadow-sm">
             <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" />
           </div>
           <div>
-            <span className="font-bold tracking-tight text-[#f1f3f8] block text-sm font-sans md:text-base">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>
-            <p className="text-[9px] md:text-[11px] text-[#9aa3b5] font-sans tracking-wide leading-relaxed mt-0.5 max-w-xs md:max-w-xl">
+            <span className="font-display font-bold uppercase tracking-tight text-[var(--fg)] block text-sm md:text-base">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>
+            <p className="text-[9px] md:text-[11px] text-[var(--muted-foreground)] font-sans tracking-wide leading-relaxed mt-0.5 max-w-xs md:max-w-xl">
               Үнэлгээ өгөх, ажлын түүх үүсгэх системээр хариуцлагатай жолооч, оператор болон найдвартай ажил олгогчдыг үүсгэх платформ
             </p>
           </div>
@@ -665,7 +665,7 @@ export default function JobBoard({
                 <button
                   id="header-post-job-btn"
                   onClick={() => setShowPostModal(true)}
-                  className="bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs px-3.5 py-2 rounded-lg flex items-center space-x-1.5 transition-all cursor-pointer shadow-md shadow-violet-600/25"
+                  className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-xs px-3.5 py-2 rounded flex items-center space-x-1.5 transition-all cursor-pointer shadow-sm"
                 >
                   <PlusCircle className="w-4 h-4" />
                   <span>Зар нэмэх</span>
@@ -677,11 +677,11 @@ export default function JobBoard({
                 <button
                   type="button"
                   onClick={toggleNotificationsMenu}
-                  className="relative p-2 bg-[var(--color-glass-bg)] hover:bg-white/10 active:scale-95 border border-[var(--color-glass-border)] hover:border-white/20 rounded-full transition-all duration-200 cursor-pointer text-[#9aa3b5] hover:text-[#f1f3f8] focus:outline-none"
+                  className="relative p-2 bg-[var(--card)] hover:bg-[var(--bg2)] active:scale-95 border border-[var(--border)] hover:border-[var(--border-strong)] rounded-full transition-all duration-200 cursor-pointer text-[var(--muted-foreground)] hover:text-[var(--fg)] focus:outline-none"
                 >
                   <Bell className="w-4 h-4" />
                   {unreadNotifs.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-rose-500 text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-[var(--color-brand-bg)] animate-bounce">
+                    <span className="absolute -top-1 -right-1 bg-[var(--alert)] text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-[var(--card)] animate-bounce">
                       {unreadNotifs.length}
                     </span>
                   )}
@@ -691,65 +691,65 @@ export default function JobBoard({
                   <div
                     id="notifications-dropdown-menu"
                     ref={notificationsMenuRef}
-                    className="absolute right-0 mt-2.5 w-[360px] bg-[var(--color-brand-bg2)] backdrop-blur-md border border-[var(--color-glass-border)] rounded-2xl shadow-2xl z-50 py-2 animate-fade-in"
+                    className="absolute right-0 mt-2.5 w-[360px] bg-[var(--card)] border border-[var(--border)] rounded-md shadow-md z-50 py-2 animate-fade-in"
                   >
-                    <div className="px-4 py-2.5 border-b border-[var(--color-glass-border)] flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#9aa3b5] tracking-wide uppercase font-sans">Системийн мэдэгдлүүд</span>
+                    <div className="px-4 py-2.5 border-b border-[var(--border)] flex items-center justify-between">
+                      <span className="text-xs font-bold text-[var(--muted-foreground)] tracking-wide uppercase font-sans">Системийн мэдэгдлүүд</span>
                       {unreadNotifs.length > 0 && (
                         <button
                           type="button"
                           onClick={handleMarkAllAsRead}
-                          className="text-[10px] bg-violet-500/15 hover:bg-violet-500/25 text-[#c4b5fd] border border-violet-500/30 px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer"
+                          className="text-[10px] bg-[var(--accent-soft)] hover:brightness-95 text-[var(--accent-soft-foreground)] border border-[var(--accent)] px-2.5 py-1 rounded font-bold transition-all cursor-pointer"
                         >
                           Бүгдийг уншсанаар тэмдэглэх
                         </button>
                       )}
                     </div>
 
-                    <div className="max-h-80 overflow-y-auto overscroll-contain divide-y divide-[var(--color-glass-border)] scrollbar-thin">
+                    <div className="max-h-80 overflow-y-auto overscroll-contain divide-y divide-[var(--border)] scrollbar-thin">
                       {notifications.length === 0 ? (
                         <div className="py-10 px-4 text-center flex flex-col items-center justify-center space-y-2">
-                          <CheckCircle className="w-8 h-8 text-[#9aa3b5] animate-pulse-soft" />
-                          <p className="text-xs text-[#9aa3b5] italic">Мэдэгдэл одоогоор байхгүй байна.</p>
+                          <CheckCircle className="w-8 h-8 text-[var(--muted-foreground)] animate-pulse-soft" />
+                          <p className="text-xs text-[var(--muted-foreground)] italic">Мэдэгдэл одоогоор байхгүй байна.</p>
                         </div>
                       ) : (
                         notifications.map((notif) => (
                           <div
                             key={notif.id}
                             onClick={() => handleNotificationClick(notif)}
-                            className={`p-3.5 pl-6 text-left transition-all duration-300 relative flex items-start space-x-3 border-l-4 cursor-pointer group ${
+                            className={`p-3.5 pl-6 text-left transition-all duration-200 relative flex items-start space-x-3 border-l-4 cursor-pointer group ${
                               notif.isRead
-                                ? 'bg-transparent border-transparent hover:bg-white/5'
-                                : 'bg-violet-500/10 border-violet-500 shadow-[inset_4px_0_16px_rgba(139,92,246,0.12),0_1px_2px_rgba(0,0,0,0.2)]'
+                                ? 'bg-transparent border-transparent hover:bg-[var(--bg2)]'
+                                : 'bg-[var(--accent-soft)] border-[var(--accent)]'
                             }`}
                           >
                             {!notif.isRead && (
                               <span className="absolute left-2 top-[18px] flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-500 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500 shadow-[0_0_8px_#8b5cf6]"></span>
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent)] opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--accent)]"></span>
                               </span>
                             )}
                             <div className="flex-1 min-w-0">
                               <div className="flex justify-between items-start gap-1">
                                 <h5 className={`text-xs font-bold leading-tight font-sans transition-colors duration-200 ${
                                   notif.isRead
-                                    ? 'text-[#9aa3b5] group-hover:text-[#f1f3f8] font-medium'
-                                    : 'text-[#f1f3f8] font-extrabold'
+                                    ? 'text-[var(--muted-foreground)] group-hover:text-[var(--fg)] font-medium'
+                                    : 'text-[var(--fg)] font-extrabold'
                                 }`}>
                                   {notif.title}
                                 </h5>
                                 <span className={`text-[8px] font-mono shrink-0 transition-colors duration-200 ${
                                   notif.isRead
-                                    ? 'text-[#9aa3b5] group-hover:text-[#9aa3b5]'
-                                    : 'text-violet-400 font-bold'
+                                    ? 'text-[var(--muted-foreground)]'
+                                    : 'text-[var(--accent-soft-foreground)] font-bold'
                                 }`}>
                                   {formatNotificationDate(notif.createdAt)}
                                 </span>
                               </div>
                               <p className={`text-[11px] leading-relaxed mt-1 font-sans transition-colors duration-200 ${
                                 notif.isRead
-                                  ? 'text-[#9aa3b5] group-hover:text-[#9aa3b5]'
-                                  : 'text-[#f1f3f8]'
+                                  ? 'text-[var(--muted-foreground)]'
+                                  : 'text-[var(--fg)]'
                               }`}>
                                 {notif.message}
                               </p>
@@ -761,7 +761,7 @@ export default function JobBoard({
                                     e.stopPropagation();
                                     handleDeleteNotification(notif.id);
                                   }}
-                                  className="bg-rose-950/30 hover:bg-rose-900/50 active:scale-95 text-rose-400 hover:text-rose-300 border border-rose-800/30 px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
+                                  className="bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 hover:text-rose-700 border border-rose-300 px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                   <span>Устгах</span>
@@ -774,11 +774,11 @@ export default function JobBoard({
                     </div>
 
                     {notifications.length > 0 && (
-                      <div className="px-4 py-2 border-t border-[var(--color-glass-border)] text-center">
+                      <div className="px-4 py-2 border-t border-[var(--border)] text-center">
                         <button
                           type="button"
                           onClick={handleDeleteAllNotifications}
-                          className="w-full bg-rose-950/20 hover:bg-rose-900/40 active:scale-98 border border-rose-800/30 hover:border-rose-700/50 text-rose-400 hover:text-white py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer font-sans"
+                          className="w-full bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-300 hover:border-rose-400 text-rose-600 hover:text-rose-700 py-1.5 rounded text-[10px] font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer font-sans"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>БҮХ МЭДЭГДЛИЙГ УСТГАХ</span>
@@ -799,22 +799,22 @@ export default function JobBoard({
                 <button
                   id="profile-dropdown-btn"
                   onClick={toggleProfileMenu}
-                  className="flex items-center space-x-2 bg-[var(--color-glass-bg)] p-1.5 pl-3 rounded-full hover:bg-white/10 transition-colors border border-[var(--color-glass-border)] text-left cursor-pointer"
+                  className="flex items-center space-x-2 bg-[var(--card)] p-1.5 pl-3 rounded-full hover:bg-[var(--bg2)] transition-colors border border-[var(--border)] text-left cursor-pointer"
                 >
                   <div className="hidden md:block">
-                    <p className="text-xs font-semibold text-[#f1f3f8] leading-none">{getFirstName(currentUser)}</p>
-                    <span className="text-[9px] text-violet-400 font-mono">
+                    <p className="text-xs font-semibold text-[var(--fg)] leading-none">{getFirstName(currentUser)}</p>
+                    <span className="text-[9px] text-[var(--muted-foreground)] font-mono">
                       {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} • {currentUser.rating}⭐
                     </span>
                   </div>
                   <img
                     src={currentUser.profileImage}
                     alt="user avatar"
-                    className="w-8 h-8 rounded-full object-cover border-2 border-violet-500"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-[var(--accent)]"
                     referrerPolicy="no-referrer"
                     onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }}
                   />
-                  <ChevronDown className="w-3.5 h-3.5 text-[#9aa3b5]" />
+                  <ChevronDown className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
                 </button>
 
                 {/* Hover Floating Menus WITH tight border logic */}
@@ -826,39 +826,39 @@ export default function JobBoard({
                     onMouseEnter={() => setShowProfileMenu(true)}
                     onMouseLeave={() => setShowProfileMenu(false)}
                   >
-                    <div className="bg-[var(--color-brand-bg2)] border border-[var(--color-glass-border)] rounded-xl shadow-2xl py-2">
-                      <div className="px-3.5 py-2 border-b border-[var(--color-glass-border)] text-[11px] text-[#9aa3b5] font-semibold font-mono">
+                    <div className="bg-[var(--card)] border border-[var(--border)] rounded-md shadow-md py-2">
+                      <div className="px-3.5 py-2 border-b border-[var(--border)] text-[11px] text-[var(--muted-foreground)] font-semibold font-mono">
                         Сонголтууд
                       </div>
 
                       <button
                         id="menu-goto-profile"
                         onClick={() => { router.push('/profile'); setShowProfileMenu(false); }}
-                        className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-[#e3e6ee] hover:text-[#f1f3f8] flex items-center space-x-2.5 transition-colors cursor-pointer"
+                        className="w-full text-left px-4 py-2 text-xs hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 transition-colors cursor-pointer"
                       >
-                        <UserIcon className="w-4 h-4 text-violet-400" />
+                        <UserIcon className="w-4 h-4 text-[var(--muted-foreground)]" />
                         <span>Миний профайл</span>
                       </button>
 
                       <button
                         id="menu-goto-applications"
                         onClick={() => { router.push('/applications'); setShowProfileMenu(false); }}
-                        className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-[#e3e6ee] hover:text-[#f1f3f8] flex items-center space-x-2.5 transition-colors cursor-pointer"
+                        className="w-full text-left px-4 py-2 text-xs hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 transition-colors cursor-pointer"
                       >
-                        <Briefcase className="w-4 h-4 text-violet-400" />
+                        <Briefcase className="w-4 h-4 text-[var(--muted-foreground)]" />
                         <span>Миний зарууд, хүсэлтүүд</span>
                       </button>
 
                       <button
                         id="menu-goto-settings"
                         onClick={() => { router.push('/settings'); setShowProfileMenu(false); }}
-                        className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-[#e3e6ee] hover:text-[#f1f3f8] flex items-center space-x-2.5 transition-colors cursor-pointer"
+                        className="w-full text-left px-4 py-2 text-xs hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 transition-colors cursor-pointer"
                       >
-                        <SettingsIcon className="w-4 h-4 text-violet-400" />
+                        <SettingsIcon className="w-4 h-4 text-[var(--muted-foreground)]" />
                         <span>Тохиргооны хэсэг</span>
                       </button>
 
-                      <div className="border-t border-[var(--color-glass-border)] my-1"></div>
+                      <div className="border-t border-[var(--border)] my-1"></div>
 
                       <button
                         id="menu-logout"
@@ -872,7 +872,7 @@ export default function JobBoard({
                           router.push('/auth');
                           setShowProfileMenu(false);
                         }}
-                        className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 text-rose-400 hover:text-rose-300 flex items-center space-x-2.5 transition-colors cursor-pointer"
+                        className="w-full text-left px-4 py-2 text-xs hover:bg-rose-50 text-rose-600 hover:text-rose-700 flex items-center space-x-2.5 transition-colors cursor-pointer"
                       >
                         <LogOut className="w-4 h-4" />
                         <span>Системээс гарах</span>
@@ -886,13 +886,13 @@ export default function JobBoard({
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => router.push('/auth?tab=login')}
-                className="text-xs text-[#9aa3b5] hover:text-[#f1f3f8] font-semibold px-3.5 py-2 transition-all cursor-pointer hover:bg-white/10 rounded-lg"
+                className="text-xs text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold px-3.5 py-2 transition-all cursor-pointer hover:bg-[var(--bg2)] rounded"
               >
                 Нэвтрэх
               </button>
               <button
                 onClick={() => router.push('/auth?tab=register')}
-                className="bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs px-3.5 py-2 rounded-lg transition-all cursor-pointer shadow-md shadow-violet-600/25"
+                className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-xs px-3.5 py-2 rounded transition-all cursor-pointer shadow-sm"
               >
                 Бүртгүүлэх
               </button>
@@ -902,43 +902,42 @@ export default function JobBoard({
         </div>
       </header>
 
-      {/* Hero — Glass Premium Violet gradient */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[var(--color-brand-bg2)] via-violet-950 to-[var(--color-brand-bg)]">
-        <div className="absolute -top-16 -right-10 w-72 h-72 rounded-full bg-violet-500/30 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-16 w-72 h-72 rounded-full bg-violet-600/20 blur-3xl pointer-events-none" />
+      {/* Hero — Hi-vis Industrial. Signature hazard stripe at the top edge. */}
+      <section className="relative overflow-hidden bg-[var(--bg2)] border-b border-[var(--border)]">
+        <div className="hazard-stripe h-1.5 w-full" />
         <div className="max-w-4xl mx-auto w-full px-6 py-9 md:py-12 relative">
-          <span className="inline-block text-[10px] md:text-xs font-semibold text-[#c4b5fd] bg-violet-500/15 px-3 py-1 rounded-full">
+          <span className="inline-block text-[10px] md:text-xs font-bold uppercase tracking-wider text-[var(--accent-soft-foreground)] bg-[var(--accent-soft)] border border-[var(--accent)] px-3 py-1 rounded-sm">
             Газар шорооны ажлын зах зээл
           </span>
-          <h1 className="mt-3 text-2xl md:text-4xl font-black tracking-tight text-white leading-tight">
+          <h1 className="mt-3 text-2xl md:text-4xl font-display font-black uppercase tracking-tight text-[var(--fg)] leading-tight">
             Найдвартай хамтрагчаа{' '}
-            <span className="text-violet-300">үнэлгээгээр</span> нь ол
+            <span className="text-[var(--accent-soft-foreground)]">үнэлгээгээр</span> нь ол
           </h1>
-          <p className="mt-2.5 text-xs md:text-sm text-[#c8cbe0] max-w-2xl leading-relaxed">
+          <p className="mt-2.5 text-xs md:text-sm text-[var(--muted-foreground)] max-w-2xl leading-relaxed">
             Жолооч, оператор болон ажил олгогч бүрийн ажлын түүх, бодит үнэлгээ ил тод. Хэн хариуцлагатай,
             хэн шударга — өмнөх түүх нь хэлнэ.
           </p>
 
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="flex items-start gap-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-3.5">
-              <ShieldCheck className="w-5 h-5 text-teal-300 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2.5 bg-[var(--card)] border border-[var(--border)] rounded-md p-3.5">
+              <ShieldCheck className="w-5 h-5 text-[var(--verify)] shrink-0 mt-0.5" />
               <div>
-                <div className="text-xs font-bold text-white">Баталгаат түүх</div>
-                <div className="text-[11px] text-[#c8cbe0] leading-snug mt-0.5">Хийсэн ажил бүр бүртгэгдэж, хариуцлагыг өсгөнө</div>
+                <div className="text-xs font-bold text-[var(--fg)]">Баталгаат түүх</div>
+                <div className="text-[11px] text-[var(--muted-foreground)] leading-snug mt-0.5">Хийсэн ажил бүр бүртгэгдэж, хариуцлагыг өсгөнө</div>
               </div>
             </div>
-            <div className="flex items-start gap-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-3.5">
-              <Star className="w-5 h-5 text-teal-300 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2.5 bg-[var(--card)] border border-[var(--border)] rounded-md p-3.5">
+              <Star className="w-5 h-5 text-[var(--verify)] shrink-0 mt-0.5" />
               <div>
-                <div className="text-xs font-bold text-white">Бодит үнэлгээ</div>
-                <div className="text-[11px] text-[#c8cbe0] leading-snug mt-0.5">Хоёр тал бие биедээ үнэлгээ өгч итгэл бий болно</div>
+                <div className="text-xs font-bold text-[var(--fg)]">Бодит үнэлгээ</div>
+                <div className="text-[11px] text-[var(--muted-foreground)] leading-snug mt-0.5">Хоёр тал бие биедээ үнэлгээ өгч итгэл бий болно</div>
               </div>
             </div>
-            <div className="flex items-start gap-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-3.5">
-              <TrendingUp className="w-5 h-5 text-teal-300 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2.5 bg-[var(--card)] border border-[var(--border)] rounded-md p-3.5">
+              <TrendingUp className="w-5 h-5 text-[var(--verify)] shrink-0 mt-0.5" />
               <div>
-                <div className="text-xs font-bold text-white">Найдвартай сонголт</div>
-                <div className="text-[11px] text-[#c8cbe0] leading-snug mt-0.5">Сайн ажилтан, шударга ажил олгогчийг ялгана</div>
+                <div className="text-xs font-bold text-[var(--fg)]">Найдвартай сонголт</div>
+                <div className="text-[11px] text-[var(--muted-foreground)] leading-snug mt-0.5">Сайн ажилтан, шударга ажил олгогчийг ялгана</div>
               </div>
             </div>
           </div>
@@ -947,13 +946,13 @@ export default function JobBoard({
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <button
                 onClick={() => router.push('/auth?tab=register')}
-                className="bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 text-white font-bold text-xs md:text-sm px-5 py-2.5 rounded-lg transition-all cursor-pointer shadow-lg shadow-violet-600/40"
+                className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-xs md:text-sm px-5 py-2.5 rounded transition-all cursor-pointer shadow-sm"
               >
                 Үнэгүй бүртгүүлэх
               </button>
               <button
                 onClick={() => router.push('/auth?tab=login')}
-                className="text-xs md:text-sm text-white font-semibold px-3 py-2.5 rounded-lg hover:bg-white/10 transition-all cursor-pointer"
+                className="text-xs md:text-sm text-[var(--fg)] font-semibold px-3 py-2.5 rounded hover:bg-[var(--card)] transition-all cursor-pointer"
               >
                 Нэвтрэх
               </button>
@@ -969,36 +968,36 @@ export default function JobBoard({
 
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-[var(--color-glass-bg)] backdrop-blur-md p-3.5 border border-[var(--color-glass-border)] rounded-xl shadow-sm">
-            <span className="text-[10px] uppercase block font-mono font-semibold text-[#9aa3b5]">Нийт зар</span>
-            <span className="text-xl font-black text-[#f1f3f8]">{jobs.length} зар</span>
+          <div className="bg-[var(--card)] p-3.5 border border-[var(--border)] rounded-md shadow-sm">
+            <span className="text-[10px] uppercase block font-mono font-semibold text-[var(--muted-foreground)]">Нийт зар</span>
+            <span className="text-xl font-display font-black text-[var(--fg)]">{jobs.length} зар</span>
           </div>
-          <div className="bg-gradient-to-br from-violet-500/10 to-violet-600/10 backdrop-blur-md p-3.5 border border-violet-500/20 rounded-xl shadow-sm">
-            <span className="text-[10px] uppercase block font-mono font-semibold text-violet-300">Бүртгэлтэй хэрэглэгч</span>
-            <span className="text-xl font-black text-violet-300">
+          <div className="bg-[var(--accent-soft)] p-3.5 border border-[var(--accent)] rounded-md shadow-sm">
+            <span className="text-[10px] uppercase block font-mono font-semibold text-[var(--accent-soft-foreground)]">Бүртгэлтэй хэрэглэгч</span>
+            <span className="text-xl font-display font-black text-[var(--accent-soft-foreground)]">
               {users.length > 0 ? users.length : '...'} хэрэглэгч
             </span>
           </div>
         </div>
 
         {/* Search bar & filter buttons */}
-        <div className="bg-[var(--color-glass-bg)] backdrop-blur-md p-5 border border-[var(--color-glass-border)] rounded-2xl space-y-4 shadow-sm">
+        <div className="bg-[var(--card)] p-5 border border-[var(--border)] rounded-md space-y-4 shadow-sm">
 
           {/* Search inputs */}
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-[#9aa3b5]" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-[var(--muted-foreground)]" />
             <input
               id="board-search-input"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Экскаватор, Шакман жолооч, Дамп, Өмнөговь гэж хайх..."
-              className="w-full pl-10 pr-10 py-2.5 bg-white/5 border border-[var(--color-glass-border)] hover:border-white/20 rounded-xl text-xs text-[#f1f3f8] focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all placeholder-[#9aa3b5] font-sans"
+              className="w-full pl-10 pr-10 py-2.5 bg-[var(--bg2)] border border-[var(--border)] hover:border-[var(--border-strong)] rounded-md text-xs text-[var(--fg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--accent)] transition-all placeholder-[var(--muted-foreground)] font-sans"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9aa3b5] hover:text-[#f1f3f8] p-1 transition-colors cursor-pointer"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] hover:text-[var(--fg)] p-1 transition-colors cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -1009,52 +1008,52 @@ export default function JobBoard({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Type Category */}
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] text-[#9aa3b5] font-bold uppercase tracking-wider text-left">Зарын төрөл</label>
+              <label className="text-[10px] text-[var(--muted-foreground)] font-bold uppercase tracking-wider text-left">Зарын төрөл</label>
               <div className="relative">
                 <select
                   id="filter-type"
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
-                  className="w-full bg-white/5 border border-[var(--color-glass-border)] hover:border-white/20 text-[#e3e6ee] text-xs px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer appearance-none"
+                  className="w-full bg-[var(--bg2)] border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--fg)] text-xs px-3.5 py-2.5 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--accent)] transition-all cursor-pointer appearance-none"
                 >
                   {getUniqueJobTypes().map((t, idx) => (
                     <option key={idx} value={t.value}>{t.label}</option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9aa3b5] pointer-events-none" />
+                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] pointer-events-none" />
               </div>
             </div>
 
             {/* Aimag location */}
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] text-[#9aa3b5] font-bold uppercase tracking-wider text-left">Аймаг / Байршил</label>
+              <label className="text-[10px] text-[var(--muted-foreground)] font-bold uppercase tracking-wider text-left">Аймаг / Байршил</label>
               <div className="relative">
                 <select
                   id="filter-location"
                   value={selectedLocation}
                   onChange={(e) => setSelectedLocation(e.target.value)}
-                  className="w-full bg-white/5 border border-[var(--color-glass-border)] hover:border-white/20 text-[#e3e6ee] text-xs px-3.5 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all cursor-pointer appearance-none"
+                  className="w-full bg-[var(--bg2)] border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--fg)] text-xs px-3.5 py-2.5 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--accent)] transition-all cursor-pointer appearance-none"
                 >
                   <option value="Бүгд">Бүх байршил (21 аймаг + Хот)</option>
                   {LOCATION_OPTIONS.filter(l => l !== 'Бүгд').map((l, id) => (
                     <option key={id} value={l}>{l}</option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9aa3b5] pointer-events-none" />
+                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] pointer-events-none" />
               </div>
             </div>
           </div>
 
           {/* Active Filters Summary */}
           {(searchQuery || selectedLocation !== 'Бүгд' || selectedType !== 'Бүгд') && (
-            <div className="flex items-center justify-between text-[10px] bg-violet-500/10 border border-violet-500/20 p-2.5 rounded-xl animate-fade-in">
-              <div className="flex flex-wrap items-center gap-1.5 text-[#9aa3b5]">
-                <Filter className="w-3.5 h-3.5 text-violet-400" />
+            <div className="flex items-center justify-between text-[10px] bg-[var(--accent-soft)] border border-[var(--accent)] p-2.5 rounded-md animate-fade-in">
+              <div className="flex flex-wrap items-center gap-1.5 text-[var(--muted-foreground)]">
+                <Filter className="w-3.5 h-3.5 text-[var(--accent-soft-foreground)]" />
                 <span>Шүүлтүүр:</span>
-                {searchQuery && <span className="bg-white/10 px-2 py-0.5 rounded border border-[var(--color-glass-border)] text-[#e3e6ee] font-mono font-medium">"{searchQuery}"</span>}
-                {selectedLocation !== 'Бүгд' && <span className="bg-white/10 px-2 py-0.5 rounded border border-[var(--color-glass-border)] text-[#e3e6ee] font-mono font-medium">{selectedLocation}</span>}
+                {searchQuery && <span className="bg-[var(--card)] px-2 py-0.5 rounded border border-[var(--border)] text-[var(--fg)] font-mono font-medium">"{searchQuery}"</span>}
+                {selectedLocation !== 'Бүгд' && <span className="bg-[var(--card)] px-2 py-0.5 rounded border border-[var(--border)] text-[var(--fg)] font-mono font-medium">{selectedLocation}</span>}
                 {selectedType !== 'Бүгд' && (
-                  <span className="bg-white/10 px-2 py-0.5 rounded border border-[var(--color-glass-border)] text-[#e3e6ee] font-mono font-medium">
+                  <span className="bg-[var(--card)] px-2 py-0.5 rounded border border-[var(--border)] text-[var(--fg)] font-mono font-medium">
                     {getUniqueJobTypes().find(t => t.value === selectedType)?.label || selectedType}
                   </span>
                 )}
@@ -1065,7 +1064,7 @@ export default function JobBoard({
                   setSelectedLocation('Бүгд');
                   setSelectedType('Бүгд');
                 }}
-                className="text-violet-600 hover:text-violet-700 font-bold hover:underline transition-all cursor-pointer flex items-center space-x-1 shrink-0 ml-2"
+                className="text-[var(--accent-soft-foreground)] hover:underline font-bold transition-all cursor-pointer flex items-center space-x-1 shrink-0 ml-2"
               >
                 <span>Арилгах ✕</span>
               </button>
@@ -1076,23 +1075,23 @@ export default function JobBoard({
 
         {/* Job listings container */}
         <div className="space-y-4">
-          <div className="flex items-center space-x-4 border-b border-[var(--color-glass-border)] pb-2">
+          <div className="flex items-center space-x-4 border-b border-[var(--border)] pb-2">
             <button
               onClick={() => setStatusFilter('open')}
-              className={`text-xs font-bold tracking-wider uppercase pb-1 transition-all cursor-pointer border-b-2 ${
+              className={`text-xs font-display font-bold tracking-wider uppercase pb-1 transition-all cursor-pointer border-b-2 ${
                 statusFilter === 'open'
-                  ? 'text-violet-400 border-violet-500 font-extrabold'
-                  : 'text-[#9aa3b5] border-transparent hover:text-[#c8cbe0]'
+                  ? 'text-[var(--fg)] border-[var(--accent)] font-extrabold'
+                  : 'text-[var(--muted-foreground)] border-transparent hover:text-[var(--fg)]'
               }`}
             >
               Идэвхтэй зар ({openFilteredJobs.length})
             </button>
             <button
               onClick={() => setStatusFilter('completed')}
-              className={`text-xs font-bold tracking-wider uppercase pb-1 transition-all cursor-pointer border-b-2 ${
+              className={`text-xs font-display font-bold tracking-wider uppercase pb-1 transition-all cursor-pointer border-b-2 ${
                 statusFilter === 'completed'
-                  ? 'text-violet-400 border-violet-500 font-extrabold'
-                  : 'text-[#9aa3b5] border-transparent hover:text-[#c8cbe0]'
+                  ? 'text-[var(--fg)] border-[var(--verify)] font-extrabold'
+                  : 'text-[var(--muted-foreground)] border-transparent hover:text-[var(--fg)]'
               }`}
             >
               Дууссан зар ({completedFilteredJobs.length})
@@ -1100,8 +1099,8 @@ export default function JobBoard({
           </div>
 
           {displayJobs.length === 0 ? (
-            <div className="bg-[var(--color-glass-bg)] backdrop-blur-md border border-[var(--color-glass-border)] p-12 text-center rounded-xl">
-              <p className="text-sm text-[#9aa3b5]">Хайлтанд нийцэх ажил олдсонгүй.</p>
+            <div className="bg-[var(--card)] border border-[var(--border)] p-12 text-center rounded-md">
+              <p className="text-sm text-[var(--muted-foreground)]">Хайлтанд нийцэх ажил олдсонгүй.</p>
               <button
                 id="reset-filters-btn"
                 onClick={() => {
@@ -1109,7 +1108,7 @@ export default function JobBoard({
                   setSelectedLocation('Бүгд');
                   setSelectedType('Бүгд');
                 }}
-                className="mt-3 text-xs text-violet-400 hover:underline cursor-pointer"
+                className="mt-3 text-xs text-[var(--accent-soft-foreground)] hover:underline cursor-pointer"
               >
                 Бүх шүүлтүүрийг арилгах
               </button>
@@ -1236,10 +1235,10 @@ export default function JobBoard({
 
       {/* Loading Review Detail Spinner */}
       {isLoadingReview && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-[var(--color-brand-bg2)] border border-[var(--color-glass-border)] p-6 rounded-xl shadow-2xl flex flex-col items-center space-y-3">
-            <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-xs text-[#c8cbe0] font-mono">Үнэлгээг ачаалж байна...</span>
+        <div className="fixed inset-0 bg-[var(--fg)]/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-[var(--card)] border border-[var(--border)] p-6 rounded-md shadow-md flex flex-col items-center space-y-3">
+            <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-xs text-[var(--muted-foreground)] font-mono">Үнэлгээг ачаалж байна...</span>
           </div>
         </div>
       )}
