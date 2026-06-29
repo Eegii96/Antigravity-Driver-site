@@ -9,7 +9,7 @@ import {
 } from 'firebase/auth';
 import { User, Job, Review, AppNotification } from '../../types';
 import { saveSingleUser } from './users';
-import { hashValue, isHashed } from '../crypto';
+import { hashSecret, verifySecret } from '../crypto';
 
 export function getCurrentUser(): User | null {
   try {
@@ -186,27 +186,12 @@ export async function loginUser(email: string, phone: string, password?: string)
       }
     }
 
-    // Validate against stored password (hashed for new accounts, plaintext for legacy)
+    // Validate the submitted password against the stored PBKDF2 hash
     if (userData && userData.password) {
-      const stored = userData.password;
-      if (isHashed(stored)) {
-        const submittedHash = await hashValue(password || '');
-        if (stored !== submittedHash) {
-          console.warn('Firestore password hash mismatch');
-          return null;
-        }
-      } else {
-        // Legacy plaintext — compare then migrate to hash
-        if (stored !== password) {
-          console.warn('Firestore password mismatch (legacy)');
-          return null;
-        }
-        try {
-          const migrated = await hashValue(password || '');
-          await saveSingleUser({ ...userData, password: migrated });
-        } catch (err) {
-          console.warn('Password hash migration failed:', err);
-        }
+      const ok = await verifySecret(password || '', userData.password);
+      if (!ok) {
+        console.warn('Firestore password mismatch');
+        return null;
       }
     }
     
@@ -373,7 +358,7 @@ export async function registerUser(
 
       // Hash the password before persisting to Firestore — never store plaintext
       if (cleanUser.password) {
-        cleanUser.password = await hashValue(cleanUser.password);
+        cleanUser.password = await hashSecret(cleanUser.password);
       }
 
       // Create a 12-second timeout for Firestore write

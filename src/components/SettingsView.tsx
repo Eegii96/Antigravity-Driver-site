@@ -6,9 +6,9 @@ import { ShieldCheck, Key, Trash2, Eye, EyeOff, Check, AlertCircle, X } from 'lu
 import { saveSingleUser, getFreshCurrentUser, setCurrentUser } from '../lib/db';
 import { User } from '../types';
 import { auth } from '../lib/firebase';
-import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { useAuth } from '../context/AuthContext';
-import { hashValue, isHashed } from '../lib/crypto';
+import { hashSecret, verifySecret } from '../lib/crypto';
 
 interface SettingsViewProps {
   onBack?: () => void;
@@ -115,21 +115,12 @@ export default function SettingsView() {
         return;
       }
 
-      // 1. Verify current password (supports both hashed and legacy plaintext)
+      // 1. Verify current password against the stored PBKDF2 hash
       if (freshUser.password) {
-        const stored = freshUser.password;
-        if (isHashed(stored)) {
-          const submittedHash = await hashValue(currentPassword);
-          if (stored !== submittedHash) {
-            setError('Одоогийн нууц үг буруу байна.');
-            return;
-          }
-        } else {
-          // Legacy plaintext
-          if (stored !== currentPassword) {
-            setError('Одоогийн нууц үг буруу байна.');
-            return;
-          }
+        const ok = await verifySecret(currentPassword, freshUser.password);
+        if (!ok) {
+          setError('Одоогийн нууц үг буруу байна.');
+          return;
         }
       } else {
         // Fallback: reauthenticate via Firebase Auth
@@ -145,8 +136,8 @@ export default function SettingsView() {
         }
       }
 
-      // 2. Save the new password as a hash — never store plaintext
-      const hashedNewPassword = await hashValue(newPassword);
+      // 2. Save the new password as a PBKDF2 hash — never store plaintext
+      const hashedNewPassword = await hashSecret(newPassword);
       const updatedUser = { ...freshUser, password: hashedNewPassword };
       await saveSingleUser(updatedUser);
 

@@ -3,7 +3,7 @@ import { X, Check, Save, Sparkles, Lock } from 'lucide-react';
 import { User } from '../types';
 import { saveSingleUser } from '../lib/db';
 import { optimizeBio } from '../lib/gemini';
-import { hashValue } from '../lib/crypto';
+import { hashSecret } from '../lib/crypto';
 
 interface ProfileEditModalProps {
   user: User;
@@ -71,9 +71,14 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
   const [machineTypes, setMachineTypes] = useState<string[]>(user.machineTypes || []);
   const [customMachine, setCustomMachine] = useState<string>('');
   const [securityQuestion1, setSecurityQuestion1] = useState<string>(user.securityQuestion1 || '');
-  const [securityAnswer1, setSecurityAnswer1] = useState<string>(user.securityAnswer1 || '');
   const [securityQuestion2, setSecurityQuestion2] = useState<string>(user.securityQuestion2 || '');
-  const [securityAnswer2, setSecurityAnswer2] = useState<string>(user.securityAnswer2 || '');
+  // Stored answers are PBKDF2 hashes — write-only. Never load them into editable
+  // fields (that would re-hash a hash). Fields start empty; blank on save keeps
+  // the existing stored answer when the question is unchanged.
+  const [securityAnswer1, setSecurityAnswer1] = useState<string>('');
+  const [securityAnswer2, setSecurityAnswer2] = useState<string>('');
+  const hadAnswer1 = !!user.securityAnswer1;
+  const hadAnswer2 = !!user.securityAnswer2;
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
   const [isOptimizing, setIsOptimizing] = useState<boolean>(false);
@@ -140,13 +145,25 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
       return;
     }
 
-    // Validation for matching security questions and answers
-    if ((securityQuestion1 && !securityAnswer1.trim()) || (!securityQuestion1 && securityAnswer1.trim())) {
-      setError('Аюулгүй байдлын асуулт 1 болон түүний хариултыг хоёуланг нь бөглөх шаардлагатай.');
+    // A question needs a fresh answer when it is newly chosen or changed.
+    // If unchanged and an answer is already stored, a blank field keeps the old one.
+    const q1Changed = securityQuestion1 !== (user.securityQuestion1 || '');
+    const q2Changed = securityQuestion2 !== (user.securityQuestion2 || '');
+
+    if (securityQuestion1 && !securityAnswer1.trim() && (q1Changed || !hadAnswer1)) {
+      setError('Аюулгүй байдлын асуулт 1-ийн хариултыг оруулна уу.');
       return;
     }
-    if ((securityQuestion2 && !securityAnswer2.trim()) || (!securityQuestion2 && securityAnswer2.trim())) {
-      setError('Аюулгүй байдлын асуулт 2 болон түүний хариултыг хоёуланг нь бөглөх шаардлагатай.');
+    if (!securityQuestion1 && securityAnswer1.trim()) {
+      setError('Аюулгүй байдлын асуулт 1-г сонгоно уу.');
+      return;
+    }
+    if (securityQuestion2 && !securityAnswer2.trim() && (q2Changed || !hadAnswer2)) {
+      setError('Аюулгүй байдлын асуулт 2-ийн хариултыг оруулна уу.');
+      return;
+    }
+    if (!securityQuestion2 && securityAnswer2.trim()) {
+      setError('Аюулгүй байдлын асуулт 2-г сонгоно уу.');
       return;
     }
 
@@ -168,9 +185,17 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
       experienceYears: user.type === 'operator' ? (experienceYears === '' ? 0 : experienceYears) : undefined,
       machineTypes: user.type === 'operator' ? machineTypes : undefined,
       securityQuestion1: securityQuestion1 || undefined,
-      securityAnswer1: securityAnswer1.trim() ? await hashValue(securityAnswer1.trim()) : undefined,
+      securityAnswer1: !securityQuestion1
+        ? undefined
+        : securityAnswer1.trim()
+          ? await hashSecret(securityAnswer1.trim(), true)
+          : user.securityAnswer1,
       securityQuestion2: securityQuestion2 || undefined,
-      securityAnswer2: securityAnswer2.trim() ? await hashValue(securityAnswer2.trim()) : undefined,
+      securityAnswer2: !securityQuestion2
+        ? undefined
+        : securityAnswer2.trim()
+          ? await hashSecret(securityAnswer2.trim(), true)
+          : user.securityAnswer2,
     };
 
     try {
@@ -178,13 +203,10 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
       await saveSingleUser(updated);
 
       // Determine what was updated to show a specific message
-      const isSecurityUpdated = 
-        (securityQuestion1 !== (user.securityQuestion1 || '') || 
-         securityAnswer1 !== (user.securityAnswer1 || '') ||
-         securityQuestion2 !== (user.securityQuestion2 || '') || 
-         securityAnswer2 !== (user.securityAnswer2 || ''));
-      
-      if (isSecurityUpdated && securityQuestion1 && securityAnswer1 && securityQuestion2 && securityAnswer2) {
+      const isSecurityUpdated =
+        q1Changed || q2Changed || !!securityAnswer1.trim() || !!securityAnswer2.trim();
+
+      if (isSecurityUpdated && updated.securityQuestion1 && updated.securityAnswer1 && updated.securityQuestion2 && updated.securityAnswer2) {
         setSuccess('Аюулгүй байдлын асуултууд амжилттай бүртгэгдлээ!');
       } else {
         setSuccess('Мэдээлэл амжилттай шинэчлэгдлээ!');
@@ -200,7 +222,10 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
     }
   };
 
-  const isSecured = !!(securityQuestion1.trim() && securityAnswer1.trim() && securityQuestion2.trim() && securityAnswer2.trim());
+  const isSecured = !!(
+    securityQuestion1.trim() && securityQuestion2.trim() &&
+    (securityAnswer1.trim() || hadAnswer1) && (securityAnswer2.trim() || hadAnswer2)
+  );
 
   return (
     <div 
@@ -590,7 +615,7 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
                     type="text"
                     value={securityAnswer1}
                     onChange={(e) => setSecurityAnswer1(e.target.value)}
-                    placeholder="Асуулт 1-ийн хариулт"
+                    placeholder={hadAnswer1 && securityQuestion1 === (user.securityQuestion1 || '') ? 'Хариулт хадгалагдсан (солих бол шинээр бичнэ үү)' : 'Асуулт 1-ийн хариулт'}
                     className="block w-full mt-1.5 px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
                   />
                 )}
@@ -614,7 +639,7 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
                     type="text"
                     value={securityAnswer2}
                     onChange={(e) => setSecurityAnswer2(e.target.value)}
-                    placeholder="Асуулт 2-ийн хариулт"
+                    placeholder={hadAnswer2 && securityQuestion2 === (user.securityQuestion2 || '') ? 'Хариулт хадгалагдсан (солих бол шинээр бичнэ үү)' : 'Асуулт 2-ийн хариулт'}
                     className="block w-full mt-1.5 px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
                   />
                 )}
