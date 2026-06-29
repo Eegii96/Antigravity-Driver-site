@@ -17,7 +17,12 @@ service cloud.firestore {
       allow update: if (request.auth != null && request.auth.uid == userId) ||
                        (request.auth != null &&
                         request.resource.data.diff(resource.data).affectedKeys()
-                          .hasOnly(['rating', 'ratingCount'])) ||
+                          .hasOnly(['rating', 'ratingCount']) &&
+                        request.resource.data.rating is number &&
+                        request.resource.data.rating >= 0 &&
+                        request.resource.data.rating <= 5 &&
+                        request.resource.data.ratingCount is int &&
+                        request.resource.data.ratingCount >= 0) ||
                        (request.auth != null &&
                         request.resource.data.diff(resource.data).affectedKeys()
                           .hasOnly(['password']));
@@ -30,8 +35,9 @@ service cloud.firestore {
       // Public read: job board visible to guests
       allow read: if true;
 
-      // Only authenticated users may post jobs
-      allow create: if request.auth != null;
+      // Only authenticated users may post jobs, and only under their own employerId
+      allow create: if request.auth != null &&
+                       request.resource.data.employerId == request.auth.uid;
 
       // Any authenticated user may update a job (operators apply, employers hire/complete)
       allow update: if request.auth != null;
@@ -46,7 +52,9 @@ service cloud.firestore {
       // Public read: reviews visible on profiles
       allow read: if true;
 
-      allow create: if request.auth != null;
+      // A review can only be created under the author's own reviewerId
+      allow create: if request.auth != null &&
+                       request.resource.data.reviewerId == request.auth.uid;
 
       // Only the reviewer may edit or delete their own review
       allow update: if request.auth != null &&
