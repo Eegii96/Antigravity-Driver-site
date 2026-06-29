@@ -1,84 +1,45 @@
 'use client';
 
-import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
+import { FormEvent, ChangeEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User as UserIcon, Phone, Mail, MapPin, Truck, Check, Wrench, Key, AlertCircle, ArrowLeft, Sparkles, X, Eye, EyeOff } from 'lucide-react';
 import { loginUser, registerUser, saveSingleUser } from '../lib/db';
 import { User, UserType } from '../types';
-
 import { optimizeBio } from '../lib/gemini';
 import { db, auth } from '../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import TermsModal from './auth/TermsModal';
 import PrivacyModal from './auth/PrivacyModal';
+import RecoveryForm from './auth/RecoveryForm';
+import { useAuthForm } from './auth/useAuthForm';
+import { AVATAR_PRESETS, MACHINE_OPTIONS } from './auth/constants';
 
 interface AuthProps {
   onSuccess: (user: User) => void;
   defaultIsLogin?: boolean;
 }
 
-const AVATAR_PRESETS = [
-  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23f4f2ec"/><circle cx="50" cy="50" r="47" fill="none" stroke="%23d4af37" stroke-width="2" opacity="0.6"/><circle cx="50" cy="40" r="16" fill="%23ffffff"/><path d="M32 36c0-11 8-18 18-18s18 7 18 18c0 1.5-.2 3-.5 4.5C64 36 58 34 50 34s-14 2-17.5 6.5c-.3-1.5-.5-3-.5-4.5z" fill="%230f172a"/><path d="M24 80c0-12 10-18 26-18s26 6 26 18z" fill="%231e293b"/><path d="M50 62v18" stroke="%23d4af37" stroke-width="3"/><path d="M42 62l8 8 8-8" stroke="%23ffffff" stroke-width="2" fill="none"/></svg>', // High-Contrast Minimal Luxury Male
-  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23f4f2ec"/><circle cx="50" cy="50" r="47" fill="none" stroke="%23d4af37" stroke-width="2" opacity="0.6"/><path d="M32 38v24c0 4 3 8 8 8s8-4 8-8V38zM52 38v24c0 4 3 8 8 8s8-4 8-8V38z" fill="%230f172a"/><circle cx="50" cy="40" r="16" fill="%23ffffff"/><path d="M32 36c0-11 8-18 18-18s18 7 18 18c0 2 0 4-.5 6C64 33 58 32 50 32s-14 1-17.5 10c-.5-2-.5-4-.5-4z" fill="%230f172a"/><path d="M24 80c0-12 10-18 26-18s26 6 26 18z" fill="%231e293b"/><circle cx="50" cy="62" r="6" fill="none" stroke="%23d4af37" stroke-width="2"/><circle cx="50" cy="68" r="1.5" fill="%23d4af37"/></svg>' // High-Contrast Minimal Luxury Female
-];
-
-const MACHINE_OPTIONS = [
-  'Экскаватор',
-  'Дамп',
-  'Хово',
-  'Ковш',
-  'Бульдозер',
-  'Авто грейдер',
-  'Кран',
-  'Бетон зуурагч машин',
-  'Трейлэр'
-];
-
 export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
   const router = useRouter();
-  const [isLogin, setIsLogin] = useState<boolean>(defaultIsLogin ?? true);
-
-  useEffect(() => {
-    if (defaultIsLogin !== undefined) {
-      setIsLogin(defaultIsLogin);
-    }
-  }, [defaultIsLogin]);
-  const [userType, setUserType] = useState<UserType>('operator');
-  const [email, setEmail] = useState<string>('');
-  const [lastName, setLastName] = useState<string>('');
-  const [firstName, setFirstName] = useState<string>('');
-  const [companyName, setCompanyName] = useState<string>('');
-  const [phone, setPhone] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [address, setAddress] = useState<string>('');
-  const [selectedAvatar, setSelectedAvatar] = useState<string>(AVATAR_PRESETS[0]);
-  const [bio, setBio] = useState<string>('');
-  const [experienceYears, setExperienceYears] = useState<number | ''>(3);
-  const [selectedMachines, setSelectedMachines] = useState<string[]>([]);
-  const [customRegMachine, setCustomRegMachine] = useState<string>('');
-
-  const [regPassword, setRegPassword] = useState<string>('');
-  const [regConfirmPassword, setRegConfirmPassword] = useState<string>('');
-  const [showRegPassword, setShowRegPassword] = useState<boolean>(false);
-  const [showRegConfirmPassword, setShowRegConfirmPassword] = useState<boolean>(false);
-
-  // Password Recovery States
-  const [isForgotMode, setIsForgotMode] = useState<boolean>(false);
-  const [recoveryStep, setRecoveryStep] = useState<1 | 2>(1);
-  const [forgotInput, setForgotInput] = useState<string>('');
-  const [securityQ1, setSecurityQ1] = useState<string>('');
-  const [securityQ2, setSecurityQ2] = useState<string>('');
-  const [securityA1Input, setSecurityA1Input] = useState<string>('');
-  const [securityA2Input, setSecurityA2Input] = useState<string>('');
-  const [matchedUserObj, setMatchedUserObj] = useState<User | null>(null);
-  const [forgotNewPassword, setForgotNewPassword] = useState<string>('');
-  const [forgotConfirmNewPassword, setForgotConfirmNewPassword] = useState<string>('');
-  const [showForgotNewPassword, setShowForgotNewPassword] = useState<boolean>(false);
-  const [showForgotConfirmNewPassword, setShowForgotConfirmNewPassword] = useState<boolean>(false);
-  const [showLoginPassword, setShowLoginPassword] = useState<boolean>(false);
-  const [showTerms, setShowTerms] = useState<boolean>(false);
-  const [showPrivacy, setShowPrivacy] = useState<boolean>(false);
+  const form = useAuthForm(defaultIsLogin);
+  const {
+    isLogin, setIsLogin, userType, setUserType, email, setEmail, lastName, setLastName,
+    firstName, setFirstName, companyName, setCompanyName, phone, setPhone, password, setPassword,
+    address, setAddress, selectedAvatar, setSelectedAvatar, bio, setBio, experienceYears, setExperienceYears,
+    selectedMachines, setSelectedMachines, customRegMachine, setCustomRegMachine,
+    regPassword, setRegPassword, regConfirmPassword, setRegConfirmPassword,
+    showRegPassword, setShowRegPassword, showRegConfirmPassword, setShowRegConfirmPassword,
+    isForgotMode, setIsForgotMode, recoveryStep, setRecoveryStep, forgotInput, setForgotInput,
+    securityQ1, setSecurityQ1, securityQ2, setSecurityQ2, securityA1Input, setSecurityA1Input,
+    securityA2Input, setSecurityA2Input, matchedUserObj, setMatchedUserObj,
+    forgotNewPassword, setForgotNewPassword, forgotConfirmNewPassword, setForgotConfirmNewPassword,
+    showForgotNewPassword, setShowForgotNewPassword, showForgotConfirmNewPassword, setShowForgotConfirmNewPassword,
+    showLoginPassword, setShowLoginPassword, showTerms, setShowTerms, showPrivacy, setShowPrivacy,
+    isAgreedToTerms, setIsAgreedToTerms, error, setError, successMsg, setSuccessMsg,
+    isOptimizing, setIsOptimizing, hasOptimized, setHasOptimized, originalBio, setOriginalBio,
+    isSubmitting, setIsSubmitting,
+  } = form;
 
   useEffect(() => {
     if (showTerms || showPrivacy) {
@@ -89,15 +50,6 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       };
     }
   }, [showTerms, showPrivacy]);
-
-  const [isAgreedToTerms, setIsAgreedToTerms] = useState<boolean>(false);
-
-  const [error, setError] = useState<string>('');
-  const [successMsg, setSuccessMsg] = useState<string>('');
-  const [isOptimizing, setIsOptimizing] = useState<boolean>(false);
-  const [hasOptimized, setHasOptimized] = useState<boolean>(false);
-  const [originalBio, setOriginalBio] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handleOptimizeBio = async () => {
     setIsOptimizing(true);
@@ -497,176 +449,11 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
           {isLogin ? (
             isForgotMode ? (
               /* PASSWORD RECOVERY FORM IN LOGIN */
-              <form onSubmit={recoveryStep === 1 ? handleVerifyAccount : handleForgotPasswordSubmit} className="space-y-4 text-xs">
-                <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
-                  <span className="font-semibold text-[var(--accent-soft-foreground)] text-xs">Нууц үг сэргээх цэс</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsForgotMode(false);
-                      setRecoveryStep(1);
-                      setForgotInput('');
-                      setSecurityQ1('');
-                      setSecurityQ2('');
-                      setSecurityA1Input('');
-                      setSecurityA2Input('');
-                      setMatchedUserObj(null);
-                      setError('');
-                      setSuccessMsg('');
-                    }}
-                    className="text-[var(--muted-foreground)] hover:text-[var(--fg)] underline cursor-pointer"
-                  >
-                    Буцах
-                  </button>
-                </div>
-
-                {recoveryStep === 1 ? (
-                  /* STEP 1: Email or Phone Search */
-                  <div className="animate-fade-in space-y-3.5">
-                    <div>
-                      <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">
-                        Бүртгэлтэй имэйл хаяг эсвэл Утасны дугаар
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <UserIcon className="h-4 w-4 text-[var(--muted-foreground)]" />
-                        </div>
-                        <input
-                          id="forgot-input"
-                          type="text"
-                          required
-                          value={forgotInput}
-                          onChange={(e) => setForgotInput(e.target.value)}
-                          placeholder=""
-                          className="block w-full pl-9 pr-3 py-2 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  /* STEP 2: Answer Questions and Reset Password */
-                  <div className="space-y-3.5 animate-fade-in">
-                    {/* Security Question 1 */}
-                    <div className="bg-[var(--color-glass-bg)] p-3 rounded-lg border border-[var(--color-glass-border)] font-sans space-y-2 text-left">
-                      <span className="text-[11px] font-semibold text-[var(--accent-soft-foreground)] block">🔒 Аюулгүй байдлын асуулт 1:</span>
-                      <p className="text-xs text-[var(--fg)] leading-relaxed font-sans">{securityQ1}</p>
-                      <input
-                        id="security-a1-input"
-                        type="text"
-                        required
-                        value={securityA1Input}
-                        onChange={(e) => setSecurityA1Input(e.target.value)}
-                        placeholder="Асуулт 1-ийн хариулт"
-                        className="block w-full px-3 py-1.5 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
-                      />
-                    </div>
-
-                    {/* Security Question 2 */}
-                    <div className="bg-[var(--color-glass-bg)] p-3 rounded-lg border border-[var(--color-glass-border)] font-sans space-y-2 text-left">
-                      <span className="text-[11px] font-semibold text-[var(--accent-soft-foreground)] block">🔒 Аюулгүй байдлын асуулт 2:</span>
-                      <p className="text-xs text-[var(--fg)] leading-relaxed font-sans">{securityQ2}</p>
-                      <input
-                        id="security-a2-input"
-                        type="text"
-                        required
-                        value={securityA2Input}
-                        onChange={(e) => setSecurityA2Input(e.target.value)}
-                        placeholder="Асуулт 2-ийн хариулт"
-                        className="block w-full px-3 py-1.5 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
-                      />
-                    </div>
-
-                    {/* Password Inputs */}
-                    <div className="border-t border-[var(--border)] pt-3.5 space-y-3.5 text-left">
-                      <div>
-                        <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">
-                          Шинэ нууц код оруулах
-                        </label>
-                        <div className="relative">
-                          <input
-                            id="forgot-new-password-input"
-                            type={showForgotNewPassword ? 'text' : 'password'}
-                            required
-                            value={forgotNewPassword}
-                            onChange={(e) => setForgotNewPassword(e.target.value)}
-                            placeholder=""
-                            className="block w-full pl-3 pr-10 py-2 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
-                          />
-                          <span
-                            onClick={() => setShowForgotNewPassword(!showForgotNewPassword)}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-[var(--muted-foreground)] hover:text-[var(--fg)] cursor-pointer"
-                          >
-                            {showForgotNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          </span>
-                        </div>
-                        {forgotNewPassword !== '' && forgotNewPassword.length < 8 && (
-                          <p className="text-[10px] text-red-400 mt-1 font-sans flex items-center space-x-1">
-                            <span className="font-bold">✗</span>
-                            <span>Нууц код хамгийн багадаа 8 тэмдэгт байх шаардлагатай! (Одоо: {forgotNewPassword.length})</span>
-                          </p>
-                        )}
-                        {forgotNewPassword !== '' && forgotNewPassword.length >= 8 && !/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(forgotNewPassword) && (
-                          <p className="text-[10px] text-red-400 mt-1 font-sans flex items-center space-x-1">
-                            <span className="font-bold">✗</span>
-                            <span>Нууц үгэнд дор хаяж нэг тусгай тэмдэгт (!@#$%^&* гэх мэт) орох шаардлагатай!</span>
-                          </p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">
-                          Шинэ нууц код давтах
-                        </label>
-                        <div className="relative">
-                          <input
-                            id="forgot-confirm-new-password-input"
-                            type={showForgotConfirmNewPassword ? 'text' : 'password'}
-                            required
-                            value={forgotConfirmNewPassword}
-                            onChange={(e) => setForgotConfirmNewPassword(e.target.value)}
-                            placeholder=""
-                            className="block w-full pl-3 pr-10 py-2 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
-                          />
-                          <span
-                            onClick={() => setShowForgotConfirmNewPassword(!showForgotConfirmNewPassword)}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-[var(--muted-foreground)] hover:text-[var(--accent-foreground)] cursor-pointer"
-                          >
-                            {showForgotConfirmNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          </span>
-                        </div>
-                        {forgotConfirmNewPassword !== '' && forgotNewPassword !== forgotConfirmNewPassword && (
-                          <p className="text-[10px] text-red-400 mt-1 font-sans flex items-center space-x-1">
-                            <span className="font-bold">✗</span>
-                            <span>Давтан оруулсан нууц код тохирохгүй байна!</span>
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="pt-2">
-                  <button
-                    id="submit-forgot-btn"
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-semibold text-sm transition-all shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? 'Түр хүлээнэ үү...' : (recoveryStep === 1 ? 'Шалгах' : 'Нууц кодыг шинэчлэх')}
-                  </button>
-                  {successMsg && (
-                    <div className="mt-3.5 bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] px-4 py-2.5 rounded-lg text-xs flex items-center justify-center space-x-2 animate-fade-in font-sans">
-                      <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping shrink-0"></span>
-                      <span className="text-left">{successMsg}</span>
-                    </div>
-                  )}
-                  {error && (
-                    <div className="mt-3.5 bg-red-500/10 border border-red-500/40 text-red-300 px-4 py-2.5 rounded-lg text-xs flex items-center justify-center text-center animate-fade-in font-sans">
-                      <span>{error}</span>
-                    </div>
-                  )}
-                </div>
-              </form>
+              <RecoveryForm
+                form={form}
+                onVerifyAccount={handleVerifyAccount}
+                onResetPassword={handleForgotPasswordSubmit}
+              />
             ) : (
               /* LOGIN FORM */
               <form onSubmit={handleLogin} className="space-y-5">
