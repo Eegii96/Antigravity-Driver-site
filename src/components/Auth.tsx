@@ -15,6 +15,7 @@ import RecoveryForm from './auth/RecoveryForm';
 import LoginForm from './auth/LoginForm';
 import RegisterForm from './auth/RegisterForm';
 import { useAuthForm } from './auth/useAuthForm';
+import { hashValue, isHashed } from '../lib/crypto';
 
 interface AuthProps {
   onSuccess: (user: User) => void;
@@ -262,10 +263,17 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
     }
     if (newPass !== confirmPass) { setError('Хоёр нууц код хоорондоо тохирохгүй байна.'); return; }
 
-    const correctAns1 = matchedUserObj.securityAnswer1?.trim().toLowerCase();
-    const correctAns2 = matchedUserObj.securityAnswer2?.trim().toLowerCase();
+    // Compare answers — supports SHA-256 hashed (new) and legacy plaintext
+    const storedAnswer1 = matchedUserObj.securityAnswer1 || '';
+    const storedAnswer2 = matchedUserObj.securityAnswer2 || '';
+    const match1 = isHashed(storedAnswer1)
+      ? (await hashValue(securityA1Input)) === storedAnswer1
+      : storedAnswer1.trim().toLowerCase() === ans1;
+    const match2 = isHashed(storedAnswer2)
+      ? (await hashValue(securityA2Input)) === storedAnswer2
+      : storedAnswer2.trim().toLowerCase() === ans2;
 
-    if (ans1 !== correctAns1 || ans2 !== correctAns2) {
+    if (!match1 || !match2) {
       setError('Аюулгүй байдлын асуултуудын хариулт таарахгүй байна! Аюулгүй байдлын үүднээс мэдээллээ зөв оруулна уу.');
       return;
     }
@@ -281,7 +289,8 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
         console.warn('Temporary sign-in for recovery failed, proceeding with Firestore rules fallback:', authErr);
       }
 
-      matchedUserObj.password = newPass;
+      // Save new password as a hash — never store plaintext
+      matchedUserObj.password = await hashValue(newPass);
       await saveSingleUser(matchedUserObj);
 
       setSuccessMsg('Нууц код амжилттай сэргээгдлээ! Та шинэ нууц кодоор нэвтэрнэ үү. 🔑');

@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth';
 import { User, Job, Review, AppNotification } from '../../types';
 import { saveSingleUser } from './users';
+import { hashValue, isHashed } from '../crypto';
 
 export function getCurrentUser(): User | null {
   try {
@@ -185,11 +186,27 @@ export async function loginUser(email: string, phone: string, password?: string)
       }
     }
 
-    // Validate the actual password against Firestore first if it exists in the document
+    // Validate against stored password (hashed for new accounts, plaintext for legacy)
     if (userData && userData.password) {
-      if (userData.password !== password) {
-        console.warn('Firestore password mismatch');
-        return null;
+      const stored = userData.password;
+      if (isHashed(stored)) {
+        const submittedHash = await hashValue(password || '');
+        if (stored !== submittedHash) {
+          console.warn('Firestore password hash mismatch');
+          return null;
+        }
+      } else {
+        // Legacy plaintext — compare then migrate to hash
+        if (stored !== password) {
+          console.warn('Firestore password mismatch (legacy)');
+          return null;
+        }
+        try {
+          const migrated = await hashValue(password || '');
+          await saveSingleUser({ ...userData, password: migrated });
+        } catch (err) {
+          console.warn('Password hash migration failed:', err);
+        }
       }
     }
     
@@ -353,12 +370,17 @@ export async function registerUser(
       const cleanUser = Object.fromEntries(
         Object.entries(newUser).filter(([_, v]) => v !== undefined)
       ) as User;
-      
+
+      // Hash the password before persisting to Firestore — never store plaintext
+      if (cleanUser.password) {
+        cleanUser.password = await hashValue(cleanUser.password);
+      }
+
       // Create a 12-second timeout for Firestore write
-      const timeoutPromise = new Promise((_, reject) => 
+      const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Холболт амжилтгүй боллоо. Та сүлжээгээ шалгаад дахин оролдоно уу.')), 12000)
       );
-      
+
       const writePromise = setDoc(doc(db, 'users', uid), cleanUser);
       
       // Race setDoc against timeout

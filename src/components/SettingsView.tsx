@@ -3,11 +3,12 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShieldCheck, Key, Trash2, Eye, EyeOff, Check, AlertCircle, X } from 'lucide-react';
-import { saveSingleUser, getFreshCurrentUser } from '../lib/db';
+import { saveSingleUser, getFreshCurrentUser, setCurrentUser } from '../lib/db';
 import { User } from '../types';
 import { auth } from '../lib/firebase';
 import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { useAuth } from '../context/AuthContext';
+import { hashValue, isHashed } from '../lib/crypto';
 
 interface SettingsViewProps {
   onBack?: () => void;
@@ -114,14 +115,24 @@ export default function SettingsView() {
         return;
       }
 
-      // 1. Verify current password
+      // 1. Verify current password (supports both hashed and legacy plaintext)
       if (freshUser.password) {
-        if (freshUser.password !== currentPassword) {
-          setError('Одоогийн нууц үг буруу байна.');
-          return;
+        const stored = freshUser.password;
+        if (isHashed(stored)) {
+          const submittedHash = await hashValue(currentPassword);
+          if (stored !== submittedHash) {
+            setError('Одоогийн нууц үг буруу байна.');
+            return;
+          }
+        } else {
+          // Legacy plaintext
+          if (stored !== currentPassword) {
+            setError('Одоогийн нууц үг буруу байна.');
+            return;
+          }
         }
       } else {
-        // Fallback for older accounts where the password isn't cached in Firestore yet
+        // Fallback: reauthenticate via Firebase Auth
         if (auth.currentUser && auth.currentUser.email) {
           try {
             const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
@@ -134,21 +145,12 @@ export default function SettingsView() {
         }
       }
 
-      // 2. We do NOT update the Firebase Auth password since it should remain 'Password123!' (unified).
-      // But if their Auth password was not unified yet (they are an old account), we should unify it.
-      if (!freshUser.password && auth.currentUser) {
-        try {
-          await updatePassword(auth.currentUser, 'Password123!');
-        } catch (authErr: any) {
-          console.warn('Failed to unify auth password, trying fallback:', authErr);
-        }
-      }
-
-      // 3. Save the new password to Firestore
-      const updatedUser = { ...freshUser, password: newPassword };
+      // 2. Save the new password as a hash — never store plaintext
+      const hashedNewPassword = await hashValue(newPassword);
+      const updatedUser = { ...freshUser, password: hashedNewPassword };
       await saveSingleUser(updatedUser);
 
-      // Save to localStorage session without the password
+      // Update localStorage session without exposing the hash
       const sessionUser: User = { ...updatedUser };
       if ('password' in sessionUser) {
         delete sessionUser.password;

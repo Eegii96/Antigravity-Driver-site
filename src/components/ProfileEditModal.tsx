@@ -3,6 +3,7 @@ import { X, Check, Save, Sparkles, Lock } from 'lucide-react';
 import { User } from '../types';
 import { saveSingleUser } from '../lib/db';
 import { optimizeBio } from '../lib/gemini';
+import { hashValue } from '../lib/crypto';
 
 interface ProfileEditModalProps {
   user: User;
@@ -167,9 +168,9 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
       experienceYears: user.type === 'operator' ? (experienceYears === '' ? 0 : experienceYears) : undefined,
       machineTypes: user.type === 'operator' ? machineTypes : undefined,
       securityQuestion1: securityQuestion1 || undefined,
-      securityAnswer1: securityAnswer1.trim() || undefined,
+      securityAnswer1: securityAnswer1.trim() ? await hashValue(securityAnswer1.trim()) : undefined,
       securityQuestion2: securityQuestion2 || undefined,
-      securityAnswer2: securityAnswer2.trim() || undefined,
+      securityAnswer2: securityAnswer2.trim() ? await hashValue(securityAnswer2.trim()) : undefined,
     };
 
     try {
