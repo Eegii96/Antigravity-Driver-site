@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "deploy:firebase": "next build && node scripts/generate-sitemap.mjs && npx --package firebase-tools firebase deploy"
+    "deploy:firebase": "next build && node scripts/generate-sitemap.mjs && npx --package firebase-tools firebase deploy",
+    "postinstall": "node -e \"const{rmSync,existsSync}=require('fs');['@next/swc-linux-x64-gnu','@next/swc-linux-x64-musl','@next/swc-linux-arm64-gnu','@next/swc-linux-arm64-musl','@next/swc-darwin-arm64','@next/swc-darwin-x64','@next/swc-win32-arm64-msvc'].forEach(p=>{const d='node_modules/'+p;if(existsSync(d)){rmSync(d,{recursive:true,force:true});console.log('Removed unused SWC binary: '+p)}})\""
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
