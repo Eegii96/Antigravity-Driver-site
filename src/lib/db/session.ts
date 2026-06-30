@@ -2,13 +2,8 @@
 // registration and the seeded-user migration. Firebase Auth lives here.
 import { collection, doc, getDocs, getDoc, setDoc, query, where, writeBatch } from 'firebase/firestore';
 import { db, auth } from '../firebase';
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  updatePassword,
-} from 'firebase/auth';
-import { User, Job, Review, AppNotification } from '../../types';
-import { saveSingleUser } from './users';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { User, AppNotification } from '../../types';
 import { hashSecret, verifySecret } from '../crypto';
 
 export function getCurrentUser(): User | null {
@@ -76,71 +71,6 @@ export function setCurrentUser(user: User | null) {
   }
 }
 
-async function migrateSeededUserDocument(oldId: string, newId: string, userData: User) {
-  try {
-    console.log(`Migrating seeded user Firestore document from ${oldId} to ${newId}`);
-    const batch = writeBatch(db);
-
-    // 1. Copy user document to the new Auth UID
-    const newUserDoc = { ...userData, id: newId };
-    const cleanUser = Object.fromEntries(
-      Object.entries(newUserDoc).filter(([_, v]) => v !== undefined)
-    ) as unknown as User;
-    batch.set(doc(db, 'users', newId), cleanUser);
-    batch.delete(doc(db, 'users', oldId));
-
-    // 2. Query and update all jobs where this user is involved
-    const jobsSnap = await getDocs(collection(db, 'jobs'));
-    jobsSnap.docs.forEach((jobDoc) => {
-      const job = jobDoc.data() as Job;
-      let changed = false;
-      const updatedApplicants = job.applicants.map((id) => {
-        if (id === oldId) {
-          changed = true;
-          return newId;
-        }
-        return id;
-      });
-
-      const updatePayload: any = {};
-      if (job.employerId === oldId) {
-        updatePayload.employerId = newId;
-        changed = true;
-      }
-      if (job.hiredOperatorId === oldId) {
-        updatePayload.hiredOperatorId = newId;
-        changed = true;
-      }
-      if (changed) {
-        updatePayload.applicants = updatedApplicants;
-        batch.update(doc(db, 'jobs', jobDoc.id), updatePayload);
-      }
-    });
-
-    // 3. Query and update all reviews written by or for this user
-    const reviewsSnap = await getDocs(collection(db, 'reviews'));
-    reviewsSnap.docs.forEach((revDoc) => {
-      const rev = revDoc.data() as Review;
-      if (rev.reviewerId === oldId) {
-        batch.update(doc(db, 'reviews', revDoc.id), { reviewerId: newId });
-      }
-    });
-
-    // 4. Query and update all notifications
-    const notifsSnap = await getDocs(collection(db, 'notifications'));
-    notifsSnap.docs.forEach((notifDoc) => {
-      const notif = notifDoc.data() as AppNotification;
-      if (notif.userId === oldId) {
-        batch.update(doc(db, 'notifications', notifDoc.id), { userId: newId });
-      }
-    });
-
-    await batch.commit();
-    console.log(`User ${oldId} successfully migrated to ${newId} across collections.`);
-  } catch (err) {
-    console.error('Error during seeded user migration:', err);
-  }
-}
 
 export async function loginUser(email: string, phone: string, password?: string): Promise<User | null> {
   try {
@@ -200,51 +130,24 @@ export async function loginUser(email: string, phone: string, password?: string)
     localStorage.setItem('activeSessionId', newSessionId);
     localStorage.setItem('activeSessionIdTime', Date.now().toString());
 
-    // 2. Authenticate using Firebase Auth
+    // 2. Authenticate with Firebase Auth using the real password
     let authUser = null;
     try {
-      // Try signing in with the fixed password first (for accounts created/unified under this system)
-      const userCredential = await signInWithEmailAndPassword(auth, targetEmail, 'Password123!');
+      const userCredential = await signInWithEmailAndPassword(auth, targetEmail, password || '');
       authUser = userCredential.user;
     } catch (authErr) {
-      // Fallback: Try signing in with the typed password (for older accounts not yet unified)
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, targetEmail, password || 'Password123!');
-        authUser = userCredential.user;
-        
-        // Since login succeeded with their custom password, let's unify their Firebase Auth password to 'Password123!'
-        // and cache the password in Firestore for future logins.
-        if (authUser && userData) {
-          try {
-            await updatePassword(authUser, 'Password123!');
-            userData.password = password;
-            await saveSingleUser(userData);
-          } catch (unifyErr) {
-            console.warn('Could not unify password in Auth:', unifyErr);
-          }
-        }
-      } catch (authErr2) {
-        console.warn('Firebase Auth sign-in failed with both passwords:', authErr2);
-        localStorage.removeItem('activeSessionId');
-        localStorage.removeItem('activeSessionIdTime');
-        localStorage.removeItem('sessionIsNew');
-        return null; // Login failed! Incorrect password or auth issue.
-      }
+      console.warn('Firebase Auth sign-in failed:', authErr);
+      localStorage.removeItem('activeSessionId');
+      localStorage.removeItem('activeSessionIdTime');
+      localStorage.removeItem('sessionIsNew');
+      return null;
     }
-    
+
     if (authUser) {
-      // Fetch fresh Firestore user data using the authenticated UID
       const docSnap = await getDoc(doc(db, 'users', authUser.uid));
       if (docSnap.exists()) {
         userData = docSnap.data() as User;
         userData.id = authUser.uid;
-      } else if (userData && userData.id !== authUser.uid) {
-        // If Firestore document exists under original seeded ID (e.g. user_op_1) but not authUser.uid,
-        // migrate the document and update references!
-        const oldId = userData.id;
-        userData.id = authUser.uid;
-        
-        await migrateSeededUserDocument(oldId, authUser.uid, userData);
       }
     }
     
@@ -311,7 +214,7 @@ export async function registerUser(
     // 1. Create Auth user
     if (onProgress) onProgress('Шинэ бүртгэл үүсгэж байна...');
     try {
-      const authUser = await createUserWithEmailAndPassword(auth, targetEmail, 'Password123!');
+      const authUser = await createUserWithEmailAndPassword(auth, targetEmail, userData.password || '');
       uid = authUser.user.uid;
     } catch (authErr: any) {
       console.error('Auth user registration failed:', authErr);

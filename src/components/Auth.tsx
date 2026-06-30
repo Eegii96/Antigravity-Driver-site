@@ -3,19 +3,19 @@
 import { FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { loginUser, registerUser, saveSingleUser } from '../lib/db';
+import { loginUser, registerUser } from '../lib/db';
 import { User } from '../types';
 import { optimizeBio } from '../lib/gemini';
-import { db, auth } from '../lib/firebase';
+import { db } from '../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import TermsModal from './auth/TermsModal';
 import PrivacyModal from './auth/PrivacyModal';
 import RecoveryForm from './auth/RecoveryForm';
 import LoginForm from './auth/LoginForm';
 import RegisterForm from './auth/RegisterForm';
 import { useAuthForm } from './auth/useAuthForm';
-import { hashSecret, verifySecret } from '../lib/crypto';
+import { verifySecret } from '../lib/crypto';
 
 interface AuthProps {
   onSuccess: (user: User) => void;
@@ -276,16 +276,14 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
     setIsSubmitting(true);
 
     try {
-      const targetEmail = matchedUserObj.email || `${matchedUserObj.phone.replace(/[^a-zA-Z0-9]/g, '')}@jolooj.mn`;
-      try {
-        await signInWithEmailAndPassword(auth, targetEmail, 'Password123!');
-      } catch (authErr) {
-        console.warn('Temporary sign-in for recovery failed, proceeding with Firestore rules fallback:', authErr);
-      }
-
-      // Save new password as a PBKDF2 hash — never store plaintext
-      matchedUserObj.password = await hashSecret(newPass);
-      await saveSingleUser(matchedUserObj);
+      const functions = getFunctions();
+      const resetFn = httpsCallable(functions, 'resetPasswordWithAnswers');
+      await resetFn({
+        userId: matchedUserObj.id,
+        answer1: securityA1Input,
+        answer2: securityA2Input,
+        newPassword: newPass,
+      });
 
       setSuccessMsg('Нууц код амжилттай сэргээгдлээ! Та шинэ нууц кодоор нэвтэрнэ үү. 🔑');
 

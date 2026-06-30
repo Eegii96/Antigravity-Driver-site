@@ -6,7 +6,7 @@ import { ShieldCheck, Key, Trash2, Eye, EyeOff, Check, AlertCircle, X } from 'lu
 import { saveSingleUser, getFreshCurrentUser, setCurrentUser } from '../lib/db';
 import { User } from '../types';
 import { auth } from '../lib/firebase';
-import { reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
 import { useAuth } from '../context/AuthContext';
 import { hashSecret, verifySecret } from '../lib/crypto';
 
@@ -122,21 +122,21 @@ export default function SettingsView() {
           setError('Одоогийн нууц үг буруу байна.');
           return;
         }
-      } else {
-        // Fallback: reauthenticate via Firebase Auth
-        if (auth.currentUser && auth.currentUser.email) {
-          try {
-            const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
-            await reauthenticateWithCredential(auth.currentUser, credential);
-          } catch (reauthErr: any) {
-            console.warn('Re-authentication failed:', reauthErr);
-            setError('Одоогийн нууц үг буруу байна.');
-            return;
-          }
-        }
       }
 
-      // 2. Save the new password as a PBKDF2 hash — never store plaintext
+      // 2. Reauthenticate with Firebase Auth (required for updatePassword)
+      if (auth.currentUser && auth.currentUser.email) {
+        const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
+        try {
+          await reauthenticateWithCredential(auth.currentUser, credential);
+        } catch (reauthErr: any) {
+          setError('Одоогийн нууц үг буруу байна.');
+          return;
+        }
+        await updatePassword(auth.currentUser, newPassword);
+      }
+
+      // 3. Save the new password as a PBKDF2 hash — never store plaintext
       const hashedNewPassword = await hashSecret(newPassword);
       const updatedUser = { ...freshUser, password: hashedNewPassword };
       await saveSingleUser(updatedUser);
