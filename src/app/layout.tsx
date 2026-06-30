@@ -59,13 +59,14 @@ export default function RootLayout({
       className={`${saira.variable} ${inter.variable} ${geistMono.variable} antialiased`}
     >
       <head>
+        <link rel="preconnect" href="https://firestore.googleapis.com" />
+        <link rel="preconnect" href="https://identitytoolkit.googleapis.com" />
+        <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
+        <link rel="preconnect" href="https://generativelanguage.googleapis.com" />
+        <link rel="dns-prefetch" href="https://firebaseinstallations.googleapis.com" />
         <script
           dangerouslySetInnerHTML={{
-            __html: `
-              if (window.location.hostname.includes('web.app') || window.location.hostname.includes('firebaseapp.com')) {
-                window.location.replace('https://jolooch.net' + window.location.pathname + window.location.search + window.location.hash);
-              }
-            `,
+            __html: `if(location.hostname.includes('web.app')||location.hostname.includes('firebaseapp.com')){location.replace('https://jolooch.net'+location.pathname+location.search+location.hash)}`,
           }}
         />
       </head>

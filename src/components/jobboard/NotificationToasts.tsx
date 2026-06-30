@@ -33,7 +33,7 @@ export default function NotificationToasts({ toasts, onToastClick, onDismiss }: 
               </span>
               <span className="text-[9px] text-[var(--muted-foreground)] font-mono mr-2">{formatNotificationDate(t.createdAt)}</span>
             </div>
-            <h4 className="text-xs font-bold text-[var(--fg)] mt-1 leading-snug">{t.title}</h4>
+            <p className="text-xs font-bold text-[var(--fg)] mt-1 leading-snug">{t.title}</p>
             <p className="text-[10px] text-[var(--muted-foreground)] leading-relaxed mt-0.5">{t.message}</p>
           </div>
 

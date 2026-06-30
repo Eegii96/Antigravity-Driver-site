@@ -9,7 +9,6 @@ import {
   applyForJob,
   hireOperator,
   completeJob,
-  getUsers,
   getNotifications,
   subscribeToJobs,
   subscribeToUsers,
@@ -195,11 +194,16 @@ export default function JobBoard({
     return () => unsub();
   }, []);
 
-  // Real-time subscription to users — replaces full-collection polling.
+  // Real-time subscription to users — guests skip this entirely (they see mock data,
+  // and the Firestore users rule now requires auth). Clears on logout.
   useEffect(() => {
+    if (!currentUser) {
+      setUsers([]);
+      return;
+    }
     const unsub = subscribeToUsers(setUsers);
     return () => unsub();
-  }, []);
+  }, [currentUser?.id]);
 
   // One-time notification seeding/migration (welcome & security). Live updates
   // arrive via the subscribeToNotifications listener below.
@@ -642,7 +646,7 @@ export default function JobBoard({
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-md bg-[var(--bg2)] border border-[var(--border-strong)] flex items-center justify-center relative overflow-hidden shrink-0 shadow-sm">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" loading="eager" />
+            <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" loading="eager" width="40" height="40" />
           </div>
           <div>
             <span className="font-display font-bold uppercase tracking-tight text-[var(--fg)] block text-sm md:text-base">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>
@@ -726,13 +730,13 @@ export default function JobBoard({
                             )}
                             <div className="flex-1 min-w-0">
                               <div className="flex justify-between items-start gap-1">
-                                <h5 className={`text-xs font-bold leading-tight font-sans transition-colors duration-200 ${
+                                <p className={`text-xs font-bold leading-tight font-sans transition-colors duration-200 ${
                                   notif.isRead
                                     ? 'text-[var(--muted-foreground)] group-hover:text-[var(--fg)] font-medium'
                                     : 'text-[var(--fg)] font-extrabold'
                                 }`}>
                                   {notif.title}
-                                </h5>
+                                </p>
                                 <span className={`text-[8px] font-mono shrink-0 transition-colors duration-200 ${
                                   notif.isRead
                                     ? 'text-[var(--muted-foreground)]'
@@ -947,7 +951,7 @@ export default function JobBoard({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Type Category */}
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] text-[var(--muted-foreground)] font-bold uppercase tracking-wider text-left">Зарын төрөл</label>
+              <label htmlFor="filter-type" className="text-[10px] text-[var(--muted-foreground)] font-bold uppercase tracking-wider text-left">Зарын төрөл</label>
               <div className="relative">
                 <select
                   id="filter-type"
@@ -965,7 +969,7 @@ export default function JobBoard({
 
             {/* Aimag location */}
             <div className="flex flex-col space-y-1.5">
-              <label className="text-[10px] text-[var(--muted-foreground)] font-bold uppercase tracking-wider text-left">Аймаг / Байршил</label>
+              <label htmlFor="filter-location" className="text-[10px] text-[var(--muted-foreground)] font-bold uppercase tracking-wider text-left">Аймаг / Байршил</label>
               <div className="relative">
                 <select
                   id="filter-location"

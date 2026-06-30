@@ -17,7 +17,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUserState] = useState<User | null>(null);
+  const [currentUser, setCurrentUserState] = useState<User | null>(() => getLocalUser());
   const [loading, setLoading] = useState(true);
 
   // Sync state update to state and localStorage. Stable reference (useCallback)
@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 } else if (localSessionId && userData.activeSessionId !== localSessionId) {
                   if (isSessionFresh) {
                     // This device just logged in/registered. It has the right to claim the active session.
-                    console.log('Claiming active session for new login on this device.');
+
                     await updateDoc(userDocRef, { activeSessionId: localSessionId });
                     handleSetCurrentUser(sessionUser);
                   } else {

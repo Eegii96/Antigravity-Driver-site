@@ -95,6 +95,27 @@ export default async function JobPage({ params }: Props) {
   const { id } = await params;
   const job = await getSingleJob(id);
 
+  // Map Mongolian salary unit to schema.org unitText
+  const salaryUnitMap: Record<string, string> = {
+    'Цагаар': 'HOUR',
+    'Өдрөөр': 'DAY',
+    'Сараар': 'MONTH',
+    'Төслөөр': 'YEAR', // closest schema.org value for per-project
+  };
+
+  // validThrough: 30 days after posting (prevents stale-listing demotion in Google for Jobs)
+  const validThrough = job
+    ? new Date(new Date(job.createdAt).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    : null;
+
+  // Map salaryUnit to schema.org employmentType
+  const employmentTypeMap: Record<string, string> = {
+    'Цагаар': 'PART_TIME',
+    'Өдрөөр': 'TEMPORARY',
+    'Сараар': 'FULL_TIME',
+    'Төслөөр': 'CONTRACTOR',
+  };
+
   const jsonLd = job
     ? {
         '@context': 'https://schema.org',
@@ -102,7 +123,8 @@ export default async function JobPage({ params }: Props) {
         title: job.title,
         description: job.description,
         datePosted: job.createdAt,
-        employmentType: 'FULL_TIME',
+        validThrough,
+        employmentType: employmentTypeMap[job.salaryUnit] ?? 'CONTRACTOR',
         jobLocation: {
           '@type': 'Place',
           address: {
@@ -118,15 +140,21 @@ export default async function JobPage({ params }: Props) {
             value: {
               '@type': 'QuantitativeValue',
               value: job.salary,
-              unitText: job.salaryUnit === 'Цагаар' ? 'HOUR' : 'DAY',
+              unitText: salaryUnitMap[job.salaryUnit] ?? 'MONTH',
             },
           },
         }),
         hiringOrganization: {
           '@type': 'Organization',
-          name: 'Jolooch.net',
+          name: job.employerName || 'Jolooch.net',
           sameAs: 'https://jolooch.net',
         },
+        identifier: {
+          '@type': 'PropertyValue',
+          name: 'Jolooch.net',
+          value: job.id,
+        },
+        directApply: true,
       }
     : null;
 

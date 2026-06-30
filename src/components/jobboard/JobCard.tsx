@@ -127,7 +127,7 @@ export default function JobCard({
 
                       {/* ── TITLE + DESCRIPTION ── */}
                       <div className="space-y-2">
-                        <h3 className="text-base font-display font-extrabold uppercase tracking-tight text-[var(--fg)] leading-snug">{job.title}</h3>
+                        <h2 className="text-base font-display font-extrabold uppercase tracking-tight text-[var(--fg)] leading-snug">{job.title}</h2>
                         <p className="text-[12px] text-[var(--muted-foreground)] leading-relaxed">{job.description}</p>
                         {job.additionalInfo && (
                           <p className="text-[11px] text-[var(--muted-foreground)] italic bg-[var(--bg2)] p-2.5 rounded-md border border-[var(--border)] leading-relaxed">
@@ -145,6 +145,8 @@ export default function JobCard({
                                 <img
                                   src={url}
                                   alt={`Slide ${idx + 1}`}
+                                  loading="lazy"
+                                  decoding="async"
                                   className="w-full h-full object-contain"
                                 />
                                 <div className="absolute bottom-2 right-2 bg-[var(--fg)]/75 text-[var(--card)] text-[9px] font-bold px-2 py-0.5 rounded-full font-sans">
@@ -164,6 +166,8 @@ export default function JobCard({
                           <img
                             src={job.imageUrl}
                             alt={job.title}
+                            loading="lazy"
+                            decoding="async"
                             className="w-full h-full object-contain"
                           />
                         </div>
@@ -502,7 +506,10 @@ export default function JobCard({
                     <div
                       id={`job-card-collapsed-${job.id}`}
                       key={`collapsed-${job.id}`}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => onSelect(job)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(job); } }}
                       className="w-full bg-[var(--card)] hover:bg-[var(--bg2)] transition-all border border-[var(--border)] hover:border-[var(--border-strong)] border-l-4 border-l-[var(--accent)] p-5 rounded-md cursor-pointer flex flex-col justify-between space-y-4 text-left group shadow-sm hover:shadow-md self-start"
                     >
                       <div className="space-y-3">
@@ -530,9 +537,9 @@ export default function JobCard({
                         </div>
 
                         {/* Title */}
-                        <h4 className="text-sm font-display font-bold uppercase tracking-tight text-[var(--fg)] transition-colors leading-snug">
+                        <h3 className="text-sm font-display font-bold uppercase tracking-tight text-[var(--fg)] transition-colors leading-snug">
                           {job.title}
-                        </h4>
+                        </h3>
 
                         {/* Job Image Thumbnail */}
                         {((job.imageUrls && job.imageUrls.length > 0) || job.imageUrl) && (
@@ -540,6 +547,10 @@ export default function JobCard({
                             <img
                               src={job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl}
                               alt={job.title}
+                              width={400}
+                              height={144}
+                              loading="lazy"
+                              decoding="async"
                               className="w-full h-full object-cover"
                             />
                           </div>

@@ -25,7 +25,7 @@ export default function Footer() {
           <div className="flex items-center space-x-2 text-[var(--fg)] font-semibold mb-4 text-base">
             <div className="w-8 h-8 rounded-md bg-[var(--bg)] border border-[var(--border-strong)] flex items-center justify-center relative overflow-hidden shrink-0 shadow-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" loading="eager" />
+              <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" loading="lazy" width="32" height="32" />
             </div>
             <span className="tracking-tight font-sans">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>
           </div>
@@ -35,7 +35,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-[var(--fg)] font-medium mb-4 text-sm font-sans">Аюулгүй байдлын зөвлөгөө</h4>
+          <h2 className="text-[var(--fg)] font-medium mb-4 text-sm font-sans">Аюулгүй байдлын зөвлөгөө</h2>
           <ul className="space-y-3 text-xs text-[var(--muted-foreground)] leading-relaxed font-sans">
             <li><strong>1. Үнэлгээ & Түүх нягтлах:</strong> Ажил олгогч эсвэл жолооч, оператортой холбогдохоос өмнө тэдгээрийн ажлын түүх, өмнөх үнэлгээнүүдийг системээс заавал шалгаж хэвшинэ үү.</li>
             <li><strong>2. Тоон үнэлгээ өгөх:</strong> Залилан болон ажлын хариуцлагагүй байдлаас сэргийлэх зорилгоор ажлын гүйцэтгэлийн дараа нөгөө талдаа 1-ээс 5 хүртэлх тоогоор бодит үнэлгээг заавал үлдээнэ үү.</li>
@@ -44,7 +44,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-[var(--fg)] font-medium mb-4 text-sm font-sans">Холбоо барих</h4>
+          <h2 className="text-[var(--fg)] font-medium mb-4 text-sm font-sans">Холбоо барих</h2>
           <ul className="space-y-2.5 text-xs font-sans">
             <li className="flex items-center space-x-2">
               <Mail className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />

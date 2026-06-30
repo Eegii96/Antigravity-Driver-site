@@ -266,15 +266,11 @@ export async function cancelHiring(jobId: string): Promise<boolean> {
       hiredOperatorName: deleteField()
     });
 
-    // Delete Job History records in Firestore
-    const histSnap = await getDocs(collection(db, 'jobHistory'));
+    // Delete only the history records for this job (targeted query, not full scan)
+    const histQuery = query(collection(db, 'jobHistory'), where('jobId', '==', jobId));
+    const histSnap = await getDocs(histQuery);
     const batch = writeBatch(db);
-    histSnap.docs.forEach(d => {
-      const h = d.data() as JobHistoryItem;
-      if (h.jobId === jobId) {
-        batch.delete(doc(db, 'jobHistory', h.id));
-      }
-    });
+    histSnap.docs.forEach(d => batch.delete(d.ref));
     await batch.commit();
 
     return true;
@@ -293,18 +289,16 @@ export async function completeJob(jobId: string): Promise<boolean> {
     const job = jobDoc.data() as Job;
     await updateDoc(jobRef, { status: 'completed' });
     
-    // Update Job History records in Firestore
-    const histSnap = await getDocs(collection(db, 'jobHistory'));
+    // Update only the history records for this job (targeted query, not full scan)
+    const histQuery = query(collection(db, 'jobHistory'), where('jobId', '==', jobId));
+    const histSnap = await getDocs(histQuery);
     const batch = writeBatch(db);
-    
     histSnap.docs.forEach(d => {
       const h = d.data() as JobHistoryItem;
-      if (h.jobId === jobId) {
-        batch.update(doc(db, 'jobHistory', h.id), {
-          status: 'completed',
-          dateRange: h.dateRange.replace('Одоо', new Date().toLocaleDateString('mn-MN'))
-        });
-      }
+      batch.update(d.ref, {
+        status: 'completed',
+        dateRange: h.dateRange.replace('Одоо', new Date().toLocaleDateString('mn-MN'))
+      });
     });
     await batch.commit();
     

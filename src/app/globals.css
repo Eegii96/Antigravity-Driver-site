@@ -20,7 +20,7 @@
   --accent: #FFC400;            /* hi-vis yellow — CTA/brand + open status */
   --accent-foreground: #1A1C1E; /* text/icon on --accent (graphite, never white) */
   --accent-soft: rgba(255, 196, 0, 0.16);   /* soft yellow badge/icon bg */
-  --accent-soft-foreground: #8A6A00;         /* dark amber text on --accent-soft */
+  --accent-soft-foreground: #6B5200;         /* dark amber text on --accent-soft (≥4.5:1 WCAG AA) */
 
   --verify: #1F8A4C;            /* safety green — trust/verified/completed */
   --alert: #FF5C28;             /* safety orange — in-progress/needs-review */
