@@ -2,7 +2,7 @@
 // hiring/apply/complete workflow for the `jobs` collection.
 import {
   collection, doc, getDocs, getDoc, setDoc, updateDoc, deleteDoc,
-  query, where, writeBatch, deleteField, onSnapshot,
+  query, where, writeBatch, deleteField, onSnapshot, orderBy, limit,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Job, User, JobHistoryItem } from '../../types';
@@ -21,7 +21,8 @@ function mapJobDoc(d: { id: string; data: () => unknown }): Job {
 
 export async function getJobs(): Promise<Job[]> {
   try {
-    const snap = await getDocs(collection(db, 'jobs'));
+    const q = query(collection(db, 'jobs'), orderBy('createdAt', 'desc'), limit(200));
+    const snap = await getDocs(q);
     return snap.docs.map(mapJobDoc);
   } catch (err) {
     console.error('Error fetching jobs from Firestore:', err);
@@ -34,8 +35,9 @@ export async function getJobs(): Promise<Job[]> {
  * Returns an unsubscribe function. Use instead of polling getJobs().
  */
 export function subscribeToJobs(callback: (jobs: Job[]) => void): () => void {
+  const q = query(collection(db, 'jobs'), orderBy('createdAt', 'desc'), limit(200));
   return onSnapshot(
-    collection(db, 'jobs'),
+    q,
     (snap) => callback(snap.docs.map(mapJobDoc)),
     (err) => console.error('Error in jobs snapshot listener:', err)
   );
@@ -86,9 +88,9 @@ export async function saveJobHistory(history: JobHistoryItem[]): Promise<void> {
     console.error('Error batch saving jobHistory to Firestore:', err);
   }
 }
-export async function addJob(jobData: Omit<Job, 'id' | 'status' | 'createdAt' | 'applicants'>): Promise<Job> {
+export async function addJob(jobData: Omit<Job, 'id' | 'status' | 'createdAt' | 'applicants'>, presetId?: string): Promise<Job> {
   try {
-    const id = `job_${Date.now()}`;
+    const id = presetId || `job_${Date.now()}`;
     const newJob: Job = {
       ...jobData,
       id: id,

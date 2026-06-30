@@ -120,6 +120,35 @@ body {
   outline: none;
 }
 
+/* Keyboard focus ring — visible for screen-reader / keyboard users only */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Skip-to-content link for screen readers */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.skip-link:focus {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 1rem;
+  background: var(--accent);
+  color: var(--accent-foreground);
+  font-weight: 700;
+  z-index: 9999;
+  outline: none;
+}
+
 /* Timeline vertical line — graphite */
 .timeline-line {
   position: relative;

@@ -94,6 +94,53 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function JobPage({ params }: Props) {
   const { id } = await params;
-  return <JobDetailClient jobId={id} />;
+  const job = await getSingleJob(id);
+
+  const jsonLd = job
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'JobPosting',
+        title: job.title,
+        description: job.description,
+        datePosted: job.createdAt,
+        employmentType: 'FULL_TIME',
+        jobLocation: {
+          '@type': 'Place',
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: job.location,
+            addressCountry: 'MN',
+          },
+        },
+        ...(job.salary > 0 && {
+          baseSalary: {
+            '@type': 'MonetaryAmount',
+            currency: 'MNT',
+            value: {
+              '@type': 'QuantitativeValue',
+              value: job.salary,
+              unitText: job.salaryUnit === 'Цагаар' ? 'HOUR' : 'DAY',
+            },
+          },
+        }),
+        hiringOrganization: {
+          '@type': 'Organization',
+          name: 'Jolooch.net',
+          sameAs: 'https://jolooch.net',
+        },
+      }
+    : null;
+
+  return (
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <JobDetailClient jobId={id} />
+    </>
+  );
 }
 

@@ -2,6 +2,7 @@ import { useState, FormEvent, useEffect } from 'react';
 import { X, ShieldCheck, Camera, Trash2, Image as ImageIcon } from 'lucide-react';
 import { Job } from '../types';
 import { addJob, updateJob } from '../lib/db';
+import { uploadJobImage, deleteJobImage } from '../lib/storage';
 
 interface JobPostModalProps {
   employerId: string;
@@ -12,48 +13,6 @@ interface JobPostModalProps {
   jobToEdit?: Job;
 }
 
-const compressImage = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 800;
-        const MAX_HEIGHT = 800;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
-          resolve(dataUrl);
-        } else {
-          reject(new Error('Canvas context not available'));
-        }
-      };
-      img.onerror = () => reject(new Error('Image load error'));
-      img.src = event.target?.result as string;
-    };
-    reader.onerror = () => reject(new Error('FileReader error'));
-    reader.readAsDataURL(file);
-  });
-};
 
 
 const AIMAGS = [
@@ -100,6 +59,8 @@ export default function JobPostModal({
     };
   }, []);
 
+  // Pre-generate job ID so Storage uploads can use it before Firestore doc exists
+  const [tempJobId] = useState<string>(() => jobToEdit?.id || `job_${Date.now()}`);
   const [title, setTitle] = useState<string>(jobToEdit?.title || '');
   const [description, setDescription] = useState<string>(jobToEdit?.description || '');
   const [imageUrls, setImageUrls] = useState<string[]>(jobToEdit?.imageUrls || (jobToEdit?.imageUrl ? [jobToEdit.imageUrl] : []));
@@ -202,7 +163,7 @@ export default function JobPostModal({
           requirements,
           imageUrl: imageUrls[0] || undefined,
           imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
-        });
+        }, tempJobId);
         onSuccess(job);
       }
     } catch (err) {
@@ -403,7 +364,11 @@ export default function JobPostModal({
                   />
                   <button
                     type="button"
-                    onClick={() => setImageUrls(prev => prev.filter((_, i) => i !== idx))}
+                    onClick={() => {
+                      const urlToDelete = imageUrls[idx];
+                      setImageUrls(prev => prev.filter((_, i) => i !== idx));
+                      if (urlToDelete.startsWith('https://')) deleteJobImage(urlToDelete);
+                    }}
                     className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-[var(--accent-foreground)] rounded-full p-0.5 shadow-md transition-colors cursor-pointer"
                     title="Устгах"
                   >
@@ -437,10 +402,10 @@ export default function JobPostModal({
                         try {
                           const maxRemaining = 4 - imageUrls.length;
                           const filesToProcess = Array.from(files).slice(0, maxRemaining);
-                          const compressed = await Promise.all(
-                            filesToProcess.map(file => compressImage(file))
+                          const uploaded = await Promise.all(
+                            filesToProcess.map(file => uploadJobImage(tempJobId, file))
                           );
-                          setImageUrls(prev => [...prev, ...compressed]);
+                          setImageUrls(prev => [...prev, ...uploaded]);
                         } catch (err) {
                           console.error(err);
                           alert('Зураг боловсруулахад алдаа гарлаа.');

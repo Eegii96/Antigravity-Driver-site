@@ -93,34 +93,5 @@ export interface AppNotification {
   isDeleted?: boolean;
 }
 
-export interface Ad {
-  id: string;
-  driverId: string;
-  driverName: string;
-  driverPhone: string;
-  title: string;
-  description: string;
-  machineryType?: string;
-  salary?: number;
-  salaryUnit?: 'Өдрөөр' | 'Цагаар' | 'Төслөөр';
-  location: string;
-  status: 'active' | 'expired';
-  createdAt: string;
-  expiresAt?: string;
-  expiredAt?: string; // set when archived
-}
-
-export interface WorkHistoryItem {
-  id: string;
-  jobId?: string;
-  jobTitle: string;
-  employerName: string;
-  role: 'operator' | 'employer';
-  status: 'completed' | 'in_progress';
-  dateRange: string;
-  completedAt: string; // ISO format string to sort by
-  ratingGiven?: number;
-  commentGiven?: string;
-}
 
 
