@@ -385,7 +385,7 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
                       const file = e.target.files?.[0];
                       if (file) {
                         if (file.size > 2 * 1024 * 1024) {
-                          alert('Зураг 2MB-аас бага хэмжээтэй байх ёстой.');
+                          setError('Зураг 2MB-аас бага хэмжээтэй байх ёстой.');
                           return;
                         }
                         const reader = new FileReader();

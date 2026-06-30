@@ -10,6 +10,7 @@ export default function AuthClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab'); // 'login' or 'register'
+  const reasonParam = searchParams.get('reason');
   const { currentUser, setCurrentUser, loading } = useAuth();
 
   useEffect(() => {
@@ -36,6 +37,15 @@ export default function AuthClient() {
 
   const defaultIsLogin = tabParam === 'register' ? false : (tabParam === 'login' ? true : undefined);
 
-  return <Auth onSuccess={handleAuthSuccess} defaultIsLogin={defaultIsLogin} />;
+  return (
+    <>
+      {reasonParam === 'concurrent_session' && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[var(--card)] border border-[var(--alert)] text-[var(--alert)] px-4 py-3 rounded-md text-xs shadow-md max-w-sm w-full mx-4 text-center">
+          Таны хаяг өөр төхөөрөмж дээр нэвтэрсэн тул энэ төхөөрөмжөөс гарлаа.
+        </div>
+      )}
+      <Auth onSuccess={handleAuthSuccess} defaultIsLogin={defaultIsLogin} />
+    </>
+  );
 }
 

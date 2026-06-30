@@ -409,7 +409,7 @@ export default function JobPostModal({
                           setImageUrls(prev => [...prev, ...uploaded]);
                         } catch (err) {
                           console.error(err);
-                          alert('Зураг боловсруулахад алдаа гарлаа.');
+                          setError('Зураг боловсруулахад алдаа гарлаа.');
                         } finally {
                           setIsImageUploading(false);
                         }

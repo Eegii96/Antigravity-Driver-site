@@ -32,6 +32,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
   const [displayReviews, setDisplayReviews] = useState<Review[]>([]);
   const [historyItems, setHistoryItems] = useState<JobHistoryItem[]>([]);
   const [success, setSuccess] = useState<string>('');
+  const [errorMsg, setErrorMsg] = useState<string>('');
 
   // States for reviews given and editing reviews
   const [givenReviews, setGivenReviews] = useState<Review[]>([]);
@@ -228,7 +229,8 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
       }
     } catch (err) {
       console.error('Error hiring operator:', err);
-      alert('Алдаа гарлаа. Дахин оролдоно уу.');
+      setErrorMsg('Алдаа гарлаа. Дахин оролдоно уу.');
+      setTimeout(() => setErrorMsg(''), 4000);
     }
   };
 
@@ -244,7 +246,8 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
       }
     } catch (err) {
       console.error('Error canceling hiring:', err);
-      alert('Алдаа гарлаа. Дахин оролдоно уу.');
+      setErrorMsg('Алдаа гарлаа. Дахин оролдоно уу.');
+      setTimeout(() => setErrorMsg(''), 4000);
     }
   };
 
@@ -265,7 +268,8 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
       }
     } catch (err) {
       console.error('Error completing job:', err);
-      alert('Алдаа гарлаа. Дахин оролдоно уу.');
+      setErrorMsg('Алдаа гарлаа. Дахин оролдоно уу.');
+      setTimeout(() => setErrorMsg(''), 4000);
     }
   };
 
@@ -278,7 +282,8 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       console.error(err);
-      alert('Зарыг устгахад алдаа гарлаа.');
+      setErrorMsg('Зарыг устгахад алдаа гарлаа.');
+      setTimeout(() => setErrorMsg(''), 4000);
     }
   };
 
@@ -291,7 +296,8 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
           setTimeout(() => setSuccess(''), 3000);
           await loadProfileData();
         } else {
-          alert('Үнэлгээг устгаход алдаа гарлаа.');
+          setErrorMsg('Үнэлгээг устгаход алдаа гарлаа.');
+          setTimeout(() => setErrorMsg(''), 4000);
         }
       } catch (err) {
         console.error('Error deleting review:', err);
@@ -368,7 +374,8 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
       if (onUpdateCurrentUser) {
         onUpdateCurrentUser(reverted);
       }
-      alert('Тохиргоо хадгалахад алдаа гарлаа. Дахин оролдоно уу.');
+      setErrorMsg('Тохиргоо хадгалахад алдаа гарлаа. Дахин оролдоно уу.');
+      setTimeout(() => setErrorMsg(''), 4000);
     }
   };
 
@@ -409,6 +416,13 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
         <div className="fixed top-6 right-6 max-w-sm bg-[var(--color-glass-bg)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] p-4 rounded-md text-xs flex items-center space-x-2.5 animate-fade-in text-left z-50 shadow-md">
           <CheckCircle className="w-4.5 h-4.5 text-[var(--accent-soft-foreground)] shrink-0" />
           <span>{success}</span>
+        </div>
+      )}
+
+      {errorMsg && (
+        <div className="fixed top-6 right-6 max-w-sm bg-[var(--card)] border border-[var(--alert)] text-[var(--alert)] p-4 rounded-md text-xs flex items-center space-x-2.5 animate-fade-in text-left z-50 shadow-md">
+          <X className="w-4.5 h-4.5 shrink-0" />
+          <span>{errorMsg}</span>
         </div>
       )}
 

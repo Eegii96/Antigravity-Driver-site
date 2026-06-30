@@ -82,14 +82,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   } else {
                     // Session ID mismatch on an established session! Another device has logged in.
                     console.warn('Session ID mismatch. Logging out due to concurrent login.');
-                    alert('Таны хаяг өөр төхөөрөмж дээр нэвтэрсэн тул энэ төхөөрөмжөөс гарлаа.');
-                    
                     await signOut(auth);
                     localStorage.removeItem('activeSessionId');
                     localStorage.removeItem('activeSessionIdTime');
                     localStorage.removeItem('sessionIsNew');
                     handleSetCurrentUser(null);
-                    window.location.href = '/auth';
+                    window.location.href = '/auth?reason=concurrent_session';
                   }
                 } else {
                   // Session matches or localSessionId doesn't exist yet
