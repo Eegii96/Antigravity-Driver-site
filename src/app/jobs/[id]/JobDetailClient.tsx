@@ -151,6 +151,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                   {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} • {currentUser.rating}⭐
                 </span>
               </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={currentUser.profileImage}
                 alt="user avatar"
@@ -281,6 +282,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 <div className="flex overflow-x-auto gap-2.5 snap-x snap-mandatory scrollbar-none py-1">
                   {job.imageUrls.map((url, idx) => (
                     <div key={idx} className="shrink-0 w-full snap-center h-64 md:h-96 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg2)] flex items-center justify-center relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={url}
                         alt={`Slide ${idx + 1}`}
@@ -300,6 +302,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
               </div>
             ) : (job.imageUrl && (
               <div className="w-full max-h-96 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg2)] flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={job.imageUrl}
                   alt={job.title}

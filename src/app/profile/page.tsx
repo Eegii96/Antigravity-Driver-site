@@ -45,7 +45,7 @@ function ProfileContent() {
         }
 
         // Clean up accidental file extensions
-        let id = rawId.replace(/\.(txt|rsc|json|html)$/i, '').trim();
+        const id = rawId.replace(/\.(txt|rsc|json|html)$/i, '').trim();
         
         // Keep URL clean and consistent
         if (queryId && rawId !== id) {

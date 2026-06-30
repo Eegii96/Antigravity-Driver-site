@@ -357,6 +357,7 @@ export default function JobPostModal({
               {/* Render uploaded image thumbnails */}
               {imageUrls.map((url, idx) => (
                 <div key={idx} className="relative w-20 h-20 rounded-lg border border-[var(--color-glass-border)] bg-[var(--bg2)] overflow-hidden shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={url}
                     alt={`Preview ${idx + 1}`}

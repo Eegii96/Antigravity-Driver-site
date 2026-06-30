@@ -24,7 +24,8 @@ export default function Footer() {
         <div>
           <div className="flex items-center space-x-2 text-[var(--fg)] font-semibold mb-4 text-base">
             <div className="w-8 h-8 rounded-md bg-[var(--bg)] border border-[var(--border-strong)] flex items-center justify-center relative overflow-hidden shrink-0 shadow-sm">
-              <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" loading="eager" />
             </div>
             <span className="tracking-tight font-sans">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>
           </div>

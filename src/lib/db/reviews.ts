@@ -109,7 +109,7 @@ export async function submitReview(reviewData: Omit<Review, 'id' | 'createdAt'>)
       }
       
       // Update job review flag in Firestore
-      const jobUpdate: any = {};
+      const jobUpdate: Partial<Pick<Job, 'isReviewedByEmployer' | 'isReviewedByOperator'>> = {};
       if (reviewData.reviewerType === 'employer') {
         jobUpdate.isReviewedByEmployer = true;
       } else {
@@ -140,7 +140,7 @@ export async function deleteReview(reviewId: string): Promise<boolean> {
       const job = jobDoc.data() as Job;
       const targetUserId = reviewData.reviewerType === 'operator' ? job.employerId : job.hiredOperatorId;
       
-      const jobUpdate: any = {};
+      const jobUpdate: Partial<Pick<Job, 'isReviewedByEmployer' | 'isReviewedByOperator'>> = {};
       if (reviewData.reviewerType === 'employer') {
         jobUpdate.isReviewedByEmployer = false;
       } else {

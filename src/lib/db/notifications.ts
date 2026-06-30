@@ -231,7 +231,7 @@ export async function addNotification(
     };
     
     const cleanNotif = Object.fromEntries(
-      Object.entries(newNotif).filter(([_, v]) => v !== undefined)
+      Object.entries(newNotif).filter(([, v]) => v !== undefined)
     ) as unknown as AppNotification;
     
     await setDoc(doc(db, 'notifications', id), cleanNotif);

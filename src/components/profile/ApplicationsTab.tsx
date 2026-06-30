@@ -151,6 +151,7 @@ export default function ApplicationsTab({
                         {/* Job Image Thumbnail */}
                         {((job.imageUrls && job.imageUrls.length > 0) || job.imageUrl) && (
                           <div className="w-full h-36 rounded-md overflow-hidden bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] relative shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl}
                               alt={job.title}
@@ -239,7 +240,7 @@ export default function ApplicationsTab({
                                   <span className="font-bold font-mono ml-1 text-[var(--fg)]">{receivedReview.rating}.0</span>
                                 </div>
                               </div>
-                              <p className="text-[11px] text-[var(--muted-foreground)] italic">"{receivedReview.comment}"</p>
+                              <p className="text-[11px] text-[var(--muted-foreground)] italic">&ldquo;{receivedReview.comment}&rdquo;</p>
                             </div>
                           );
                         })()}
@@ -327,6 +328,7 @@ export default function ApplicationsTab({
                         {/* Job Image Thumbnail */}
                         {((job.imageUrls && job.imageUrls.length > 0) || job.imageUrl) && (
                           <div className="w-full h-36 rounded-md overflow-hidden bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] relative shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl}
                               alt={job.title}
@@ -405,6 +407,7 @@ export default function ApplicationsTab({
                                       onClick={() => { window.location.href = `/profile?id=${op.id}`; }}
                                       className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
                                     >
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
                                       <img
                                         src={op.profileImage}
                                         alt={op.fullName}
@@ -467,7 +470,7 @@ export default function ApplicationsTab({
                                     <span className="font-bold font-mono ml-1 text-[var(--fg)]">{receivedReview.rating}.0</span>
                                   </div>
                                 </div>
-                                <p className="text-[11px] text-[var(--muted-foreground)] italic">"{receivedReview.comment}"</p>
+                                <p className="text-[11px] text-[var(--muted-foreground)] italic">&ldquo;{receivedReview.comment}&rdquo;</p>
                               </div>
                             );
                           })()}

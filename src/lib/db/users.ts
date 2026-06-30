@@ -44,7 +44,7 @@ export async function saveUsers(users: User[]): Promise<void> {
     for (const u of users) {
       // Clean up any undefined properties to prevent Firestore "Unsupported field value: undefined" error
       const cleanUser = Object.fromEntries(
-        Object.entries(u).filter(([_, v]) => v !== undefined)
+        Object.entries(u).filter(([, v]) => v !== undefined)
       ) as unknown as User;
       batch.set(doc(db, 'users', u.id), cleanUser);
     }
@@ -58,7 +58,7 @@ export async function saveSingleUser(user: User): Promise<void> {
   try {
     // Clean up any undefined properties to prevent Firestore "Unsupported field value: undefined" error
     const cleanUser = Object.fromEntries(
-      Object.entries(user).filter(([_, v]) => v !== undefined)
+      Object.entries(user).filter(([, v]) => v !== undefined)
     ) as unknown as User;
     await setDoc(doc(db, 'users', user.id), cleanUser);
   } catch (err) {

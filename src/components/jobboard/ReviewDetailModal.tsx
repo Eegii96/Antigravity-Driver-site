@@ -81,7 +81,7 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
             <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-mono tracking-wider block">Бичсэн сэтгэгдэл:</span>
             <div className="relative bg-[var(--bg2)] p-4.5 rounded-md border border-[var(--border)] italic text-xs text-[var(--fg)] leading-relaxed font-sans">
               <span className="absolute -top-1 left-2 text-3xl text-[var(--concrete)] font-serif pointer-events-none">“</span>
-              <p className="relative z-10 px-2">"{review.comment}"</p>
+              <p className="relative z-10 px-2">&ldquo;{review.comment}&rdquo;</p>
               <span className="absolute -bottom-4 right-3 text-3xl text-[var(--concrete)] font-serif pointer-events-none">”</span>
             </div>
           </div>

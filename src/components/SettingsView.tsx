@@ -3,16 +3,12 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShieldCheck, Key, Trash2, Eye, EyeOff, Check, AlertCircle, X } from 'lucide-react';
-import { saveSingleUser, getFreshCurrentUser, setCurrentUser } from '../lib/db';
+import { saveSingleUser, getFreshCurrentUser } from '../lib/db';
 import { User } from '../types';
 import { auth } from '../lib/firebase';
 import { reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
 import { useAuth } from '../context/AuthContext';
 import { hashSecret, verifySecret } from '../lib/crypto';
-
-interface SettingsViewProps {
-  onBack?: () => void;
-}
 
 export default function SettingsView() {
   const router = useRouter();
@@ -129,7 +125,7 @@ export default function SettingsView() {
         const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
         try {
           await reauthenticateWithCredential(auth.currentUser, credential);
-        } catch (reauthErr: any) {
+        } catch {
           setError('Одоогийн нууц үг буруу байна.');
           return;
         }

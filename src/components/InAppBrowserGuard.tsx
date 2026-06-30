@@ -6,7 +6,7 @@ export default function InAppBrowserGuard() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
+    const ua = navigator.userAgent || navigator.vendor || (window as Window & { opera?: string }).opera || '';
     
     // Check if the user is inside an in-app browser (Facebook, Messenger, Instagram, WhatsApp, etc.)
     const isInApp = /FBAN|FBAV|Instagram|Messenger|FB_IAB|FB4A|FBIOS|WhatsApp|Telegram|Twitter|TwitterAndroid|TwitteriPhone|Line|Viber|MicroMessenger/i.test(ua);

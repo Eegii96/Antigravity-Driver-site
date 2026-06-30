@@ -335,7 +335,7 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
                 onClick={() => setSelectedAvatar(avatar)}
                 className={`relative rounded-full overflow-hidden w-12 h-12 border-2 transition-colors cursor-pointer ${selectedAvatar === avatar ? 'border-[var(--accent)]' : 'border-transparent'}`}
               >
-                <img src={avatar} alt={`Avatar Preset ${idx + 1}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <img src={avatar} alt={`Avatar Preset ${idx + 1}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
                 {selectedAvatar === avatar && (
                   <div className="absolute inset-0 bg-[var(--accent-soft)] flex items-center justify-center">
                     <Check className="w-4 h-4 text-[var(--accent-soft-foreground)]" />

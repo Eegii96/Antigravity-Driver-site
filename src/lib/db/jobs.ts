@@ -101,7 +101,7 @@ export async function addJob(jobData: Omit<Job, 'id' | 'status' | 'createdAt' | 
     
     // Filter out undefined properties to prevent Firestore write failures
     const cleanJob = Object.fromEntries(
-      Object.entries(newJob).filter(([_, v]) => v !== undefined)
+      Object.entries(newJob).filter(([, v]) => v !== undefined)
     ) as unknown as Job;
 
     await setDoc(doc(db, 'jobs', id), cleanJob);
@@ -116,7 +116,7 @@ export async function updateJob(jobId: string, updatedFields: Partial<Job>): Pro
   try {
     const jobRef = doc(db, 'jobs', jobId);
     const cleanFields = Object.fromEntries(
-      Object.entries(updatedFields).filter(([_, v]) => v !== undefined)
+      Object.entries(updatedFields).filter(([, v]) => v !== undefined)
     ) as Partial<Job>;
     await updateDoc(jobRef, cleanFields);
   } catch (err) {

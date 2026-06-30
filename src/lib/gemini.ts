@@ -374,7 +374,6 @@ function generateMockBio(params: {
   if (userType === 'employer') {
     const isCompany = isCompanyName(fullName);
     const companyPrefix = isCompany ? "Манай компани" : "Миний бие ажил олгогчийн хувьд";
-    const teamPrefix = isCompany ? "манай хамт олон" : "миний зүгээс";
     const repLabel = isCompany ? "Захиалагч компани" : "Ажил олгогч";
 
     const variations = [

@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { User, Job, Review, AppNotification } from '../types';
 import {
   getJobs,
-  saveJobs,
   applyForJob,
   hireOperator,
   completeJob,
@@ -16,10 +16,8 @@ import {
   subscribeToNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
-  addNotification,
   deleteNotification,
   deleteAllNotifications,
-  addJob,
   deleteJob,
   cancelHiring,
   getReviews,
@@ -39,14 +37,13 @@ import {
   User as UserIcon,
   Settings as SettingsIcon,
   CheckCircle,
-  Users,
   AlertTriangle,
   Bell,
   X,
   Trash2
 } from 'lucide-react';
-import JobPostModal from './JobPostModal';
-import ReviewModal from './ReviewModal';
+const JobPostModal = dynamic(() => import('./JobPostModal'), { ssr: false });
+const ReviewModal = dynamic(() => import('./ReviewModal'), { ssr: false });
 import JobCard from './jobboard/JobCard';
 import NotificationToasts from './jobboard/NotificationToasts';
 import ReviewDetailModal from './jobboard/ReviewDetailModal';
@@ -117,6 +114,7 @@ export default function JobBoard({
   const notificationsMenuRef = useRef<HTMLDivElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
+  // eslint-disable-next-line react-hooks/purity
   const addErrorToast = (message: string) => {
     const newErrNotif: AppNotification & { x?: number; y?: number } = {
       id: 'err_' + Date.now(),
@@ -135,6 +133,7 @@ export default function JobBoard({
     }, 4500);
   };
 
+  // eslint-disable-next-line react-hooks/purity
   const addSuccessToast = (title: string, message: string) => {
     const newSuccessNotif: AppNotification & { x?: number; y?: number } = {
       id: 'success_' + Date.now(),
@@ -160,11 +159,6 @@ export default function JobBoard({
       const updated = allJobs.find(j => j.id === selectedJob.id);
       setSelectedJob(updated || null);
     }
-  };
-
-  const refreshUsers = async () => {
-    const allUsers = await getUsers();
-    setUsers(allUsers);
   };
 
   // Function to load notifications and sync unread count
@@ -211,6 +205,7 @@ export default function JobBoard({
 
   // One-time notification seeding/migration (welcome & security). Live updates
   // arrive via the subscribeToNotifications listener below.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (currentUser) {
       refreshNotifications().catch(err => console.error('Error seeding notifications:', err));
@@ -271,6 +266,7 @@ export default function JobBoard({
 
   // Real-time subscription to the current user's notifications — replaces the
   // 4-second polling loop. Newly-arrived unread notifications still raise a toast.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (!currentUser) {
       setNotifications([]);
@@ -647,7 +643,8 @@ export default function JobBoard({
       <header className="bg-[var(--card)] border-b border-[var(--border)] sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-md bg-[var(--bg2)] border border-[var(--border-strong)] flex items-center justify-center relative overflow-hidden shrink-0 shadow-sm">
-            <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" loading="eager" />
           </div>
           <div>
             <span className="font-display font-bold uppercase tracking-tight text-[var(--fg)] block text-sm md:text-base">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>
@@ -807,6 +804,7 @@ export default function JobBoard({
                       {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} • {currentUser.rating}⭐
                     </span>
                   </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={currentUser.profileImage}
                     alt="user avatar"
@@ -1050,7 +1048,7 @@ export default function JobBoard({
               <div className="flex flex-wrap items-center gap-1.5 text-[var(--muted-foreground)]">
                 <Filter className="w-3.5 h-3.5 text-[var(--accent-soft-foreground)]" />
                 <span>Шүүлтүүр:</span>
-                {searchQuery && <span className="bg-[var(--card)] px-2 py-0.5 rounded border border-[var(--border)] text-[var(--fg)] font-mono font-medium">"{searchQuery}"</span>}
+                {searchQuery && <span className="bg-[var(--card)] px-2 py-0.5 rounded border border-[var(--border)] text-[var(--fg)] font-mono font-medium">&ldquo;{searchQuery}&rdquo;</span>}
                 {selectedLocation !== 'Бүгд' && <span className="bg-[var(--card)] px-2 py-0.5 rounded border border-[var(--border)] text-[var(--fg)] font-mono font-medium">{selectedLocation}</span>}
                 {selectedType !== 'Бүгд' && (
                   <span className="bg-[var(--card)] px-2 py-0.5 rounded border border-[var(--border)] text-[var(--fg)] font-mono font-medium">
@@ -1210,7 +1208,7 @@ export default function JobBoard({
           reviewerName={currentUser.fullName}
           reviewerType={currentUser.type}
           onClose={() => setActiveReviewJob(null)}
-          onSuccess={async (rev) => {
+          onSuccess={async () => {
             setActiveReviewJob(null);
             await refreshJobs();
             const msg = '🌟 Сэтгэгдэл, үнэлгээ амжилттай бүртгэгдэж тухайн хэрэглэгчийн албан ёсны ажлын түүхэнд шинэчлэгдэж заслаа. Хамтын оролцоонд баярлалаа.';

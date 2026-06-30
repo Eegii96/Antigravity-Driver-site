@@ -59,7 +59,7 @@ export default function ReceivedReviewsList({ reviews, reviewsVisible, isOwnProf
                     </div>
 
                     <p className="text-xs leading-relaxed text-[var(--muted-foreground)] italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--color-glass-border)] text-left">
-                      "{rev.comment}"
+                      &ldquo;{rev.comment}&rdquo;
                     </p>
 
                     <div className="flex justify-end items-center text-[10px] text-[var(--muted-foreground)] font-mono border-t border-[var(--color-glass-border)] pt-2">

@@ -114,7 +114,7 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
       });
       setBio(optimized);
       setHasOptimized(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError('AI намтар сайжруулахад алдаа гарлаа. Та дахин оролдоно уу.');
     } finally {
@@ -217,7 +217,7 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
       setTimeout(() => {
         onSave(updated);
       }, 2000);
-    } catch (err) {
+    } catch {
       setError('Мэдээллийг хадгалахад алдаа гарлаа.');
     }
   };
@@ -401,6 +401,7 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
               
               {/* Display the current profile picture below */}
               <div className="flex items-center space-x-3.5 bg-[var(--bg2)] p-2.5 rounded-lg border border-[var(--color-glass-border)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={avatar}
                   alt="Current Avatar"

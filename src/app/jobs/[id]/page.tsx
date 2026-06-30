@@ -73,8 +73,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const formattedSalary = formatMongolianSalary(job.salary);
-  const locationFormatted = formatMongolianLocation(job.location);
-  
+
   // Format title like: "Дундговьд ажиллах Ковш оператор яаралтай авна - Цалин 3.5 сая"
   const title = job.salary === 0
     ? `${job.title} - Цалин тохиролцоно | Жолооч Монголиа`

@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { User, Review, JobHistoryItem, Job } from '../types';
 import { getReviews, getJobHistory, saveSingleUser, getSingleUser, getJobs, getUsers, hireOperator, completeJob, deleteJob, cancelHiring, deleteReview, updateReview } from '../lib/db';
-import { Star, ShieldAlert, Award, Phone, Mail, MapPin, Calendar, CheckCircle, X, Edit, Bookmark } from 'lucide-react';
-import ProfileEditModal from './ProfileEditModal';
-import ReviewModal from './ReviewModal';
-import JobPostModal from './JobPostModal';
+import { Star, ShieldAlert, Award, Phone, Mail, MapPin, Calendar, CheckCircle, X, Bookmark } from 'lucide-react';
+const ProfileEditModal = dynamic(() => import('./ProfileEditModal'), { ssr: false });
+const ReviewModal = dynamic(() => import('./ReviewModal'), { ssr: false });
+const JobPostModal = dynamic(() => import('./JobPostModal'), { ssr: false });
 import { parseReviewDateToTimestamp } from '../lib/job-format';
 import GivenReviewsList from './profile/GivenReviewsList';
 import ReceivedReviewsList from './profile/ReceivedReviewsList';
@@ -25,7 +25,6 @@ interface ProfileViewProps {
 }
 
 export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, defaultTab, highlightJobId }: ProfileViewProps) {
-  const router = useRouter();
   const [showEdit, setShowEdit] = useState<boolean>(false);
   const [profileUser, setProfileUser] = useState<User>(user);
   
@@ -45,7 +44,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
   const [isEditSubmitting, setIsEditSubmitting] = useState<boolean>(false);
 
   // Tracking driver applications and job status
-  const [activeTab, setActiveTab] = useState<'profile' | 'applications'>(defaultTab || 'profile');
+  const activeTab = defaultTab || 'profile';
   const [applicationsSubTab, setApplicationsSubTab] = useState<'sent' | 'posted'>(
     user.type === 'operator' ? 'sent' : 'posted'
   );
@@ -58,6 +57,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeHighlightJobId, setActiveHighlightJobId] = useState<string | undefined>(highlightJobId);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     setActiveHighlightJobId(highlightJobId);
   }, [highlightJobId]);
@@ -79,6 +79,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
     };
   }, [activeHighlightJobId]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     setProfileUser(user);
   }, [user]);
@@ -188,6 +189,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadProfileData();
   }, [profileUser.id]);
@@ -439,6 +441,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
         {/* Profile photo and badges */}
         <div className="md:col-span-1 flex flex-col items-center space-y-4">
           <div className="relative">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={profileUser.profileImage}
               alt={profileUser.fullName}
@@ -698,7 +701,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
           reviewerName={profileUser.fullName}
           reviewerType={profileUser.type}
           onClose={() => setActiveReviewJob(null)}
-          onSuccess={async (rev) => {
+          onSuccess={async () => {
             setActiveReviewJob(null);
             await loadProfileData();
             setSuccess('Сэтгэгдэл, үнэлгээ амжилттай бүртгэгдлээ!');

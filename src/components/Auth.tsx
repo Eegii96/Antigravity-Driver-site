@@ -28,10 +28,10 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
   const {
     isLogin, setIsLogin,
     isForgotMode, setIsForgotMode,
-    recoveryStep, setRecoveryStep,
+    setRecoveryStep,
     forgotInput, setForgotInput,
-    securityQ1, setSecurityQ1,
-    securityQ2, setSecurityQ2,
+    setSecurityQ1,
+    setSecurityQ2,
     securityA1Input, setSecurityA1Input,
     securityA2Input, setSecurityA2Input,
     matchedUserObj, setMatchedUserObj,
@@ -79,7 +79,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       });
       setBio(optimized);
       setHasOptimized(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError('AI намтар сайжруулахад алдаа гарлаа. Та дахин оролдоно уу.');
     } finally {
@@ -168,9 +168,9 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
 
       setSuccessMsg('Бүртгэл амжилттай үүслээ! Тавтай морилно уу. 🚀');
       setTimeout(() => { onSuccess(newUser); }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError('Бүртгэл үүсгэхэд алдаа гарлаа: ' + (err.message || 'Дахин оролдоно уу.'));
+      setError('Бүртгэл үүсгэхэд алдаа гарлаа: ' + (err instanceof Error ? err.message : 'Дахин оролдоно уу.'));
       setSuccessMsg('');
     } finally {
       setIsSubmitting(false);
@@ -233,9 +233,9 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       setRecoveryStep(2);
       setSuccessMsg('Аюулгүй байдлын асуултууд амжилттай ачаалагдлаа.');
       setTimeout(() => { setSuccessMsg(''); }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError('Алдаа гарлаа: ' + (err.message || err));
+      setError('Алдаа гарлаа: ' + (err instanceof Error ? err.message : String(err)));
       setSuccessMsg('');
     } finally {
       setIsSubmitting(false);
@@ -301,9 +301,9 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
         setIsForgotMode(false);
         setSuccessMsg('');
       }, 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError('Нууц код сэргээхэд алдаа гарлаа: ' + (err.message || err));
+      setError('Нууц код сэргээхэд алдаа гарлаа: ' + (err instanceof Error ? err.message : String(err)));
       setSuccessMsg('');
     } finally {
       setIsSubmitting(false);
@@ -326,7 +326,8 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       <div className="sm:mx-auto sm:w-full sm:max-w-xl relative z-10 text-center">
         <div className="flex justify-center mb-3">
           <div className="w-24 h-24 rounded-md bg-[var(--bg2)] border-2 border-[var(--accent)] flex items-center justify-center relative overflow-hidden group hover:border-[var(--accent)] transition-all duration-500 shadow-md">
-            <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" loading="eager" />
           </div>
         </div>
         <h2 className="mt-4 text-center text-3xl font-black tracking-tight text-[var(--fg)] font-sans">

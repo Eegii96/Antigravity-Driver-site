@@ -216,19 +216,20 @@ export async function registerUser(
     try {
       const authUser = await createUserWithEmailAndPassword(auth, targetEmail, userData.password || '');
       uid = authUser.user.uid;
-    } catch (authErr: any) {
+    } catch (authErr: unknown) {
       console.error('Auth user registration failed:', authErr);
       localStorage.removeItem('activeSessionId');
       localStorage.removeItem('activeSessionIdTime');
       localStorage.removeItem('sessionIsNew');
-      let userFriendlyMsg = authErr.message || 'Бүртгэл үүсгэхэд алдаа гарлаа.';
-      if (authErr.code === 'auth/email-already-in-use') {
+      const ae = authErr as { code?: string; message?: string };
+      let userFriendlyMsg = ae.message || 'Бүртгэл үүсгэхэд алдаа гарлаа.';
+      if (ae.code === 'auth/email-already-in-use') {
         userFriendlyMsg = 'Энэ имэйл хаяг эсвэл утас аль хэдийн бүртгэгдсэн байна.';
-      } else if (authErr.code === 'auth/invalid-email') {
+      } else if (ae.code === 'auth/invalid-email') {
         userFriendlyMsg = 'Имэйл хаяг буруу форматтай байна.';
-      } else if (authErr.code === 'auth/operation-not-allowed') {
+      } else if (ae.code === 'auth/operation-not-allowed') {
         userFriendlyMsg = 'Бүртгүүлэх үйлчилгээ түр хаагдсан байна. Дараа дахин оролдоно уу.';
-      } else if (authErr.code === 'auth/weak-password') {
+      } else if (ae.code === 'auth/weak-password') {
         userFriendlyMsg = 'Нууц үг хэтэрхий сул байна.';
       }
       throw new Error(userFriendlyMsg);
@@ -256,7 +257,7 @@ export async function registerUser(
     try {
       // Clean up any undefined properties to prevent Firestore "Unsupported field value: undefined" error
       const cleanUser = Object.fromEntries(
-        Object.entries(newUser).filter(([_, v]) => v !== undefined)
+        Object.entries(newUser).filter(([, v]) => v !== undefined)
       ) as User;
 
       // Hash the password before persisting to Firestore — never store plaintext
