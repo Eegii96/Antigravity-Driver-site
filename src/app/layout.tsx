@@ -62,7 +62,6 @@ export default function RootLayout({
         <link rel="preconnect" href="https://firestore.googleapis.com" />
         <link rel="preconnect" href="https://identitytoolkit.googleapis.com" />
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
-        <link rel="preconnect" href="https://generativelanguage.googleapis.com" />
         <link rel="dns-prefetch" href="https://firebaseinstallations.googleapis.com" />
         <script
           dangerouslySetInnerHTML={{

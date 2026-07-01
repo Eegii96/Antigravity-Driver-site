@@ -5,6 +5,8 @@ import { promisify } from 'util';
 
 admin.initializeApp();
 const db = admin.firestore();
+
+export { optimizeBio } from './optimizeBio';
 const pbkdf2Async = promisify(_pbkdf2);
 
 const ITERATIONS = 100_000;

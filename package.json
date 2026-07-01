@@ -13,7 +13,6 @@
     "postinstall": "node -e \"const{rmSync,existsSync}=require('fs');['@next/swc-linux-x64-gnu','@next/swc-linux-x64-musl','@next/swc-linux-arm64-gnu','@next/swc-linux-arm64-musl','@next/swc-darwin-arm64','@next/swc-darwin-x64','@next/swc-win32-arm64-msvc'].forEach(p=>{const d='node_modules/'+p;if(existsSync(d)){rmSync(d,{recursive:true,force:true});console.log('Removed unused SWC binary: '+p)}})\""
   },
   "dependencies": {
-    "@google/genai": "^2.4.0",
     "firebase": "^12.14.0",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
