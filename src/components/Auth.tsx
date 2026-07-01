@@ -6,8 +6,6 @@ import { ArrowLeft } from 'lucide-react';
 import { loginUser, registerUser } from '../lib/db';
 import { User } from '../types';
 import { optimizeBio } from '../lib/gemini';
-import { db } from '../lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import TermsModal from './auth/TermsModal';
 import PrivacyModal from './auth/PrivacyModal';
@@ -15,7 +13,6 @@ import RecoveryForm from './auth/RecoveryForm';
 import LoginForm from './auth/LoginForm';
 import RegisterForm from './auth/RegisterForm';
 import { useAuthForm } from './auth/useAuthForm';
-import { verifySecret } from '../lib/crypto';
 
 interface AuthProps {
   onSuccess: (user: User) => void;
@@ -189,53 +186,27 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
     setIsSubmitting(true);
 
     try {
-      let snapshot;
-      if (inputVal.includes('@')) {
-        const q = query(collection(db, 'users'), where('email', '==', inputVal.toLowerCase()));
-        snapshot = await getDocs(q);
-      } else {
-        const q = query(collection(db, 'users'), where('phone', '==', inputVal));
-        snapshot = await getDocs(q);
+      // Resolve the account server-side (Admin SDK) — the users collection now requires
+      // auth to read, so this lookup can no longer happen directly from the client.
+      const functions = getFunctions();
+      const resolveFn = httpsCallable(functions, 'resolveAccountForRecovery');
+      const result = await resolveFn(
+        inputVal.includes('@')
+          ? { email: inputVal.toLowerCase() }
+          : { phone: inputVal }
+      );
+      const matched = result.data as { userId: string; securityQuestion1: string; securityQuestion2: string };
 
-        if (snapshot.empty && inputVal.startsWith('+976')) {
-          const localPhone = inputVal.replace('+976', '');
-          snapshot = await getDocs(query(collection(db, 'users'), where('phone', '==', localPhone)));
-        } else if (snapshot.empty && !inputVal.startsWith('+976') && /^\d+$/.test(inputVal)) {
-          snapshot = await getDocs(query(collection(db, 'users'), where('phone', '==', '+976' + inputVal)));
-        }
-      }
-
-      let matched: User | null = null;
-      if (snapshot && !snapshot.empty) {
-        const docs = snapshot.docs.map(d => d.data() as User);
-        matched = docs.find(u => u.securityQuestion1 && u.securityAnswer1 && u.securityQuestion2 && u.securityAnswer2) || docs[0];
-      }
-
-      if (!matched) {
-        setError('Энэхүү имэйл эсвэл утасны дугаартай хэрэглэгч системд бүртгэлгүй байна.');
-        setSuccessMsg('');
-        return;
-      }
-
-      const hasSecurityQuestions =
-        matched.securityQuestion1 && matched.securityAnswer1 &&
-        matched.securityQuestion2 && matched.securityAnswer2;
-
-      if (!hasSecurityQuestions) {
-        setError('Уучлаарай, та аюулгүй байдлын асуулт тохируулаагүй тул автоматаар нууц код сэргээх боломжгүй байна. Та манай холбоо барих хэсгээр хандаж дэмжлэг авна уу.');
-        setSuccessMsg('');
-        return;
-      }
-
-      setSecurityQ1(matched.securityQuestion1 || '');
-      setSecurityQ2(matched.securityQuestion2 || '');
-      setMatchedUserObj(matched);
+      setSecurityQ1(matched.securityQuestion1);
+      setSecurityQ2(matched.securityQuestion2);
+      setMatchedUserObj({ id: matched.userId });
       setRecoveryStep(2);
       setSuccessMsg('Аюулгүй байдлын асуултууд амжилттай ачаалагдлаа.');
       setTimeout(() => { setSuccessMsg(''); }, 1500);
     } catch (err: unknown) {
       console.error(err);
-      setError('Алдаа гарлаа: ' + (err instanceof Error ? err.message : String(err)));
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message.replace(/^\w+\/[\w-]+:\s*/, '') || 'Алдаа гарлаа. Дахин оролдоно уу.');
       setSuccessMsg('');
     } finally {
       setIsSubmitting(false);
@@ -263,14 +234,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
     }
     if (newPass !== confirmPass) { setError('Хоёр нууц код хоорондоо тохирохгүй байна.'); return; }
 
-    // Compare answers against stored PBKDF2 hashes (normalized: trim + lowercase)
-    const match1 = await verifySecret(securityA1Input, matchedUserObj.securityAnswer1 || '', true);
-    const match2 = await verifySecret(securityA2Input, matchedUserObj.securityAnswer2 || '', true);
-
-    if (!match1 || !match2) {
-      setError('Аюулгүй байдлын асуултуудын хариулт таарахгүй байна! Аюулгүй байдлын үүднээс мэдээллээ зөв оруулна уу.');
-      return;
-    }
+    // Security answers are verified server-side (Admin SDK) inside resetPasswordWithAnswers below.
 
     setSuccessMsg('Нууц кодыг шинэчилж байна...');
     setIsSubmitting(true);

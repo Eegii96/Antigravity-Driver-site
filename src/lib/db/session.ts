@@ -1,10 +1,11 @@
 // Session & auth domain — local session persistence (localStorage), login,
 // registration and the seeded-user migration. Firebase Auth lives here.
-import { collection, doc, getDocs, getDoc, setDoc, query, where, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, setDoc, writeBatch } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { User, AppNotification } from '../../types';
-import { hashSecret, verifySecret } from '../crypto';
+import { hashSecret } from '../crypto';
 
 export function getCurrentUser(): User | null {
   try {
@@ -76,55 +77,29 @@ export async function loginUser(email: string, phone: string, password?: string)
   try {
     const cleanEmail = email ? email.trim().toLowerCase() : '';
     const cleanPhone = phone ? phone.trim() : '';
-    
+
     let targetEmail = '';
     let userData: User | null = null;
-    
-    // 1. Find the user in Firestore first to get the correct email/phone mapping
-    let snapshot;
-    if (cleanEmail) {
-      const q = query(collection(db, 'users'), where('email', '==', cleanEmail));
-      snapshot = await getDocs(q);
-    } else if (cleanPhone) {
-      let q = query(collection(db, 'users'), where('phone', '==', cleanPhone));
-      snapshot = await getDocs(q);
-      
-      if (snapshot.empty && cleanPhone.startsWith('+976')) {
-        const localPhone = cleanPhone.replace('+976', '');
-        q = query(collection(db, 'users'), where('phone', '==', localPhone));
-        snapshot = await getDocs(q);
-      } else if (snapshot.empty && !cleanPhone.startsWith('+976')) {
-        const countryPhone = '+976' + cleanPhone;
-        q = query(collection(db, 'users'), where('phone', '==', countryPhone));
-        snapshot = await getDocs(q);
-      }
-    }
-    
-    if (snapshot && !snapshot.empty) {
-      const userDoc = snapshot.docs[0];
-      userData = userDoc.data() as User;
-      userData.id = userDoc.id;
-      
-      // Determine the Firebase Auth email registered for this user
-      targetEmail = userData.email || `${userData.phone.replace(/[^a-zA-Z0-9]/g, '')}@jolooj.mn`;
+
+    // 1. Resolve the phone/email identifier to the Firebase Auth email via a Cloud Function.
+    //    This runs with Admin SDK privileges server-side — the users collection now requires
+    //    auth to read, so this lookup can no longer happen directly from the client.
+    const functions = getFunctions();
+    const resolveFn = httpsCallable(functions, 'resolveLoginEmail');
+    const result = await resolveFn({ email: cleanEmail || undefined, phone: cleanEmail ? undefined : cleanPhone });
+    const data = result.data as { found: boolean; authEmail?: string };
+
+    if (data.found && data.authEmail) {
+      targetEmail = data.authEmail;
+    } else if (cleanEmail) {
+      // Not found in Firestore — fall back to trying the entered email directly.
+      targetEmail = cleanEmail;
     } else {
-      // If user not found in Firestore, try logging in with the entered email directly
-      if (cleanEmail) {
-        targetEmail = cleanEmail;
-      } else {
-        return null; // No user found
-      }
+      return null; // No user found
     }
 
-    // Validate the submitted password against the stored PBKDF2 hash
-    if (userData && userData.password) {
-      const ok = await verifySecret(password || '', userData.password);
-      if (!ok) {
-        console.warn('Firestore password mismatch');
-        return null;
-      }
-    }
-    
+    // Password itself is verified by Firebase Auth in step 2 below — no separate check needed.
+
     // Generate session ID before sign in to prevent race condition in onAuthStateChanged observer
     const newSessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
     localStorage.setItem('activeSessionId', newSessionId);
@@ -180,28 +155,16 @@ export async function registerUser(
     const targetEmail = userData.email ? userData.email.trim().toLowerCase() : `${userData.phone.replace(/[^a-zA-Z0-9]/g, '')}@jolooj.mn`;
     let uid = tempId;
 
-    // Check if phone number already exists in Firestore (checking both formats: local and international)
+    // Check if phone number already exists (both local and international formats) via the
+    // same Admin-SDK-backed resolver used for login — the users collection now requires auth
+    // to read directly, so this check can no longer query Firestore from the client.
     if (onProgress) onProgress('Утасны дугаарыг шалгаж байна...');
     const phoneClean = userData.phone.trim();
-    const q1 = query(collection(db, 'users'), where('phone', '==', phoneClean));
-    const snap1 = await getDocs(q1);
-    
-    let phoneExists = !snap1.empty;
-    
-    if (!phoneExists) {
-      if (phoneClean.startsWith('+976')) {
-        const local = phoneClean.replace('+976', '');
-        const q2 = query(collection(db, 'users'), where('phone', '==', local));
-        const snap2 = await getDocs(q2);
-        phoneExists = !snap2.empty;
-      } else {
-        const country = '+976' + phoneClean;
-        const q2 = query(collection(db, 'users'), where('phone', '==', country));
-        const snap2 = await getDocs(q2);
-        phoneExists = !snap2.empty;
-      }
-    }
-    
+    const functions = getFunctions();
+    const resolveFn = httpsCallable(functions, 'resolveLoginEmail');
+    const resolveResult = await resolveFn({ phone: phoneClean });
+    const { found: phoneExists } = resolveResult.data as { found: boolean };
+
     if (phoneExists) {
       throw new Error('Энэхүү утасны дугаар системд бүртгэгдсэн байна. Та өөр дугаар ашиглах эсвэл нэвтэрч орно уу.');
     }

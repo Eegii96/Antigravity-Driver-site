@@ -45,11 +45,6 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
         const jobData = await getSingleJob(jobId);
         if (jobData) {
           setJob(jobData);
-          // Fetch employer info
-          const empData = await getSingleUser(jobData.employerId);
-          if (empData) {
-            setEmployer(empData);
-          }
         } else {
           setError('Уучлаарай, ажлын зар олдсонгүй эсвэл устгагдсан байна.');
         }
@@ -63,6 +58,15 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
 
     fetchJobData();
   }, [jobId]);
+
+  // Fetch the real employer profile only for authenticated users — guests always see
+  // blurred mock data and the users collection now requires auth to read anyway.
+  useEffect(() => {
+    if (!currentUser || !job) return;
+    getSingleUser(job.employerId).then(empData => {
+      if (empData) setEmployer(empData);
+    });
+  }, [currentUser, job]);
 
   const handleApply = async () => {
     if (!currentUser) {
@@ -225,42 +229,41 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
           <div className="bg-[var(--card)] border border-[var(--border)] p-6 md:p-8 rounded-md space-y-6 shadow-sm">
             {/* Header info */}
             <div className="border-b border-[var(--border)] pb-5 space-y-3">
-              {employer && (
-                <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]" onClick={(e) => e.stopPropagation()}>
-                  {/* Creator name */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!currentUser) { setShowBlurWarningModal(true); return; }
-                      router.push(`/profile?id=${employer.id}`);
-                    }}
-                    className="flex items-center space-x-2 text-left focus:outline-none hover:opacity-80 transition-opacity bg-transparent border-0 p-0 cursor-pointer"
-                  >
-                    <UserIcon className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
-                    <span className={`text-xs font-bold font-sans text-[var(--accent-soft-foreground)] ${
-                      !currentUser ? 'filter blur-[5px] select-none cursor-pointer' : 'hover:underline'
-                    }`}>
-                      {!currentUser ? getMockEmployerName(job.id) : (employer.companyName || employer.fullName)}
-                    </span>
-                  </button>
+              <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]" onClick={(e) => e.stopPropagation()}>
+                {/* Creator name */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!currentUser) { setShowBlurWarningModal(true); return; }
+                    router.push(`/profile?id=${job.employerId}`);
+                  }}
+                  className="flex items-center space-x-2 text-left focus:outline-none hover:opacity-80 transition-opacity bg-transparent border-0 p-0 cursor-pointer"
+                >
+                  <UserIcon className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
+                  <span className={`text-xs font-bold font-sans text-[var(--accent-soft-foreground)] ${
+                    !currentUser ? 'filter blur-[5px] select-none cursor-pointer' : 'hover:underline'
+                  }`}>
+                    {!currentUser ? getMockEmployerName(job.id) : (employer?.companyName || employer?.fullName || job.employerName)}
+                  </span>
+                </button>
 
-                  {/* Phone number */}
-                  <div
-                    onClick={(e) => {
-                      if (!currentUser) { e.stopPropagation(); setShowBlurWarningModal(true); }
-                    }}
-                    className={`flex items-center space-x-1.5 ${ !currentUser ? 'cursor-pointer' : '' }`}
-                  >
-                    <Phone className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
-                    <span className={`font-mono text-xs font-bold text-[var(--fg)] ${
-                      !currentUser ? 'filter blur-[5px] select-none' : ''
-                    }`}>
-                      {!currentUser ? getMockEmployerPhone(job.id) : (employer.phone || 'Утасгүй')}
-                    </span>
-                  </div>
+                {/* Phone number */}
+                <div
+                  onClick={(e) => {
+                    if (!currentUser) { e.stopPropagation(); setShowBlurWarningModal(true); }
+                  }}
+                  className={`flex items-center space-x-1.5 ${ !currentUser ? 'cursor-pointer' : '' }`}
+                >
+                  <Phone className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
+                  <span className={`font-mono text-xs font-bold text-[var(--fg)] ${
+                    !currentUser ? 'filter blur-[5px] select-none' : ''
+                  }`}>
+                    {!currentUser ? getMockEmployerPhone(job.id) : (employer?.phone || 'Утасгүй')}
+                  </span>
                 </div>
-              )}
+              </div>
+
 
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-mono text-[10px] text-[var(--muted-foreground)]">

@@ -30,6 +30,77 @@ async function hashSecret(secret: string): Promise<string> {
   return `pbkdf2$${ITERATIONS}$${salt.toString('base64')}$${hash.toString('base64')}`;
 }
 
+// Shared lookup: find a user doc by email or phone (with local/international phone fallback).
+// Runs with Admin SDK privileges — bypasses Firestore rules, so it's the only place allowed
+// to read the users collection before the caller is authenticated.
+async function findUserByIdentifier(email?: string, phone?: string) {
+  if (email) {
+    const snap = await db.collection('users').where('email', '==', email.trim().toLowerCase()).limit(1).get();
+    if (!snap.empty) return snap.docs[0];
+    return null;
+  }
+  if (phone) {
+    const cleanPhone = phone.trim();
+    let snap = await db.collection('users').where('phone', '==', cleanPhone).limit(1).get();
+    if (snap.empty) {
+      const altPhone = cleanPhone.startsWith('+976') ? cleanPhone.replace('+976', '') : '+976' + cleanPhone;
+      snap = await db.collection('users').where('phone', '==', altPhone).limit(1).get();
+    }
+    if (!snap.empty) return snap.docs[0];
+  }
+  return null;
+}
+
+// Callable function: resolve an email-or-phone login identifier to the Firebase Auth email,
+// without exposing any other user document fields to the (still unauthenticated) client.
+export const resolveLoginEmail = onCall(
+  { region: 'us-central1' },
+  async (request) => {
+    const { email, phone } = request.data as { email?: string; phone?: string };
+    if (!email && !phone) {
+      throw new HttpsError('invalid-argument', 'Имэйл эсвэл утасны дугаар шаардлагатай.');
+    }
+
+    const userDoc = await findUserByIdentifier(email, phone);
+    if (!userDoc) {
+      return { found: false };
+    }
+    const data = userDoc.data();
+    const authEmail = data.email || `${(data.phone as string).replace(/[^a-zA-Z0-9]/g, '')}@jolooj.mn`;
+    return { found: true, authEmail };
+  }
+);
+
+// Callable function: resolve an email-or-phone identifier to the account's security questions
+// (text only, never the hashed answers) so the password-recovery UI can render step 2.
+export const resolveAccountForRecovery = onCall(
+  { region: 'us-central1' },
+  async (request) => {
+    const { email, phone } = request.data as { email?: string; phone?: string };
+    if (!email && !phone) {
+      throw new HttpsError('invalid-argument', 'Имэйл эсвэл утасны дугаар шаардлагатай.');
+    }
+
+    const userDoc = await findUserByIdentifier(email, phone);
+    if (!userDoc) {
+      throw new HttpsError('not-found', 'Энэхүү имэйл эсвэл утасны дугаартай хэрэглэгч системд бүртгэлгүй байна.');
+    }
+    const data = userDoc.data();
+    if (!data.securityQuestion1 || !data.securityAnswer1 || !data.securityQuestion2 || !data.securityAnswer2) {
+      throw new HttpsError(
+        'failed-precondition',
+        'Уучлаарай, та аюулгүй байдлын асуулт тохируулаагүй тул автоматаар нууц код сэргээх боломжгүй байна. Та манай холбоо барих хэсгээр хандаж дэмжлэг авна уу.'
+      );
+    }
+
+    return {
+      userId: userDoc.id,
+      securityQuestion1: data.securityQuestion1 as string,
+      securityQuestion2: data.securityQuestion2 as string,
+    };
+  }
+);
+
 // Callable function: verify PBKDF2 security answers server-side and reset Firebase Auth password
 export const resetPasswordWithAnswers = onCall(
   { region: 'us-central1' },

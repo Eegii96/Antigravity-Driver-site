@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { User, UserType } from '../../types';
+import type { UserType } from '../../types';
 import { AVATAR_PRESETS } from './constants';
 
 /**
@@ -44,7 +44,7 @@ export function useAuthForm(defaultIsLogin?: boolean) {
   const [securityQ2, setSecurityQ2] = useState<string>('');
   const [securityA1Input, setSecurityA1Input] = useState<string>('');
   const [securityA2Input, setSecurityA2Input] = useState<string>('');
-  const [matchedUserObj, setMatchedUserObj] = useState<User | null>(null);
+  const [matchedUserObj, setMatchedUserObj] = useState<{ id: string } | null>(null);
   const [forgotNewPassword, setForgotNewPassword] = useState<string>('');
   const [forgotConfirmNewPassword, setForgotConfirmNewPassword] = useState<string>('');
   const [showForgotNewPassword, setShowForgotNewPassword] = useState<boolean>(false);
