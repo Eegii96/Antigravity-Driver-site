@@ -29,6 +29,12 @@ export interface User {
   securityAnswer2?: string;
   phone2?: string;
   activeSessionId?: string;
+  /**
+   * Aimag/city names (subset of LOCATION_OPTIONS) an operator wants "new job
+   * posted here" notifications for. Opt-in — absent/empty means no pings.
+   * Only meaningful for `type === 'operator'` (audit C5).
+   */
+  notifyLocations?: string[];
 }
 
 export interface Review {

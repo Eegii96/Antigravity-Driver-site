@@ -1,10 +1,21 @@
 'use client';
 
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import JobBoard from '../../components/JobBoard';
 import { useAuth } from '../../context/AuthContext';
 
-export default function BoardClient() {
+function BoardContent() {
   const { currentUser } = useAuth();
-  return <JobBoard currentUser={currentUser} />;
+  const searchParams = useSearchParams();
+  const jobId = searchParams.get('jobId') || undefined;
+  return <JobBoard currentUser={currentUser} initialJobId={jobId} />;
 }
 
+export default function BoardClient() {
+  return (
+    <Suspense fallback={null}>
+      <BoardContent />
+    </Suspense>
+  );
+}

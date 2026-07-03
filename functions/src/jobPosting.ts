@@ -79,6 +79,45 @@ export const createJob = onCall(
     };
 
     await db.collection('jobs').doc(data.id).set(newJob);
+    await notifyMatchingOperators(db, newJob);
     return newJob;
   }
 );
+
+const MAX_LOCATION_NOTIFY_RECIPIENTS = 200;
+
+// Pings operators who opted into "new job in my aimag" alerts (User.notifyLocations,
+// set in Settings). Runs with Admin SDK privileges — the `users` collection denies
+// client `list` reads entirely (audit S1), so this query only works server-side.
+// Best-effort: any failure here must not fail job creation itself.
+async function notifyMatchingOperators(db: admin.firestore.Firestore, job: { id: string; title: string; location: string }): Promise<void> {
+  try {
+    const matches = await db.collection('users')
+      .where('type', '==', 'operator')
+      .where('notifyLocations', 'array-contains', job.location)
+      .limit(MAX_LOCATION_NOTIFY_RECIPIENTS)
+      .get();
+
+    if (matches.empty) return;
+
+    const batch = db.batch();
+    const now = new Date().toISOString();
+    matches.docs.forEach(userDoc => {
+      const notifRef = db.collection('notifications').doc();
+      batch.set(notifRef, {
+        id: notifRef.id,
+        userId: userDoc.id,
+        title: `Шинэ ажлын зар: ${job.location}`,
+        message: `"${job.title}" ажлын зар танай сонгосон бүсэд шинээр нийтлэгдлээ.`,
+        type: 'info',
+        isRead: false,
+        createdAt: now,
+        relatedId: job.id,
+        jobId: job.id,
+      });
+    });
+    await batch.commit();
+  } catch (err) {
+    console.error('notifyMatchingOperators failed (non-fatal):', err);
+  }
+}

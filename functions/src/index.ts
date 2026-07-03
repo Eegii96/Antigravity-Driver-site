@@ -10,6 +10,7 @@ const db = admin.firestore();
 export { optimizeBio } from './optimizeBio';
 export { onReviewWrite, cleanupJobRelations, onJobHiringCancelled } from './jobLifecycle';
 export { createJob } from './jobPosting';
+export { jobMeta } from './jobMeta';
 const pbkdf2Async = promisify(_pbkdf2);
 
 // Callable function: total registered user count for the public homepage stat.

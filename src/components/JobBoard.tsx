@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { User, Job, Review, AppNotification } from '../types';
 import {
   getJobs,
+  getSingleJob,
   applyForJob,
   hireOperator,
   completeJob,
@@ -51,10 +52,17 @@ import { trackSearch, trackViewJob, trackApplySubmit, trackPostStarted, trackPos
 
 interface JobBoardProps {
   currentUser: User | null;
+  /**
+   * Job id to auto-expand on load, e.g. from `/?jobId=xxx`. Used by the
+   * `jobMeta` Cloud Function's redirect for jobs posted after the last
+   * static build (audit P1) and as a general deep-link target.
+   */
+  initialJobId?: string;
 }
 
 export default function JobBoard({
-  currentUser
+  currentUser,
+  initialJobId
 }: JobBoardProps) {
   const router = useRouter();
   const { logout } = useAuth();
@@ -226,6 +234,31 @@ export default function JobBoard({
   useEffect(() => {
     getRegisteredUserCount().then(setRegisteredUserCount);
   }, []);
+
+  // Deep-link support: auto-expand a specific job when arriving via ?jobId=.
+  // This is the redirect target for the jobMeta Cloud Function (jobs posted
+  // after the last static build have no prerendered /jobs/<id> page, so
+  // Facebook/Google get correct metadata from the function while real
+  // browsers bounce here) and doubles as a general shareable deep link
+  // (audit P1).
+  useEffect(() => {
+    if (!initialJobId) return;
+    const existing = jobs.find(j => j.id === initialJobId);
+    if (existing) {
+      setStatusFilter(existing.status === 'completed' ? 'completed' : 'open');
+      setSelectedJob(existing);
+      return;
+    }
+    let cancelled = false;
+    getSingleJob(initialJobId).then(job => {
+      if (cancelled || !job) return;
+      setJobs(prev => (prev.some(j => j.id === job.id) ? prev : [job, ...prev]));
+      setStatusFilter(job.status === 'completed' ? 'completed' : 'open');
+      setSelectedJob(job);
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialJobId]);
 
   // Debounced search/filter tracking (audit C2) — fires once ~600ms after the
   // user stops typing/changing filters, not on every keystroke.

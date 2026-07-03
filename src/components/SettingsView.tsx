@@ -2,12 +2,13 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, Key, Trash2, Eye, EyeOff, Check, AlertCircle, X } from 'lucide-react';
+import { ShieldCheck, Key, Trash2, Eye, EyeOff, Check, AlertCircle, X, Bell } from 'lucide-react';
 import { saveSingleUser, getFreshCurrentUser, requestAccountDeletion } from '../lib/db';
 import { User } from '../types';
 import { auth } from '../lib/firebase';
 import { reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
 import { useAuth } from '../context/AuthContext';
+import { LOCATION_OPTIONS } from '../lib/job-format';
 
 export default function SettingsView() {
   const router = useRouter();
@@ -71,6 +72,41 @@ export default function SettingsView() {
   const [deleteSuccess, setDeleteSuccess] = useState<boolean>(false);
   const [deleteError, setDeleteError] = useState<string>('');
   const [isSubmittingDeleteRequest, setIsSubmittingDeleteRequest] = useState<boolean>(false);
+
+  // "New job in my aimag" notification preferences (audit C5) — opt-in,
+  // operator accounts only. Persisted on User.notifyLocations.
+  const [notifyLocations, setNotifyLocations] = useState<string[]>([]);
+  const [isSavingNotifyLocations, setIsSavingNotifyLocations] = useState<boolean>(false);
+
+  useEffect(() => {
+    setNotifyLocations(currentUser?.notifyLocations || []);
+    // Only re-sync on user switch, not on every local edit to notifyLocations itself.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id]);
+
+  const toggleNotifyLocation = (location: string) => {
+    setNotifyLocations(prev =>
+      prev.includes(location) ? prev.filter(l => l !== location) : [...prev, location]
+    );
+  };
+
+  const handleSaveNotifyLocations = async () => {
+    if (!currentUser) return;
+    setIsSavingNotifyLocations(true);
+    try {
+      const updatedUser: User = { ...currentUser, notifyLocations };
+      await saveSingleUser(updatedUser);
+      setCurrentUser(updatedUser);
+      setSuccess('Мэдэгдлийн бүсийн тохиргоо хадгалагдлаа.');
+      setError('');
+      setTimeout(() => setSuccess(''), 4000);
+    } catch (err) {
+      console.error('Error saving notifyLocations:', err);
+      setError('Тохиргоог хадгалахад алдаа гарлаа.');
+    } finally {
+      setIsSavingNotifyLocations(false);
+    }
+  };
 
   const deleteReasons = [
     'Ажлын санал хангалтгүй байна',
@@ -298,6 +334,46 @@ export default function SettingsView() {
               </div>
             </form>
           </div>
+
+          {/* Notification preferences — operator-only "new job in my aimag" alerts */}
+          {currentUser?.type === 'operator' && (
+            <div className="bg-[var(--bg2)] border border-[var(--border)] p-6 rounded-xl space-y-4">
+              <h3 className="text-sm font-semibold text-[var(--accent-foreground)] flex items-center space-x-2 border-b border-[var(--border)] pb-2">
+                <Bell className="w-4 h-4 text-[var(--accent-soft-foreground)]" />
+                <span>Шинэ зарын мэдэгдэл</span>
+              </h3>
+              <p className="text-[10px] text-[var(--muted-foreground)] leading-relaxed">
+                Сонгосон аймаг/хотод шинэ ажлын зар нийтлэгдэх бүрт танд мэдэгдэл ирнэ. Юу ч сонгоогүй бол мэдэгдэл ирэхгүй.
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {LOCATION_OPTIONS.filter(loc => loc !== 'Бүгд').map((loc) => (
+                  <button
+                    key={loc}
+                    type="button"
+                    onClick={() => toggleNotifyLocation(loc)}
+                    className={`px-2.5 py-1 rounded text-[11px] border transition-colors cursor-pointer ${
+                      notifyLocations.includes(loc)
+                        ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] font-semibold'
+                        : 'border-[var(--border)] bg-[var(--card)] text-[var(--muted-foreground)] hover:border-[var(--border)]'
+                    }`}
+                  >
+                    {loc}
+                  </button>
+                ))}
+              </div>
+              <div className="pt-2 flex justify-end">
+                <button
+                  id="save-notify-locations-btn"
+                  type="button"
+                  disabled={isSavingNotifyLocations}
+                  onClick={handleSaveNotifyLocations}
+                  className="bg-[var(--accent)] hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed text-[var(--accent-foreground)] px-4 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer"
+                >
+                  {isSavingNotifyLocations ? 'Хадгалж байна...' : 'Тохиргоог хадгалах'}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Dangerous accounts zone */}
           <div className="bg-rose-950/10 border border-rose-900/40 p-6 rounded-xl space-y-3">

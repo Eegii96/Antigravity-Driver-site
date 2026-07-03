@@ -24,7 +24,10 @@
       },
       {
         "source": "/jobs/:id",
-        "destination": "/index.html"
+        "function": {
+          "functionId": "jobMeta",
+          "region": "us-central1"
+        }
       }
     ],
     "headers": [
