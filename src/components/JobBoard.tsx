@@ -41,6 +41,7 @@ import {
 } from 'lucide-react';
 const JobPostModal = dynamic(() => import('./JobPostModal'), { ssr: false });
 const ReviewModal = dynamic(() => import('./ReviewModal'), { ssr: false });
+const ProfileEditModal = dynamic(() => import('./ProfileEditModal'), { ssr: false });
 import JobCard from './jobboard/JobCard';
 import NotificationToasts from './jobboard/NotificationToasts';
 import ReviewDetailModal from './jobboard/ReviewDetailModal';
@@ -65,7 +66,7 @@ export default function JobBoard({
   initialJobId
 }: JobBoardProps) {
   const router = useRouter();
-  const { logout } = useAuth();
+  const { logout, setCurrentUser } = useAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [registeredUserCount, setRegisteredUserCount] = useState<number | null>(null);
@@ -76,6 +77,7 @@ export default function JobBoard({
   
   // Modals & States
   const [showPostModal, setShowPostModal] = useState<boolean>(false);
+  const [showOnboardingModal, setShowOnboardingModal] = useState<boolean>(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   
@@ -234,6 +236,18 @@ export default function JobBoard({
   useEffect(() => {
     getRegisteredUserCount().then(setRegisteredUserCount);
   }, []);
+
+  // Skippable profile-completion prompt right after registration (audit C3).
+  // AuthClient.tsx redirects to `/` the moment Firebase Auth reports a signed-in
+  // user — before Auth.tsx's own onSuccess callback would ever get a chance to
+  // show a step-2 UI on the /auth page itself — so the flag set in
+  // Auth.tsx's handleRegister is consumed here, on first landing, instead.
+  useEffect(() => {
+    if (currentUser && sessionStorage.getItem('justRegistered') === '1') {
+      sessionStorage.removeItem('justRegistered');
+      setShowOnboardingModal(true);
+    }
+  }, [currentUser]);
 
   // Deep-link support: auto-expand a specific job when arriving via ?jobId=.
   // This is the redirect target for the jobMeta Cloud Function (jobs posted
@@ -1186,6 +1200,18 @@ export default function JobBoard({
             setSuccessMessage(msg);
             addSuccessToast('Амжилттай 🎉', msg);
             setTimeout(() => setSuccessMessage(''), 4500);
+          }}
+        />
+      )}
+
+      {showOnboardingModal && currentUser && (
+        <ProfileEditModal
+          user={currentUser}
+          isOnboarding
+          onClose={() => setShowOnboardingModal(false)}
+          onSave={(updated) => {
+            setCurrentUser(updated);
+            setShowOnboardingModal(false);
           }}
         />
       )}

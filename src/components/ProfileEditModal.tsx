@@ -9,6 +9,13 @@ interface ProfileEditModalProps {
   user: User;
   onClose: () => void;
   onSave: (updatedUser: User) => void;
+  /**
+   * True when shown as the skippable step-2 prompt right after registration
+   * (JobBoard.tsx) rather than from Settings — swaps the header copy and the
+   * cancel button label to make it clear this is optional, not editing
+   * existing data (audit C3). Behavior is otherwise identical.
+   */
+  isOnboarding?: boolean;
 }
 
 const AVATAR_PRESETS = [
@@ -40,7 +47,7 @@ const SECURITY_QUESTIONS = [
   'Таны хамгийн анхны унаж сурсан машины загвар юу вэ?'
 ];
 
-export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditModalProps) {
+export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }: ProfileEditModalProps) {
   const getInitialNames = () => {
     let ln = user.lastName || '';
     let fn = user.firstName || '';
@@ -134,9 +141,11 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
     e.preventDefault();
     if (success) return; // Prevent double submission when success message is shown
 
+    // Address is optional (audit C3) — matching RegisterForm.tsx's stance. Requiring
+    // it here would defeat the point of this modal being a skippable onboarding step.
     const isNameValid = firstName.trim() !== '' && lastName.trim() !== '';
-    if (!isNameValid || !phone || !address) {
-      setError('Шаардлагатай мэдээллүүдийг бүрэн бөглөнө үү. (Овог, Нэр, Утас, Хаяг)');
+    if (!isNameValid || !phone) {
+      setError('Шаардлагатай мэдээллүүдийг бүрэн бөглөнө үү. (Овог, Нэр, Утас)');
       return;
     }
 
@@ -240,11 +249,20 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
       >
         
         {/* Header */}
-        <div className="flex justify-between items-center border-b border-[var(--border)] px-6 py-4">
-          <h3 className="text-base font-semibold text-[var(--fg)]">Хувийн мэдээлэл засварлах</h3>
-          <button id="close-profile-edit-btn" onClick={onClose} className="min-w-11 min-h-11 flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer">
-            <X className="w-5 h-5" />
-          </button>
+        <div className="border-b border-[var(--border)] px-6 py-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-base font-semibold text-[var(--fg)]">
+              {isOnboarding ? 'Профайлаа гүйцээх' : 'Хувийн мэдээлэл засварлах'}
+            </h3>
+            <button id="close-profile-edit-btn" onClick={onClose} className="min-w-11 min-h-11 flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          {isOnboarding && (
+            <p className="text-xs text-[var(--muted-foreground)] mt-1">
+              Одоо гүйцээвэл бусад хэрэглэгчид танд илүү итгэх болно — алгасаад дараа ч бөглөж болно.
+            </p>
+          )}
         </div>
 
         {/* Form */}
@@ -350,11 +368,10 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
 
           <div className="grid grid-cols-1">
             <div>
-              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Гэрийн хаяг</label>
+              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Гэрийн хаяг (Заавал биш)</label>
               <input
                 id="edit-address"
                 type="text"
-                required
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
@@ -657,7 +674,7 @@ export default function ProfileEditModal({ user, onClose, onSave }: ProfileEditM
               onClick={onClose}
               className="flex-1 py-1.5 px-4 border border-[var(--border)] text-[var(--muted-foreground)] text-xs font-medium rounded hover:bg-[var(--bg2)] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Буцах
+              {isOnboarding ? 'Алгасах' : 'Буцах'}
             </button>
             <button
               id="submit-profile-edit-btn"

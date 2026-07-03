@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { loginUser, registerUser } from '../lib/db';
 import { User } from '../types';
-import { optimizeBio } from '../lib/gemini';
 import { trackSignUpStarted, trackSignUpCompleted } from '../lib/analytics';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import TermsModal from './auth/TermsModal';
@@ -38,14 +37,13 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
     email, password,
     lastName, firstName, companyName, phone, address,
     selectedAvatar,
-    bio, setBio, originalBio, setOriginalBio,
+    bio,
     experienceYears,
     selectedMachines,
     regPassword, regConfirmPassword,
     isAgreedToTerms,
     userType,
     setError, setSuccessMsg, setIsSubmitting,
-    setIsOptimizing, setHasOptimized,
     showTerms, setShowTerms,
     showPrivacy, setShowPrivacy,
   } = form;
@@ -59,31 +57,6 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       };
     }
   }, [showTerms, showPrivacy]);
-
-  const handleOptimizeBio = async () => {
-    setIsOptimizing(true);
-    setError('');
-    const rawToOptimize = originalBio || bio;
-    if (!originalBio) setOriginalBio(bio);
-    const computedFullName = lastName.trim() ? lastName.trim() + ' ' + firstName.trim() : firstName.trim();
-    try {
-      const optimized = await optimizeBio({
-        fullName: computedFullName,
-        experienceYears: userType === 'operator' ? (experienceYears === '' ? 0 : experienceYears) : 0,
-        machineTypes: userType === 'operator' ? selectedMachines : [],
-        rawBio: rawToOptimize,
-        currentBio: bio,
-        userType: userType,
-      });
-      setBio(optimized);
-      setHasOptimized(true);
-    } catch (err: unknown) {
-      console.error(err);
-      setError('AI намтар сайжруулахад алдаа гарлаа. Та дахин оролдоно уу.');
-    } finally {
-      setIsOptimizing(false);
-    }
-  };
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -170,6 +143,11 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
 
       trackSignUpCompleted(userType);
       setSuccessMsg('Бүртгэл амжилттай үүслээ! Тавтай морилно уу. 🚀');
+      // Consumed once by JobBoard.tsx to show the skippable profile-completion
+      // modal right after landing on the homepage (audit C3) — set here rather
+      // than delaying onSuccess, since AuthClient's own redirect-on-currentUser
+      // effect fires before onSuccess would ever run (see JobBoard.tsx note).
+      sessionStorage.setItem('justRegistered', '1');
       setTimeout(() => { onSuccess(newUser); }, 1500);
     } catch (err: unknown) {
       console.error(err);
@@ -349,7 +327,6 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
             <RegisterForm
               form={form}
               onRegister={handleRegister}
-              onOptimizeBio={handleOptimizeBio}
             />
           )}
         </div>

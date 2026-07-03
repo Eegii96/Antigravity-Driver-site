@@ -1,18 +1,23 @@
 'use client';
 
-import { FormEvent, ChangeEvent } from 'react';
-import { User as UserIcon, Phone, MapPin, Truck, Check, AlertCircle, Sparkles, X, Eye, EyeOff } from 'lucide-react';
+import { FormEvent } from 'react';
+import { User as UserIcon, Phone, Truck, Check, AlertCircle, X, Eye, EyeOff } from 'lucide-react';
 import type { AuthFormState } from './useAuthForm';
-import { AVATAR_PRESETS, MACHINE_OPTIONS } from './constants';
+import { AVATAR_PRESETS } from './constants';
 
 interface RegisterFormProps {
   form: AuthFormState;
   onRegister: (e: FormEvent) => void;
-  onOptimizeBio: () => void;
 }
 
-/** Full registration form — role selector, personal details, password, avatar, bio, machine picker. */
-export default function RegisterForm({ form, onRegister, onOptimizeBio }: RegisterFormProps) {
+/**
+ * Step 1 of registration — role, name, contact, password only. Address,
+ * avatar, bio and machine-type enrichment are deferred to a skippable
+ * post-registration step (the reused ProfileEditModal shown from JobBoard —
+ * see Auth.tsx/JobBoard.tsx) so creating an account itself stays fast
+ * (audit C3).
+ */
+export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
   const {
     userType, setUserType,
     email, setEmail,
@@ -20,45 +25,17 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
     firstName, setFirstName,
     companyName, setCompanyName,
     phone, setPhone,
-    address, setAddress,
     regPassword, setRegPassword,
     regConfirmPassword, setRegConfirmPassword,
     showRegPassword, setShowRegPassword,
     showRegConfirmPassword, setShowRegConfirmPassword,
-    selectedAvatar, setSelectedAvatar,
-    bio, setBio,
-    setOriginalBio, setHasOptimized,
-    isOptimizing, hasOptimized,
-    experienceYears, setExperienceYears,
-    selectedMachines, setSelectedMachines,
-    customRegMachine, setCustomRegMachine,
+    setSelectedAvatar,
+    setBio, setOriginalBio, setHasOptimized,
     isAgreedToTerms, setIsAgreedToTerms,
     isSubmitting,
     successMsg, error,
     setShowTerms, setShowPrivacy,
   } = form;
-
-  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      form.setError('Зураг 2MB-аас бага хэмжээтэй байх ёстой.');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') setSelectedAvatar(reader.result);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const toggleMachine = (machine: string) => {
-    if (selectedMachines.includes(machine)) {
-      setSelectedMachines(selectedMachines.filter(m => m !== machine));
-    } else {
-      setSelectedMachines([...selectedMachines, machine]);
-    }
-  };
 
   // Address is optional and password composition rules (special character)
   // are dropped — see the matching note in Auth.tsx's handleRegister (audit C3).
@@ -196,25 +173,6 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="reg-address">
-            Гэрийн/Байгууллагын хаяг (Заавал биш)
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MapPin className="h-4 w-4 text-[var(--muted-foreground)]" />
-            </div>
-            <input
-              id="reg-address"
-              type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder=""
-              className="block w-full pl-9 pr-3 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
-            />
-          </div>
-        </div>
-
         {/* Password fields */}
         <div>
           <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="reg-password">
@@ -304,192 +262,6 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
         </div>
       </div>
 
-      {/* Avatar Picker */}
-      <div>
-        <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 font-sans">Профайл зураг сонгох</label>
-        <div className="flex items-center space-x-6">
-          <div className="flex space-x-3 items-center">
-            {AVATAR_PRESETS.map((avatar, idx) => (
-              <button
-                id={`preset-avatar-${idx}`}
-                key={idx}
-                type="button"
-                onClick={() => setSelectedAvatar(avatar)}
-                className={`relative rounded-full overflow-hidden w-12 h-12 border-2 transition-colors cursor-pointer ${selectedAvatar === avatar ? 'border-[var(--accent)]' : 'border-transparent'}`}
-              >
-                <img src={avatar} alt={`Avatar Preset ${idx + 1}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
-                {selectedAvatar === avatar && (
-                  <div className="absolute inset-0 bg-[var(--accent-soft)] flex items-center justify-center">
-                    <Check className="w-4 h-4 text-[var(--accent-soft-foreground)]" />
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-
-          <div className="border-l border-[var(--border)] pl-4 py-1.5 flex flex-col justify-center">
-            <label className="text-xs text-[var(--accent-soft-foreground)] hover:text-[var(--accent-soft-foreground)] underline cursor-pointer font-sans inline-flex items-center space-x-1">
-              <span>Эсвэл өөрийн зургийг хуулах (Upload)</span>
-              <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-            </label>
-            {!AVATAR_PRESETS.includes(selectedAvatar) && (
-              <div className="mt-1 flex items-center space-x-2">
-                <img src={selectedAvatar} alt="Custom upload" className="w-7 h-7 rounded-full object-cover border border-[var(--accent)]" referrerPolicy="no-referrer" />
-                <span className="text-[10px] text-[var(--accent-soft-foreground)]">Зургийг сонголоо!</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Bio */}
-      <div>
-        <div className="flex justify-between items-center mb-1">
-          <label className="block text-xs font-medium text-[var(--muted-foreground)]" htmlFor="reg-bio">
-            Нэмэлт Мэдээлэл / Био (Туршлага, ажлын чиглэл, товч танилцуулга г.м)
-          </label>
-          <button
-            type="button"
-            onClick={onOptimizeBio}
-            disabled={isOptimizing}
-            className="text-[10px] text-[var(--accent-soft-foreground)] hover:text-[var(--accent-soft-foreground)] flex items-center space-x-1 border border-[var(--accent)] bg-[var(--accent-soft)] px-2.5 py-0.5 rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-sans"
-          >
-            <Sparkles className={`w-3 h-3 ${isOptimizing ? 'animate-spin' : ''}`} />
-            <span>{isOptimizing ? 'AI сайжруулж байна...' : (hasOptimized ? 'Өөр загвар гаргах' : 'AI-аар сайжруулах')}</span>
-          </button>
-        </div>
-        <textarea
-          id="reg-bio"
-          rows={6}
-          value={bio}
-          onChange={(e) => {
-            const val = e.target.value;
-            setBio(val);
-            setOriginalBio(val);
-            setHasOptimized(false);
-          }}
-          placeholder=""
-          className="block w-full px-3 py-2.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans min-h-[140px] leading-relaxed"
-        />
-      </div>
-
-      {/* Operator-specific fields */}
-      {userType === 'operator' && (
-        <div className="border-t border-[var(--border)] pt-4 space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="reg-experience">
-              Ажилласан туршлага (Жилээр)
-            </label>
-            <input
-              id="reg-experience"
-              type="number"
-              min={0}
-              max={40}
-              value={experienceYears}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === '') {
-                  setExperienceYears('');
-                } else {
-                  const parsed = parseInt(val, 10);
-                  setExperienceYears(isNaN(parsed) ? '' : parsed);
-                }
-              }}
-              onFocus={(e) => e.target.select()}
-              className="block w-[100px] px-3 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5">
-              Мэргэшсэн Хүнд Машин Механизмууд (Сонгоно уу)
-            </label>
-            <div className="grid grid-cols-2 gap-2 text-xs font-sans">
-              {MACHINE_OPTIONS.map((item, id) => (
-                <button
-                  id={`machine-option-${id}`}
-                  type="button"
-                  key={id}
-                  onClick={() => toggleMachine(item)}
-                  className={`flex items-center space-x-1.5 py-1 px-2.5 rounded transition-colors text-left border cursor-pointer ${selectedMachines.includes(item)
-                      ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)]'
-                      : 'border-[var(--border)] bg-[var(--card)] text-[var(--muted-foreground)] hover:border-[var(--border)]'
-                    }`}
-                >
-                  <span className="text-xs">{item}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Custom machine entry */}
-            <div className="mt-3.5 pt-3 border-t border-[var(--border)]">
-              <label className="block text-[11px] font-medium text-[var(--muted-foreground)] mb-1">
-                Бусад машин механизм нэмэх (Гараар бичих)
-              </label>
-              <div className="flex space-x-2">
-                <input
-                  id="custom-machine-reg-input"
-                  type="text"
-                  placeholder=""
-                  value={customRegMachine}
-                  onChange={(e) => setCustomRegMachine(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      const trimmed = customRegMachine.trim();
-                      if (trimmed && !selectedMachines.includes(trimmed)) {
-                        setSelectedMachines([...selectedMachines, trimmed]);
-                      }
-                      setCustomRegMachine('');
-                    }
-                  }}
-                  className="flex-1 px-2.5 py-1.5 input text-xs text-[var(--accent-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] placeholder-[var(--muted-foreground)] font-sans"
-                />
-                <button
-                  id="add-custom-machine-reg-btn"
-                  type="button"
-                  onClick={() => {
-                    const trimmed = customRegMachine.trim();
-                    if (trimmed && !selectedMachines.includes(trimmed)) {
-                      setSelectedMachines([...selectedMachines, trimmed]);
-                    }
-                    setCustomRegMachine('');
-                  }}
-                  className="px-3 bg-[var(--card)] border border-[var(--border)] hover:bg-[var(--bg2)] text-[var(--accent-soft-foreground)] rounded text-xs font-semibold transition-colors cursor-pointer"
-                >
-                  Нэмэх
-                </button>
-              </div>
-            </div>
-
-            {/* Custom machines list */}
-            {selectedMachines.some(m => !MACHINE_OPTIONS.includes(m)) && (
-              <div className="mt-2.5 space-y-1">
-                <span className="text-[10px] text-[var(--muted-foreground)] block font-sans">Нэмэлтээр оруулсан хүнд техникүүд:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedMachines.filter(m => !MACHINE_OPTIONS.includes(m)).map((item, idx) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center space-x-1.5 py-1 px-2 rounded-md bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] text-[10.5px]"
-                    >
-                      <span>{item}</span>
-                      <button
-                        type="button"
-                        onClick={() => toggleMachine(item)}
-                        className="text-[var(--muted-foreground)] hover:text-red-700 font-bold ml-1 text-xs cursor-pointer focus:outline-none"
-                        title="Устгах"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Validation warnings */}
       {!isFormValid && (
         <div className="mt-4 p-3.5 bg-red-500/5 border border-red-500/25 text-red-700 rounded-lg text-xs space-y-1.5 font-sans animate-fade-in leading-relaxed">
@@ -532,6 +304,9 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
 
       {/* Submit */}
       <div className="pt-3">
+        <p className="text-[10.5px] text-[var(--muted-foreground)] text-center mb-2.5 font-sans">
+          Профайл зураг, био, туршлагаа дараа нэмж болно — одоохондоо эдгээрийг л бөглөнө үү.
+        </p>
         <button
           id="submit-register-btn"
           type="submit"
