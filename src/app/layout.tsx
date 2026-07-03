@@ -1,23 +1,27 @@
 import type { Metadata } from "next";
-import { Saira_Condensed, Inter, Geist_Mono } from "next/font/google";
+import { Oswald, Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "../components/Footer";
 import { AuthProvider } from "../context/AuthContext";
 import InAppBrowserGuard from "../components/InAppBrowserGuard";
 import ErrorBoundary from "../components/ErrorBoundary";
 
-// "Hi-vis Industrial" canonical fonts:
-// Saira Condensed (condensed grotesque, nameplate feel) for headings/display,
-// Inter for body/UI text, Geist Mono for numbers/codes/dates.
-const saira = Saira_Condensed({
+// "Hi-vis Industrial" canonical fonts (AGENTS.md §4):
+// Oswald (condensed grotesque, nameplate feel — the AGENTS.md-approved alternate
+// to Saira Condensed) for headings/display, Inter for body/UI text, Geist Mono
+// for numbers/codes/dates. Both display and body fonts load the "cyrillic"
+// subset — the site's content is ~100% Mongolian Cyrillic, and Saira Condensed
+// has no Cyrillic glyphs at all, which was silently falling back to the system
+// font for every heading.
+const saira = Oswald({
   variable: "--font-saira",
-  subsets: ["latin"],
+  subsets: ["latin", "cyrillic"],
   weight: ["500", "600", "700"],
 });
 
 const inter = Inter({
   variable: "--font-inter",
-  subsets: ["latin"],
+  subsets: ["latin", "cyrillic"],
   weight: ["400", "500", "600", "700"],
 });
 
@@ -33,6 +37,9 @@ export const metadata: Metadata = {
     template: '%s | Жолооч Монголиа',
   },
   description: 'Барилга, замын газар шорооны ажил, хүнд машин механизм түрээс ба жолооч нарын үнэлгээ, түүх бүхий нэгдсэн зарын систем.',
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     siteName: 'Жолооч Монголиа',
     type: 'website',
@@ -40,12 +47,40 @@ export const metadata: Metadata = {
     url: 'https://jolooch.net',
     title: 'Хүнд Механизмын Ажлын Нэгдсэн Систем | Жолооч Монголиа',
     description: 'Барилга, замын газар шорооны ажил, хүнд машин механизм түрээс ба жолооч нарын үнэлгээ, түүх бүхий нэгдсэн зарын систем.',
+    images: ['/logo.jpg'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Хүнд Механизмын Ажлын Нэгдсэн Систем | Жолооч Монголиа',
     description: 'Барилга, замын газар шорооны ажил, хүнд машин механизм түрээс ба жолооч нарын үнэлгээ, түүх бүхий нэгдсэн зарын систем.',
+    images: ['/logo.jpg'],
   },
+};
+
+// Site-wide Organization + WebSite JSON-LD — previously no structured data
+// described the site itself (only individual job postings had JobPosting
+// JSON-LD). Helps Google attribute job listings to a real organization and
+// enables a sitelinks search box.
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Жолооч Монголиа',
+  url: 'https://jolooch.net',
+  logo: 'https://jolooch.net/logo.jpg',
+  contactPoint: {
+    '@type': 'ContactPoint',
+    telephone: '+976-99106339',
+    contactType: 'customer service',
+    areaServed: 'MN',
+    availableLanguage: 'mn',
+  },
+};
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Жолооч Монголиа',
+  url: 'https://jolooch.net',
 };
 
 export default function RootLayout({
@@ -67,6 +102,14 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `if(location.hostname.includes('web.app')||location.hostname.includes('firebaseapp.com')){location.replace('https://jolooch.net'+location.pathname+location.search+location.hash)}`,
           }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
       </head>
       <body className="min-h-screen flex flex-col justify-between">

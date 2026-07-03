@@ -11,6 +11,7 @@ import { getSingleJob, getSingleUser, saveSingleUser, applyForJob } from '../../
 import { getMockEmployerName, getMockEmployerPhone } from '../../../lib/mock-employer';
 import { Job, User } from '../../../types';
 import { useAuth } from '../../../context/AuthContext';
+import { trackViewJob, trackContactClick, trackApplySubmit } from '../../../lib/analytics';
 
 interface JobDetailClientProps {
   jobId: string;
@@ -45,6 +46,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
         const jobData = await getSingleJob(jobId);
         if (jobData) {
           setJob(jobData);
+          trackViewJob(jobData.id, jobData.status);
         } else {
           setError('Уучлаарай, ажлын зар олдсонгүй эсвэл устгагдсан байна.');
         }
@@ -82,6 +84,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
         // Update local state
         const updatedJob = { ...job, applicants: [...job.applicants, currentUser.id] };
         setJob(updatedJob);
+        trackApplySubmit(job.id);
         setSuccessMessage('Ажилд орох хүсэлт амжилттай илгээгдлээ! Захиалагч хянах болно. 🎉');
         setTimeout(() => setSuccessMessage(''), 5000);
       } else {
@@ -135,7 +138,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
             <ArrowLeft className="w-4 h-4 text-[var(--fg)]" />
           </button>
           <div>
-            <h1 className="text-sm font-black tracking-wide text-[var(--fg)] uppercase text-left font-display">Antigravity Driver</h1>
+            <h1 className="text-sm font-black tracking-wide text-[var(--fg)] uppercase text-left font-display">Жолооч Монголиа</h1>
             <p className="text-[10px] text-[var(--muted-foreground)] font-medium">Хүнд машин, механизм & Газар шорооны ажлын сайт</p>
           </div>
         </div>
@@ -147,11 +150,12 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
             onMouseLeave={() => setShowProfileMenu(false)}
           >
             <button
+              onClick={() => setShowProfileMenu(prev => !prev)}
               className="flex items-center space-x-2 bg-[var(--card)] p-1.5 pl-3 rounded-full hover:bg-[var(--bg2)] transition-colors border border-[var(--border)] text-left cursor-pointer"
             >
               <div className="hidden md:block">
                 <p className="text-xs font-semibold text-[var(--fg)] leading-none">{getFirstName(currentUser)}</p>
-                <span className="text-[9px] text-[var(--muted-foreground)] font-mono">
+                <span className="text-[10.5px] text-[var(--muted-foreground)] font-mono">
                   {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} • {currentUser.rating}⭐
                 </span>
               </div>
@@ -256,11 +260,21 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                   className={`flex items-center space-x-1.5 ${ !currentUser ? 'cursor-pointer' : '' }`}
                 >
                   <Phone className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
-                  <span className={`font-mono text-xs font-bold text-[var(--fg)] ${
-                    !currentUser ? 'filter blur-[5px] select-none' : ''
-                  }`}>
-                    {!currentUser ? getMockEmployerPhone(job.id) : (employer?.phone || 'Утасгүй')}
-                  </span>
+                  {!currentUser ? (
+                    <span className="font-mono text-xs font-bold text-[var(--fg)] filter blur-[5px] select-none">
+                      {getMockEmployerPhone(job.id)}
+                    </span>
+                  ) : employer?.phone ? (
+                    <a
+                      href={`tel:${employer.phone}`}
+                      onClick={() => trackContactClick(job.id, 'tel')}
+                      className="font-mono text-xs font-bold text-[var(--fg)] underline decoration-[var(--accent)] underline-offset-2"
+                    >
+                      {employer.phone}
+                    </a>
+                  ) : (
+                    <span className="font-mono text-xs font-bold text-[var(--fg)]">Утасгүй</span>
+                  )}
                 </div>
               </div>
 
@@ -291,7 +305,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                         alt={`Slide ${idx + 1}`}
                         className="w-full h-full object-contain"
                       />
-                      <div className="absolute bottom-2.5 right-2.5 bg-[var(--fg)]/75 text-[var(--card)] text-[9.5px] font-bold px-2 py-0.5 rounded-full font-sans">
+                      <div className="absolute bottom-2.5 right-2.5 bg-[var(--fg)]/75 text-[var(--card)] text-[11px] font-bold px-2 py-0.5 rounded-full font-sans">
                         {idx + 1} / {job.imageUrls?.length}
                       </div>
                     </div>

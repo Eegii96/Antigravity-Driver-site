@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { loginUser, registerUser } from '../lib/db';
 import { User } from '../types';
 import { optimizeBio } from '../lib/gemini';
+import { trackSignUpStarted, trackSignUpCompleted } from '../lib/analytics';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import TermsModal from './auth/TermsModal';
 import PrivacyModal from './auth/PrivacyModal';
@@ -119,17 +120,20 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
   const handleRegister = async (e: FormEvent) => {
     e.preventDefault();
     if (!isAgreedToTerms) { setError('Үйлчилгээний нөхцлийг зөвшөөрнө үү.'); return; }
-    if (!firstName.trim() || !lastName.trim() || !phone || !address) {
+    // Address is no longer required — a mandatory home/office address was
+    // pure friction for a marketplace where contact happens by phone, and it
+    // was costing signups (audit C3). Special-character password composition
+    // rules are dropped too: NIST 800-63B recommends against them (they push
+    // users toward predictable substitutions without adding real entropy),
+    // and this audience skews toward users who'd abandon over it. Length
+    // (>=8) is what actually matters.
+    if (!firstName.trim() || !lastName.trim() || !phone) {
       setError('Шаардлагатай мэдээллүүдийг бүрэн бөглөнө үү.');
       return;
     }
     if (!regPassword) { setError('Нэвтрэх нууц кодыг оруулна уу.'); return; }
     if (regPassword.length < 8) {
       setError('Нууц үг шаардлага хангахгүй байна: Нууц үгийн урт хамгийн багадаа 8 тэмдэгт байх ёстой.');
-      return;
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword)) {
-      setError('Нууц үг шаардлага хангахгүй байна: Дор хаяж нэг тусгай тэмдэгт (!@#$%^&* гэх мэт) агуулсан байх ёстой.');
       return;
     }
     if (regPassword !== regConfirmPassword) {
@@ -143,6 +147,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       setError('');
       setSuccessMsg('Бүртгэл үүсгэж байна, түр хүлээнэ үү...');
       setIsSubmitting(true);
+      trackSignUpStarted(userType);
 
       const newUser = await registerUser({
         email: email.trim().toLowerCase(),
@@ -163,6 +168,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
         setSuccessMsg(status);
       });
 
+      trackSignUpCompleted(userType);
       setSuccessMsg('Бүртгэл амжилттай үүслээ! Тавтай морилно уу. 🚀');
       setTimeout(() => { onSuccess(newUser); }, 1500);
     } catch (err: unknown) {
@@ -280,7 +286,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       <div className="absolute top-6 left-6 right-6 flex justify-between items-center z-20">
         <button
           onClick={() => router.push('/')}
-          className="text-[var(--muted-foreground)] hover:text-[var(--fg)] text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer bg-[var(--card)] border border-[var(--color-glass-border)] px-3.5 py-2 rounded-md"
+          className="text-[var(--muted-foreground)] hover:text-[var(--fg)] text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer bg-[var(--card)] border border-[var(--border)] px-3.5 py-2 rounded-md"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Нүүр хуудас</span>
@@ -303,7 +309,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl relative z-10">
-        <div className="panel py-8 px-4 shadow-md rounded-md sm:px-10 border border-[var(--color-glass-border)]">
+        <div className="panel py-8 px-4 shadow-md rounded-md sm:px-10 border border-[var(--border)]">
           {!isForgotMode && (
             <div className="flex border-b border-[var(--border)] mb-6 pb-1">
               <button

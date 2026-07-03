@@ -1,19 +1,21 @@
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from './firebase';
 
-// Compress an image File to JPEG using Canvas (max 800px, 75% quality)
-// Returns a Blob ready for Firebase Storage upload
-function compressToBlob(file: File): Promise<Blob> {
+const THUMBNAIL_MAX = 320;
+const FULL_MAX = 800;
+
+// Compress an image File to JPEG using Canvas (max `maxSize` on the longest
+// edge, 75% quality). Returns a Blob ready for Firebase Storage upload.
+function compressToBlob(file: File, maxSize: number): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        const MAX = 800;
         let { width, height } = img;
-        if (width > MAX || height > MAX) {
-          if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
-          else { width = Math.round(width * MAX / height); height = MAX; }
+        if (width > maxSize || height > maxSize) {
+          if (width > height) { height = Math.round(height * maxSize / width); width = maxSize; }
+          else { width = Math.round(width * maxSize / height); height = maxSize; }
         }
         const canvas = document.createElement('canvas');
         canvas.width = width;
@@ -35,13 +37,30 @@ function compressToBlob(file: File): Promise<Blob> {
   });
 }
 
-// Upload a job image to Firebase Storage and return its public download URL
-export async function uploadJobImage(jobId: string, file: File): Promise<string> {
-  const blob = await compressToBlob(file);
-  const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-  const storageRef = ref(storage, `jobs/${jobId}/${filename}`);
-  const snapshot = await uploadBytes(storageRef, blob, { contentType: 'image/jpeg' });
-  return getDownloadURL(snapshot.ref);
+/**
+ * Upload a job image to Firebase Storage, in both a full (800px) size and a
+ * small (320px) thumbnail. Collapsed job cards used to load the full 800px
+ * image just to display it at 144px — a 20-job board could pull 2-4MB of
+ * images it never actually needed at that resolution (audit P3).
+ */
+export async function uploadJobImage(jobId: string, file: File): Promise<{ url: string; thumbUrl: string }> {
+  const [fullBlob, thumbBlob] = await Promise.all([
+    compressToBlob(file, FULL_MAX),
+    compressToBlob(file, THUMBNAIL_MAX),
+  ]);
+  const baseName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+  const fullRef = ref(storage, `jobs/${jobId}/${baseName}`);
+  const thumbRef = ref(storage, `jobs/${jobId}/thumb_${baseName}`);
+
+  const [fullSnap, thumbSnap] = await Promise.all([
+    uploadBytes(fullRef, fullBlob, { contentType: 'image/jpeg' }),
+    uploadBytes(thumbRef, thumbBlob, { contentType: 'image/jpeg' }),
+  ]);
+  const [url, thumbUrl] = await Promise.all([
+    getDownloadURL(fullSnap.ref),
+    getDownloadURL(thumbSnap.ref),
+  ]);
+  return { url, thumbUrl };
 }
 
 // Delete a job image from Firebase Storage by its download URL

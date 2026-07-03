@@ -70,6 +70,31 @@ export const formatDate = (isoString?: string): string => {
 };
 
 /**
+ * Format an ISO date string relative to now ("5 минутын өмнө", "3 цагийн
+ * өмнө", "2 өдрийн өмнө") for recent posts, falling back to the absolute
+ * `formatDate` beyond 7 days — an always-static "2026.06.28" gave the board
+ * no sense of being alive (audit C5).
+ */
+export const formatRelativeDate = (isoString?: string): string => {
+  if (!isoString) return '';
+  const d = new Date(isoString);
+  if (isNaN(d.getTime())) return isoString;
+
+  const diffMs = Date.now() - d.getTime();
+  if (diffMs < 0) return formatDate(isoString);
+
+  const minutes = Math.floor(diffMs / 60_000);
+  const hours = Math.floor(diffMs / 3_600_000);
+  const days = Math.floor(diffMs / 86_400_000);
+
+  if (minutes < 1) return 'дөнгөж сая';
+  if (minutes < 60) return `${minutes} минутын өмнө`;
+  if (hours < 24) return `${hours} цагийн өмнө`;
+  if (days < 7) return `${days} өдрийн өмнө`;
+  return formatDate(isoString);
+};
+
+/**
  * Parse a review date (either `YYYY.MM.DD` or a Date-parseable string) into a
  * timestamp for sorting. Returns 0 when unparseable.
  */

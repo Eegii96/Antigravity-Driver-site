@@ -87,7 +87,7 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
           </div>
 
           {/* Footer info/warning */}
-          <p className="text-[9.5px] text-[var(--muted-foreground)] leading-normal text-center bg-[var(--bg2)] p-2 rounded border border-[var(--border)]">
+          <p className="text-[11px] text-[var(--muted-foreground)] leading-normal text-center bg-[var(--bg2)] p-2 rounded border border-[var(--border)]">
             🛡️ Энэхүү үнэлгээ нь таны профайлын дундаж үнэлгээ болон ажилчны түүхэнд шууд нөлөөлж, бусад хэрэглэгчдэд харагдах болно.
           </p>
 

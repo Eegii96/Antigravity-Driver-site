@@ -19,13 +19,13 @@ interface GivenReviewsListProps {
 export default function GivenReviewsList({ givenReviews, allJobs, onEditReview, onDeleteReview }: GivenReviewsListProps) {
   return (
         <div className="mt-8 space-y-4 relative z-10 text-left">
-          <h3 className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-widest border-b border-[var(--color-glass-border)] pb-2.5 flex items-center space-x-2">
+          <h3 className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-widest border-b border-[var(--border)] pb-2.5 flex items-center space-x-2">
             <Star className="w-4.5 h-4.5 text-[var(--accent-soft-foreground)] drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
             <span>Миний өгсөн үнэлгээнүүд ({givenReviews.length})</span>
           </h3>
 
           {givenReviews.length === 0 ? (
-            <div className="panel p-6 rounded-md border border-[var(--color-glass-border)] text-center text-xs text-[var(--muted-foreground)] font-sans">
+            <div className="panel p-6 rounded-md border border-[var(--border)] text-center text-xs text-[var(--muted-foreground)] font-sans">
               Та одоогоор өөр хэрэглэгчид үнэлгээ өгөөгүй байна.
             </div>
           ) : (
@@ -47,7 +47,7 @@ export default function GivenReviewsList({ givenReviews, allJobs, onEditReview, 
                 }
 
                 return (
-                  <div key={rev.id} className="panel p-4 rounded-md border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] space-y-3 relative overflow-hidden group">
+                  <div key={rev.id} className="panel p-4 rounded-md border border-[var(--border)] hover:border-[var(--border)] space-y-3 relative overflow-hidden group">
                     <div className="flex justify-between items-start">
                       <div className="flex flex-col space-y-1.5 text-left">
                         {targetId ? (
@@ -75,7 +75,7 @@ export default function GivenReviewsList({ givenReviews, allJobs, onEditReview, 
 
                       <div className="flex flex-col items-end space-y-2 shrink-0">
                         {/* Stars */}
-                        <div className="flex items-center space-x-0.5 bg-[rgba(255,255,255,0.04)] px-2 py-1 rounded-lg border border-[var(--color-glass-border)] shadow-sm">
+                        <div className="flex items-center space-x-0.5 bg-[rgba(255,255,255,0.04)] px-2 py-1 rounded-lg border border-[var(--border)] shadow-sm">
                           {[1, 2, 3, 4, 5].map((s) => (
                             <Star key={s} className={`w-2.5 h-2.5 ${s <= rev.rating ? 'text-[var(--accent-soft-foreground)] fill-[var(--accent)]' : 'text-[var(--muted-foreground)]'}`} />
                           ))}
@@ -87,7 +87,7 @@ export default function GivenReviewsList({ givenReviews, allJobs, onEditReview, 
                           <button 
                             type="button"
                             onClick={() => onEditReview(rev)}
-                            className="text-[10px] bg-[var(--color-glass-bg)] hover:bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] text-[var(--muted-foreground)] hover:text-[var(--fg)] px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
+                            className="text-[10px] bg-[var(--card)] hover:bg-[var(--card)] border border-[var(--border)] hover:border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--fg)] px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
                           >
                             <Edit className="w-2.5 h-2.5 text-[var(--accent-soft-foreground)]" />
                             <span>Засах</span>
@@ -95,7 +95,7 @@ export default function GivenReviewsList({ givenReviews, allJobs, onEditReview, 
                           <button 
                             type="button"
                             onClick={() => onDeleteReview(rev.id)}
-                            className="text-[10px] bg-[var(--color-glass-bg)] hover:bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] text-[var(--muted-foreground)] hover:text-[var(--accent-soft-foreground)] px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
+                            className="text-[10px] bg-[var(--card)] hover:bg-[var(--card)] border border-[var(--border)] hover:border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--accent-soft-foreground)] px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
                           >
                             <Trash2 className="w-2.5 h-2.5 text-[var(--accent-soft-foreground)]" />
                             <span>Устгах</span>
@@ -104,11 +104,11 @@ export default function GivenReviewsList({ givenReviews, allJobs, onEditReview, 
                       </div>
                     </div>
 
-                    <p className="text-xs leading-relaxed text-[var(--muted-foreground)] italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--color-glass-border)] text-left">
+                    <p className="text-xs leading-relaxed text-[var(--muted-foreground)] italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--border)] text-left">
                       &ldquo;{rev.comment}&rdquo;
                     </p>
 
-                    <div className="flex justify-end items-center text-[10px] text-[var(--muted-foreground)] font-mono border-t border-[var(--color-glass-border)] pt-2">
+                    <div className="flex justify-end items-center text-[10px] text-[var(--muted-foreground)] font-mono border-t border-[var(--border)] pt-2">
                       <span className="text-[var(--muted-foreground)]">{formatReviewDate(rev.createdAt)}</span>
                     </div>
                   </div>

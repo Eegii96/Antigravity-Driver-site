@@ -2,11 +2,16 @@
 // hiring/apply/complete workflow for the `jobs` collection.
 import {
   collection, doc, getDocs, getDoc, setDoc, updateDoc, deleteDoc,
-  query, where, writeBatch, deleteField, onSnapshot, orderBy, limit,
+  query, where, writeBatch, deleteField, onSnapshot, orderBy, limit, arrayUnion,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Job, User, JobHistoryItem } from '../../types';
 import { addNotification } from './notifications';
+
+// getFunctions/httpsCallable are dynamically imported inside addJob() — job
+// posting is a rare action (unlike getJobs/subscribeToJobs, which run on every
+// board load), so there's no reason to ship the Cloud Functions SDK in the
+// initial bundle for it (audit P2).
 
 function mapJobDoc(d: { id: string; data: () => unknown }): Job {
   const data = d.data() as Job;
@@ -21,7 +26,11 @@ function mapJobDoc(d: { id: string; data: () => unknown }): Job {
 
 export async function getJobs(): Promise<Job[]> {
   try {
-    const q = query(collection(db, 'jobs'), orderBy('createdAt', 'desc'), limit(200));
+    // 200 -> 50: the board has no "load more" pagination yet, so this is the
+    // full page weight on every load. 50 keeps recent listings comprehensive
+    // for the site's current scale while cutting payload/parse cost — revisit
+    // with real pagination once listing volume approaches this cap (audit P2).
+    const q = query(collection(db, 'jobs'), orderBy('createdAt', 'desc'), limit(50));
     const snap = await getDocs(q);
     return snap.docs.map(mapJobDoc);
   } catch (err) {
@@ -35,7 +44,7 @@ export async function getJobs(): Promise<Job[]> {
  * Returns an unsubscribe function. Use instead of polling getJobs().
  */
 export function subscribeToJobs(callback: (jobs: Job[]) => void): () => void {
-  const q = query(collection(db, 'jobs'), orderBy('createdAt', 'desc'), limit(200));
+  const q = query(collection(db, 'jobs'), orderBy('createdAt', 'desc'), limit(50));
   return onSnapshot(
     q,
     (snap) => callback(snap.docs.map(mapJobDoc)),
@@ -88,24 +97,23 @@ export async function saveJobHistory(history: JobHistoryItem[]): Promise<void> {
     console.error('Error batch saving jobHistory to Firestore:', err);
   }
 }
+// Job creation goes through the createJob Cloud Function (not a direct
+// Firestore write) — it enforces a per-employer rate limit that Firestore
+// rules can't express on their own (a rule can only `get()` one known
+// document, not "this user's most recent job"). Without a limit here, a
+// script could mass-post spam jobs with no quota at all (audit S10).
 export async function addJob(jobData: Omit<Job, 'id' | 'status' | 'createdAt' | 'applicants'>, presetId?: string): Promise<Job> {
   try {
-    const id = presetId || `job_${Date.now()}`;
-    const newJob: Job = {
-      ...jobData,
-      id: id,
-      status: 'open',
-      createdAt: new Date().toISOString(),
-      applicants: []
-    };
-    
-    // Filter out undefined properties to prevent Firestore write failures
-    const cleanJob = Object.fromEntries(
-      Object.entries(newJob).filter(([, v]) => v !== undefined)
-    ) as unknown as Job;
+    const id = presetId || `job_${crypto.randomUUID()}`;
+    const cleanJobData = Object.fromEntries(
+      Object.entries(jobData).filter(([, v]) => v !== undefined)
+    );
 
-    await setDoc(doc(db, 'jobs', id), cleanJob);
-    return newJob;
+    const { getFunctions, httpsCallable } = await import('firebase/functions');
+    const functions = getFunctions();
+    const fn = httpsCallable(functions, 'createJob');
+    const result = await fn({ ...cleanJobData, id });
+    return result.data as Job;
   } catch (err) {
     console.error('Error adding job to Firestore:', err);
     throw err;
@@ -127,22 +135,12 @@ export async function updateJob(jobId: string, updatedFields: Partial<Job>): Pro
 
 export async function deleteJob(jobId: string): Promise<void> {
   try {
+    // Related notifications/jobHistory are cleaned up server-side by the
+    // cleanupJobRelations Cloud Function trigger (functions/src/index.ts) —
+    // it runs with Admin SDK privileges, so it can delete every participant's
+    // records regardless of who owns them, which client-side rules can't do
+    // (notifications are only readable/deletable by their own recipient).
     await deleteDoc(doc(db, 'jobs', jobId));
-    
-    const notifsQuery = query(collection(db, 'notifications'), where('relatedId', '==', jobId));
-    const notifsSnap = await getDocs(notifsQuery);
-    const batch = writeBatch(db);
-    notifsSnap.docs.forEach(d => {
-      batch.delete(d.ref);
-    });
-    
-    const historyQuery = query(collection(db, 'jobHistory'), where('jobId', '==', jobId));
-    const historySnap = await getDocs(historyQuery);
-    historySnap.docs.forEach(d => {
-      batch.delete(d.ref);
-    });
-    
-    await batch.commit();
   } catch (err) {
     console.error('Error deleting job in Firestore:', err);
     throw err;
@@ -164,9 +162,11 @@ export async function applyForJob(jobId: string, operatorId: string): Promise<bo
     if (job.employerId === operatorId) return false;
     
     if (!job.applicants.includes(operatorId)) {
-      const updatedApplicants = [...job.applicants, operatorId];
-      await updateDoc(jobRef, { applicants: updatedApplicants });
-      
+      // arrayUnion is an atomic server-side operation — a read-modify-write
+      // with a plain array spread can silently drop an applicant when two
+      // people apply at nearly the same moment (last write wins).
+      await updateDoc(jobRef, { applicants: arrayUnion(operatorId) });
+
       // Get operator name for notification
       const opDoc = await getDoc(doc(db, 'users', operatorId));
       const opData = opDoc.exists() ? (opDoc.data() as User) : null;
@@ -178,6 +178,7 @@ export async function applyForJob(jobId: string, operatorId: string): Promise<bo
         'Шинэ хүсэлт ирлээ 🚜',
         `${roleText} ${opName} таны "${job.title}" заранд хүсэлт ирүүлж, мэдээллээ илгээлээ.`,
         'info',
+        jobId,
         jobId
       );
       
@@ -214,8 +215,8 @@ export async function hireOperator(jobId: string, operatorId: string): Promise<b
     });
     
     // Add to Job History Collection in Firestore
-    const histId1 = `hist_${Date.now()}_op`;
-    const histId2 = `hist_${Date.now()}_emp`;
+    const histId1 = `hist_${crypto.randomUUID()}_op`;
+    const histId2 = `hist_${crypto.randomUUID()}_emp`;
     
     await setDoc(doc(db, 'jobHistory', histId1), {
       id: histId1,
@@ -243,6 +244,7 @@ export async function hireOperator(jobId: string, operatorId: string): Promise<b
       'Ажилд сонгогдлоо 🎉',
       `Баяр хүргэе! Захиалагч ${job.employerName} таныг "${job.title}" ажилдаа сонгон томиллоо.`,
       'success',
+      jobId,
       jobId
     );
     
@@ -309,16 +311,18 @@ export async function completeJob(jobId: string): Promise<boolean> {
         'Ажил дууслаа ✓',
         `Захиалагч ${job.employerName} ажлыг гүйцэтгэж дууссаныг баталгаажууллаа. Одоо нэвтэрч үнэлгээгээ өгнө үү.`,
         'success',
+        jobId,
         jobId
       );
     }
-    
+
     // Notification for employer
     await addNotification(
       job.employerId,
       'Ажлын гүйцэтгэл дууслаа',
       `"${job.title}" ажил амжилттай дууслаа. Та жолооч ${job.hiredOperatorName || 'оператор'}-д сэтгэгдэл үнэлгээ өгнө үү.`,
       'info',
+      jobId,
       jobId
     );
     

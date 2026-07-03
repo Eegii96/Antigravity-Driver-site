@@ -62,7 +62,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto border-t border-[var(--color-glass-border)] mt-8 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-[var(--muted-foreground)] font-sans">
+      <div className="max-w-7xl mx-auto border-t border-[var(--border)] mt-8 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-[var(--muted-foreground)] font-sans">
         <p>© {new Date().getFullYear()} Хүнд машин, механизм & Газар шорооны ажлын сайт. Бүх эрх хуулиар хамгаалагдсан.</p>
         <div className="flex space-x-6 mt-4 md:mt-0">
           <span 
@@ -91,10 +91,10 @@ export default function Footer() {
         >
           <div 
             onClick={(e) => e.stopPropagation()} 
-            className="bg-[var(--card)] border border-[var(--color-glass-border)] rounded-md max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
+            className="bg-[var(--card)] border border-[var(--border)] rounded-md max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
           >
             {/* Header */}
-            <div className="sticky top-0 bg-[var(--card)] border-b border-[var(--color-glass-border)] px-6 py-4 flex items-center justify-between z-10">
+            <div className="sticky top-0 bg-[var(--card)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
               <div className="flex items-center space-x-2.5">
                 <FileText className="w-5 h-5 text-[var(--accent-soft-foreground)]" />
                 <h3 className="text-sm font-bold text-[var(--fg)] font-sans">Үйлчилгээний нөхцөл (Terms of Service)</h3>
@@ -141,7 +141,7 @@ export default function Footer() {
             </div>
             
             {/* Footer */}
-            <div className="border-t border-[var(--color-glass-border)] px-6 py-4 flex justify-end bg-[var(--bg2)]">
+            <div className="border-t border-[var(--border)] px-6 py-4 flex justify-end bg-[var(--bg2)]">
               <button 
                 onClick={() => setShowTerms(false)}
                 className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold px-5 py-2 rounded transition-all cursor-pointer text-xs font-sans"
@@ -163,10 +163,10 @@ export default function Footer() {
         >
           <div 
             onClick={(e) => e.stopPropagation()} 
-            className="bg-[var(--card)] border border-[var(--color-glass-border)] rounded-md max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
+            className="bg-[var(--card)] border border-[var(--border)] rounded-md max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
           >
             {/* Header */}
-            <div className="sticky top-0 bg-[var(--card)] border-b border-[var(--color-glass-border)] px-6 py-4 flex items-center justify-between z-10">
+            <div className="sticky top-0 bg-[var(--card)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
               <div className="flex items-center space-x-2.5">
                 <Lock className="w-5 h-5 text-[var(--verify)]" />
                 <h3 className="text-sm font-bold text-[var(--fg)] font-sans">Нууцлалын бодлого (Privacy Policy)</h3>
@@ -213,7 +213,7 @@ export default function Footer() {
             </div>
             
             {/* Footer */}
-            <div className="border-t border-[var(--color-glass-border)] px-6 py-4 flex justify-end bg-[var(--bg2)]">
+            <div className="border-t border-[var(--border)] px-6 py-4 flex justify-end bg-[var(--bg2)]">
               <button 
                 onClick={() => setShowPrivacy(false)}
                 className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold px-5 py-2 rounded transition-all cursor-pointer text-xs font-sans"

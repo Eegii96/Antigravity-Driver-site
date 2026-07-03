@@ -9,7 +9,12 @@ const firebaseConfig = {
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  // Optional: only set once Google Analytics is linked to this Firebase project
+  // in the Firebase Console (Project Settings → General → your web app). Until
+  // NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID is set, src/lib/analytics.ts no-ops
+  // (audit C2 — no funnel tracking existed at all).
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase

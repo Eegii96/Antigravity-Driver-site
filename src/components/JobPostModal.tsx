@@ -3,6 +3,7 @@ import { X, ShieldCheck, Camera, Trash2, Image as ImageIcon } from 'lucide-react
 import { Job } from '../types';
 import { addJob, updateJob } from '../lib/db';
 import { uploadJobImage, deleteJobImage } from '../lib/storage';
+import { MACHINE_OPTIONS } from './auth/constants';
 
 interface JobPostModalProps {
   employerId: string;
@@ -59,11 +60,18 @@ export default function JobPostModal({
     };
   }, []);
 
-  // Pre-generate job ID so Storage uploads can use it before Firestore doc exists
-  const [tempJobId] = useState<string>(() => jobToEdit?.id || `job_${Date.now()}`);
+  // Pre-generate job ID so Storage uploads can use it before Firestore doc exists.
+  // crypto.randomUUID() instead of Date.now() — two posts in the same
+  // millisecond (e.g. a script, or a fast double-submit) used to collide and
+  // silently overwrite each other (audit S11).
+  const [tempJobId] = useState<string>(() => jobToEdit?.id || `job_${crypto.randomUUID()}`);
   const [title, setTitle] = useState<string>(jobToEdit?.title || '');
   const [description, setDescription] = useState<string>(jobToEdit?.description || '');
   const [imageUrls, setImageUrls] = useState<string[]>(jobToEdit?.imageUrls || (jobToEdit?.imageUrl ? [jobToEdit.imageUrl] : []));
+  // Index-parallel to imageUrls for newly-uploaded images. Jobs edited from
+  // before this field existed keep whatever thumbnailUrls they already had
+  // (display code falls back to the full image when a thumbnail is missing).
+  const [thumbnailUrls, setThumbnailUrls] = useState<string[]>(jobToEdit?.thumbnailUrls || []);
   const [isImageUploading, setIsImageUploading] = useState<boolean>(false);
   
   // Determine initial type selection
@@ -95,9 +103,13 @@ export default function JobPostModal({
     jobToEdit && !AIMAGS.includes(jobToEdit.location) ? jobToEdit.location : ''
   );
   
-  // Default values for database schema, hidden from user form
-  const [machineryType] = useState<string>('Бусад');
-  const [salaryUnit] = useState<'Өдрөөр' | 'Цагаар' | 'Төслөөр'>('Өдрөөр');
+  // Previously silently hardcoded to 'Бусад'/'Өдрөөр' on every job — search
+  // filters by machineryType, so every new listing landed in the same bucket,
+  // and the salary unit shown on the detail page was frequently wrong
+  // (audit C4). Now real form fields, defaulting to the same values so
+  // existing behavior doesn't change until the poster picks something else.
+  const [machineryType, setMachineryType] = useState<string>(jobToEdit?.machineryType || 'Бусад');
+  const [salaryUnit, setSalaryUnit] = useState<'Өдрөөр' | 'Цагаар' | 'Төслөөр'>(jobToEdit?.salaryUnit || 'Өдрөөр');
   const [duration] = useState<string>('Тохиролцоно');
   const [requirements] = useState<string[]>([
     'Архидан согтуурахаас хол, хариуцлагатай байх',
@@ -137,10 +149,13 @@ export default function JobPostModal({
           title,
           description: description.trim() || 'Нэмэлт мэдээлэл оруулаагүй.',
           type: resolvedType,
+          machineryType,
           salary: resolvedSalary,
+          salaryUnit,
           location: resolvedLocation,
           imageUrl: imageUrls[0] || '',
           imageUrls: imageUrls,
+          thumbnailUrls: thumbnailUrls,
         };
         await updateJob(jobToEdit.id, updatedFields);
         onSuccess({
@@ -163,6 +178,7 @@ export default function JobPostModal({
           requirements,
           imageUrl: imageUrls[0] || undefined,
           imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
+          thumbnailUrls: thumbnailUrls.length > 0 ? thumbnailUrls : undefined,
         }, tempJobId);
         onSuccess(job);
       }
@@ -183,18 +199,18 @@ export default function JobPostModal({
       <div 
         id="job-post-modal-container" 
         onClick={(e) => e.stopPropagation()}
-        className="bg-[var(--bg2)] border border-[var(--color-glass-border)] max-w-xl w-full rounded-xl overflow-hidden shadow-2xl my-8"
+        className="bg-[var(--bg2)] border border-[var(--border)] max-w-xl w-full rounded-xl overflow-hidden shadow-2xl my-8"
       >
         
         {/* Header */}
-        <div className="flex justify-between items-center border-b border-[var(--color-glass-border)] px-6 py-4">
+        <div className="flex justify-between items-center border-b border-[var(--border)] px-6 py-4">
           <div className="flex items-center space-x-2">
             <ShieldCheck className="w-5 h-5 text-[var(--accent-soft-foreground)]" />
             <h3 className="text-sm font-semibold text-[var(--fg)]">
               {isEditing ? 'Ажлын Зар Засварлах' : 'Шинэ Ажлын Зар Бүртгүүлэх'}
             </h3>
           </div>
-          <button id="close-job-post-modal" onClick={onClose} className="text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer">
+          <button id="close-job-post-modal" onClick={onClose} className="min-w-11 min-h-11 flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -202,7 +218,7 @@ export default function JobPostModal({
         {/* Content body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="bg-red-500/10 border border-red-500 text-red-300 p-2.5 rounded text-xs">
+            <div className="bg-red-500/10 border border-red-500 text-red-700 p-2.5 rounded text-xs">
               {error}
             </div>
           )}
@@ -219,7 +235,7 @@ export default function JobPostModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Жишээ: Дундговьд дампны жолооч авна"
-              className="block w-full px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none placeholder-[var(--muted-foreground)] font-sans"
+              className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none placeholder-[var(--muted-foreground)] font-sans"
             />
           </div>
 
@@ -230,7 +246,7 @@ export default function JobPostModal({
               id="job-type-selector"
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="block w-full px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
+              className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
             >
               <option value="operator_hiring" className="bg-[var(--bg2)] text-[var(--fg)]">Жолооч, оператор хайж байна</option>
               <option value="operator_job_seeking" className="bg-[var(--bg2)] text-[var(--fg)]">Жолооч, операторын ажил хайж байна</option>
@@ -253,7 +269,7 @@ export default function JobPostModal({
                 value={customType}
                 onChange={(e) => setCustomType(e.target.value)}
                 placeholder="Жишээ: Харуул хамгаалалт"
-                className="block w-full px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none placeholder-[var(--muted-foreground)] font-sans"
+                className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none placeholder-[var(--muted-foreground)] font-sans"
               />
             </div>
           )}
@@ -266,7 +282,7 @@ export default function JobPostModal({
                 id="job-location-selector"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="block w-full px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
+                className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
               >
                 {AIMAGS.map((a, idx) => (
                   <option key={idx} value={a} className="bg-[var(--bg2)] text-[var(--fg)]">
@@ -294,7 +310,7 @@ export default function JobPostModal({
                         setSalary(150000);
                       }
                     }}
-                    className="w-3.5 h-3.5 rounded border-[var(--color-glass-border)] bg-[var(--bg2)] text-[var(--accent-soft-foreground)] focus:ring-0 cursor-pointer"
+                    className="w-3.5 h-3.5 rounded border-[var(--border)] bg-[var(--bg2)] text-[var(--accent-soft-foreground)] focus:ring-0 cursor-pointer"
                   />
                   <span className="text-[10px] text-[var(--muted-foreground)] font-sans">Тохиролцоно</span>
                 </label>
@@ -309,8 +325,46 @@ export default function JobPostModal({
                 onChange={(e) => setSalary(e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
                 onFocus={(e) => e.target.select()}
                 placeholder={isNegotiable ? 'Тохиролцоно' : ''}
-                className={`block w-full px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none ${isNegotiable ? 'opacity-50 cursor-not-allowed font-sans' : ''}`}
+                className={`block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none ${isNegotiable ? 'opacity-50 cursor-not-allowed font-sans' : ''}`}
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* Machinery type — previously silently hardcoded to 'Бусад' on
+                every job, which broke the machineryType search filter (audit C4) */}
+            <div>
+              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="job-machinery-type">
+                Машин механизмын төрөл
+              </label>
+              <select
+                id="job-machinery-type"
+                value={machineryType}
+                onChange={(e) => setMachineryType(e.target.value)}
+                className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
+              >
+                <option value="Бусад" className="bg-[var(--bg2)] text-[var(--fg)]">Бусад</option>
+                {MACHINE_OPTIONS.map((m, idx) => (
+                  <option key={idx} value={m} className="bg-[var(--bg2)] text-[var(--fg)]">{m}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Salary unit — previously silently hardcoded to 'Өдрөөр' (audit C4) */}
+            <div>
+              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="job-salary-unit">
+                Цалингийн нэгж
+              </label>
+              <select
+                id="job-salary-unit"
+                value={salaryUnit}
+                onChange={(e) => setSalaryUnit(e.target.value as 'Өдрөөр' | 'Цагаар' | 'Төслөөр')}
+                className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
+              >
+                <option value="Өдрөөр" className="bg-[var(--bg2)] text-[var(--fg)]">Өдрөөр</option>
+                <option value="Цагаар" className="bg-[var(--bg2)] text-[var(--fg)]">Цагаар</option>
+                <option value="Төслөөр" className="bg-[var(--bg2)] text-[var(--fg)]">Төслөөр</option>
+              </select>
             </div>
           </div>
 
@@ -327,7 +381,7 @@ export default function JobPostModal({
                 value={customLocation}
                 onChange={(e) => setCustomLocation(e.target.value)}
                 placeholder="Жишээ: Өмнөговь аймаг, Цогтцэций сум, 3-р баг"
-                className="block w-full px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none placeholder-[var(--muted-foreground)] font-sans"
+                className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none placeholder-[var(--muted-foreground)] font-sans"
               />
             </div>
           )}
@@ -343,7 +397,7 @@ export default function JobPostModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Ажлын нөхцөл, хангамж, тавигдах шаардлага зэрэг бусад мэдээллийг энд оруулах боломжтой..."
-              className="block w-full px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-[var(--bg2)] text-[var(--fg)] placeholder-[var(--muted-foreground)] text-xs focus:ring-1 focus:outline-none resize-none font-sans"
+              className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] placeholder-[var(--muted-foreground)] text-xs focus:ring-1 focus:outline-none resize-none font-sans"
             />
           </div>
 
@@ -356,7 +410,7 @@ export default function JobPostModal({
             <div className="flex flex-wrap gap-3 mt-1.5">
               {/* Render uploaded image thumbnails */}
               {imageUrls.map((url, idx) => (
-                <div key={idx} className="relative w-20 h-20 rounded-lg border border-[var(--color-glass-border)] bg-[var(--bg2)] overflow-hidden shrink-0">
+                <div key={idx} className="relative w-20 h-20 rounded-lg border border-[var(--border)] bg-[var(--bg2)] overflow-hidden shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={url}
@@ -367,8 +421,11 @@ export default function JobPostModal({
                     type="button"
                     onClick={() => {
                       const urlToDelete = imageUrls[idx];
+                      const thumbToDelete = thumbnailUrls[idx];
                       setImageUrls(prev => prev.filter((_, i) => i !== idx));
+                      setThumbnailUrls(prev => prev.filter((_, i) => i !== idx));
                       if (urlToDelete.startsWith('https://')) deleteJobImage(urlToDelete);
+                      if (thumbToDelete && thumbToDelete.startsWith('https://')) deleteJobImage(thumbToDelete);
                     }}
                     className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-[var(--accent-foreground)] rounded-full p-0.5 shadow-md transition-colors cursor-pointer"
                     title="Устгах"
@@ -380,14 +437,14 @@ export default function JobPostModal({
 
               {/* Render dashed upload button if less than 4 images */}
               {imageUrls.length < 4 && (
-                <label className="flex flex-col items-center justify-center w-20 h-20 border border-[var(--color-glass-border)] border-dashed rounded-lg cursor-pointer bg-[var(--bg2)] hover:bg-[var(--bg2)] transition-all text-center">
+                <label className="flex flex-col items-center justify-center w-20 h-20 border border-[var(--border)] border-dashed rounded-lg cursor-pointer bg-[var(--bg2)] hover:bg-[var(--bg2)] transition-all text-center">
                   {isImageUploading ? (
-                    <span className="text-[8px] text-[var(--muted-foreground)] font-medium px-1 leading-tight">Шахаж байна...</span>
+                    <span className="text-[10px] text-[var(--muted-foreground)] font-medium px-1 leading-tight">Шахаж байна...</span>
                   ) : (
                     <>
                       <Camera className="w-4 h-4 text-[var(--accent-soft-foreground)] mb-0.5" />
                       <span className="text-[10px] text-[var(--accent-soft-foreground)] font-bold">Нэмэх</span>
-                      <span className="text-[8px] text-[var(--muted-foreground)] font-sans mt-0.5">{imageUrls.length}/4</span>
+                      <span className="text-[10px] text-[var(--muted-foreground)] font-sans mt-0.5">{imageUrls.length}/4</span>
                     </>
                   )}
                   <input
@@ -406,7 +463,8 @@ export default function JobPostModal({
                           const uploaded = await Promise.all(
                             filesToProcess.map(file => uploadJobImage(tempJobId, file))
                           );
-                          setImageUrls(prev => [...prev, ...uploaded]);
+                          setImageUrls(prev => [...prev, ...uploaded.map(u => u.url)]);
+                          setThumbnailUrls(prev => [...prev, ...uploaded.map(u => u.thumbUrl)]);
                         } catch (err) {
                           console.error(err);
                           setError('Зураг боловсруулахад алдаа гарлаа.');
@@ -422,7 +480,7 @@ export default function JobPostModal({
             </div>
           </div>
 
-          <div className="bg-[var(--color-glass-bg)] p-3.5 rounded-lg border border-[var(--color-glass-border)] flex items-center space-x-2 text-[10px] text-[var(--muted-foreground)]">
+          <div className="bg-[var(--card)] p-3.5 rounded-lg border border-[var(--border)] flex items-center space-x-2 text-[10px] text-[var(--muted-foreground)]">
             <span className="text-[var(--accent-soft-foreground)]">🛡️</span>
             <span>Санамж: Ажил олгогчоор бүртгүүлсэн таны нэр, өнөөгийн үнэлгээ ({employerRating}⭐) энэхүү заранд хамт байршиж, жолооч нарт харагдана.</span>
           </div>
@@ -433,7 +491,7 @@ export default function JobPostModal({
               id="cancel-job-post"
               type="button"
               onClick={onClose}
-              className="flex-1 py-1.5 border border-[var(--color-glass-border)] text-[var(--muted-foreground)] text-xs rounded hover:bg-[var(--bg2)] transition-colors cursor-pointer"
+              className="flex-1 py-1.5 border border-[var(--border)] text-[var(--muted-foreground)] text-xs rounded hover:bg-[var(--bg2)] transition-colors cursor-pointer"
             >
               Цуцлах
             </button>

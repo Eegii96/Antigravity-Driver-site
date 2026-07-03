@@ -3,7 +3,8 @@
 import { ChevronLeft, User as UserIcon, Phone, MapPin, CheckCircle, Share2 } from 'lucide-react';
 import type { Job, User } from '../../types';
 import { getMockEmployerName, getMockEmployerPhone } from '../../lib/mock-employer';
-import { formatDate, getFirstName } from '../../lib/job-format';
+import { formatRelativeDate, getFirstName } from '../../lib/job-format';
+import { trackContactClick, trackShareJob } from '../../lib/analytics';
 
 interface JobCardProps {
   job: Job;
@@ -85,7 +86,7 @@ export default function JobCard({
                           <ChevronLeft className="w-4 h-4" />
                           <span className="text-xs text-[var(--muted-foreground)]">Буцах</span>
                         </button>
-                        <span className="font-mono text-[10px] text-[var(--muted-foreground)]">{formatDate(job.createdAt)}</span>
+                        <span className="font-mono text-[10px] text-[var(--muted-foreground)]">{formatRelativeDate(job.createdAt)}</span>
                       </div>
 
                       {/* ── CREATOR INFO ROW (Name on left, Phone on right) ── */}
@@ -117,11 +118,21 @@ export default function JobCard({
                           className={`flex items-center space-x-1.5 ${ !currentUser ? 'cursor-pointer' : '' }`}
                         >
                           <Phone className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
-                          <span className={`font-mono text-xs font-bold text-[var(--fg)] ${
-                            !currentUser ? 'filter blur-[5px] select-none' : ''
-                          }`}>
-                            {!currentUser ? getMockEmployerPhone(job.id) : (getEmployerPhone(job) || 'Утасгүй')}
-                          </span>
+                          {!currentUser ? (
+                            <span className="font-mono text-xs font-bold text-[var(--fg)] filter blur-[5px] select-none">
+                              {getMockEmployerPhone(job.id)}
+                            </span>
+                          ) : getEmployerPhone(job) ? (
+                            <a
+                              href={`tel:${getEmployerPhone(job)}`}
+                              onClick={(e) => { e.stopPropagation(); trackContactClick(job.id, 'tel'); }}
+                              className="font-mono text-xs font-bold text-[var(--fg)] underline decoration-[var(--accent)] underline-offset-2"
+                            >
+                              {getEmployerPhone(job)}
+                            </a>
+                          ) : (
+                            <span className="font-mono text-xs font-bold text-[var(--fg)]">Утасгүй</span>
+                          )}
                         </div>
                       </div>
 
@@ -149,14 +160,14 @@ export default function JobCard({
                                   decoding="async"
                                   className="w-full h-full object-contain"
                                 />
-                                <div className="absolute bottom-2 right-2 bg-[var(--fg)]/75 text-[var(--card)] text-[9px] font-bold px-2 py-0.5 rounded-full font-sans">
+                                <div className="absolute bottom-2 right-2 bg-[var(--fg)]/75 text-[var(--card)] text-[10.5px] font-bold px-2 py-0.5 rounded-full font-sans">
                                   {idx + 1} / {job.imageUrls?.length}
                                 </div>
                               </div>
                             ))}
                           </div>
                           {job.imageUrls.length > 1 && (
-                            <p className="text-[9px] text-[var(--muted-foreground)] text-center font-sans select-none">
+                            <p className="text-[10.5px] text-[var(--muted-foreground)] text-center font-sans select-none">
                               ↔️ Хажуу тийш гүйлгэж үзнэ үү
                             </p>
                           )}
@@ -176,16 +187,16 @@ export default function JobCard({
                       {/* ── SALARY + LOCATION 2-column grid ── */}
                       <div className="grid grid-cols-2 gap-3">
                         <div className="bg-[var(--bg2)] p-3.5 rounded-md border border-[var(--border)]">
-                          <span className="text-[9.5px] text-[var(--muted-foreground)] uppercase tracking-wider font-bold block mb-1">Цалин / Төлбөр</span>
+                          <span className="text-[11px] text-[var(--muted-foreground)] uppercase tracking-wider font-bold block mb-1">Цалин / Төлбөр</span>
                           <span className="font-mono font-bold text-[var(--verify)] text-sm">
                             {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
                           </span>
                           {job.salaryUnit && job.salaryUnit !== 'Өдрөөр' && (
-                            <span className="text-[9px] text-[var(--muted-foreground)] block mt-0.5">{job.salaryUnit}</span>
+                            <span className="text-[10.5px] text-[var(--muted-foreground)] block mt-0.5">{job.salaryUnit}</span>
                           )}
                         </div>
                         <div className="bg-[var(--bg2)] p-3.5 rounded-md border border-[var(--border)]">
-                          <span className="text-[9.5px] text-[var(--muted-foreground)] uppercase tracking-wider font-bold block mb-1">Байршил</span>
+                          <span className="text-[11px] text-[var(--muted-foreground)] uppercase tracking-wider font-bold block mb-1">Байршил</span>
                           <span className="font-semibold text-[var(--fg)] text-xs flex items-start gap-1">
                             <MapPin className="w-3.5 h-3.5 text-[var(--muted-foreground)] shrink-0 mt-0.5" />
                             {job.location}
@@ -284,7 +295,7 @@ export default function JobCard({
                                               <button type="button" onClick={() => onNavigate(`/profile?id=${op.id}`)} className="text-xs text-[var(--fg)] font-medium hover:underline hover:text-[var(--accent-soft-foreground)] text-left focus:outline-none">
                                                 {op.fullName} {op.type === 'operator' && `(${op.experienceYears || 0} жил)`}
                                               </button>
-                                              <button onClick={() => onHire(job.id, op.id)} className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] text-[10px] font-bold px-3 py-1.5 rounded transition-all cursor-pointer">
+                                              <button onClick={() => onHire(job.id, op.id)} className="min-h-11 bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] text-[10px] font-bold px-3 rounded transition-all cursor-pointer">
                                                 Сонгох
                                               </button>
                                             </div>
@@ -352,7 +363,7 @@ export default function JobCard({
 
                                 {currentUser.type === 'operator' && job.hiredOperatorId === currentUser.id && !job.isReviewedByOperator && (
                                   <button id="op-review-employer-btn" onClick={() => onReview(job)} className="w-full bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] py-1.5 px-3 rounded text-xs font-bold cursor-pointer transition-all">
-                                    Захиалагчийг Үнэлэх (Цалингийн мурилт эсвэл харилцаа)
+                                    Захиалагчийг Үнэлэх (Цалин хоцрогдол эсвэл харилцаа)
                                   </button>
                                 )}
 
@@ -400,6 +411,7 @@ export default function JobCard({
                                   text: shareText,
                                   url: jobUrl,
                                 });
+                                trackShareJob(job.id, 'native');
                               } catch (_) {
                                 // User cancelled share — do nothing
                               }
@@ -420,7 +432,7 @@ export default function JobCard({
                             className="absolute bottom-full left-0 mb-2 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-md p-3 z-50 w-64 animate-fade-in"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <p className="text-[9.5px] text-[var(--muted-foreground)] uppercase font-bold tracking-wider mb-2">Хуваалцах платформ</p>
+                            <p className="text-[11px] text-[var(--muted-foreground)] uppercase font-bold tracking-wider mb-2">Хуваалцах платформ</p>
                             <div className="grid grid-cols-3 gap-2">
                               {(() => {
                                 const jobUrl = typeof window !== 'undefined' ? `${window.location.origin}/jobs/${job.id}` : '';
@@ -487,6 +499,7 @@ export default function JobCard({
                                   type="button"
                                   onClick={async () => {
                                     await action();
+                                    trackShareJob(job.id, label.toLowerCase());
                                     onToggleShareMenu(null);
                                   }}
                                   className="flex flex-col items-center justify-center bg-[var(--bg2)] hover:bg-[var(--border)] border border-[var(--border)] hover:border-[var(--border-strong)] rounded p-2 text-[10px] text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer gap-1"
@@ -532,7 +545,7 @@ export default function JobCard({
                             </span>
                           )}
                           <span className="font-mono text-[var(--muted-foreground)]">
-                            {formatDate(job.createdAt)}
+                            {formatRelativeDate(job.createdAt)}
                           </span>
                         </div>
 
@@ -541,11 +554,13 @@ export default function JobCard({
                           {job.title}
                         </h3>
 
-                        {/* Job Image Thumbnail */}
+                        {/* Job Image Thumbnail — prefer the 320px thumbnailUrls entry over
+                            the full 800px image (audit P3); older jobs without a thumbnail
+                            fall back to the full image. */}
                         {((job.imageUrls && job.imageUrls.length > 0) || job.imageUrl) && (
                           <div className="w-full h-36 rounded-md overflow-hidden bg-[var(--bg2)] border border-[var(--border)] relative shrink-0">
                             <img
-                              src={job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl}
+                              src={job.thumbnailUrls?.[0] || (job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl)}
                               alt={job.title}
                               width={400}
                               height={144}
@@ -574,29 +589,41 @@ export default function JobCard({
                           className={`flex items-center space-x-1.5 text-[var(--muted-foreground)] ${!currentUser ? 'cursor-pointer' : ''}`}
                         >
                           <Phone className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
-                          <span className={`font-mono font-medium text-[var(--muted-foreground)] ${!currentUser ? 'filter blur-[5px] select-none' : ''}`}>
-                            {!currentUser ? getMockEmployerPhone(job.id) : (getEmployerPhone(job) || 'Утасгүй')}
-                          </span>
+                          {!currentUser ? (
+                            <span className="font-mono font-medium text-[var(--muted-foreground)] filter blur-[5px] select-none">
+                              {getMockEmployerPhone(job.id)}
+                            </span>
+                          ) : getEmployerPhone(job) ? (
+                            <a
+                              href={`tel:${getEmployerPhone(job)}`}
+                              onClick={(e) => { e.stopPropagation(); trackContactClick(job.id, 'tel'); }}
+                              className="font-mono font-medium text-[var(--fg)] underline decoration-[var(--accent)] underline-offset-2"
+                            >
+                              {getEmployerPhone(job)}
+                            </a>
+                          ) : (
+                            <span className="font-mono font-medium text-[var(--muted-foreground)]">Утасгүй</span>
+                          )}
                         </div>
 
                         {/* Salary and Status */}
                         <div className="flex flex-col items-end space-y-2 shrink-0">
                           <span className="font-sans font-bold text-[var(--fg)] flex items-center gap-1.5">
-                            <span className="text-[9px] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">Цалин / Төлбөр:</span>
+                            <span className="text-[10.5px] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">Цалин / Төлбөр:</span>
                             <span className="font-mono text-xs text-[var(--verify)]">{job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}</span>
                           </span>
 
                           {(() => {
                             if (job.status === 'open') {
                               return (
-                                <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)]">
+                                <span className="inline-flex items-center text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)]">
                                   <span className="w-1 h-1 rounded-full mr-1 bg-[var(--accent)] animate-pulse" />
                                   <span>Нээлттэй</span>
                                 </span>
                               );
                             } else if (job.status === 'in_progress') {
                               return (
-                                <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)]">
+                                <span className="inline-flex items-center text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)]">
                                   <span className="w-1 h-1 rounded-full mr-1 bg-[var(--alert)] animate-pulse" />
                                   <span>Ажиллаж байгаа</span>
                                 </span>
@@ -605,13 +632,13 @@ export default function JobCard({
                               const isReviewed = job.isReviewedByEmployer;
                               if (isReviewed) {
                                 return (
-                                  <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--verify)] bg-[rgba(31,138,76,0.1)] text-[var(--verify)]">
+                                  <span className="inline-flex items-center text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--verify)] bg-[rgba(31,138,76,0.1)] text-[var(--verify)]">
                                     <span>Хаагдсан ✓</span>
                                   </span>
                                 );
                               } else {
                                 return (
-                                  <span className="inline-flex items-center text-[9.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)] animate-pulse">
+                                  <span className="inline-flex items-center text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)] animate-pulse">
                                     <span className="w-1 h-1 rounded-full mr-1 bg-[var(--alert)]" />
                                     <span>Ажил дууссан ⚠️</span>
                                   </span>

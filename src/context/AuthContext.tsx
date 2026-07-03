@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { User } from '../types';
 import { auth, db } from '../lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot, updateDoc, deleteField } from 'firebase/firestore';
 import { setCurrentUser as setLocalUser, getCurrentUser as getLocalUser } from '../lib/db';
 
 interface AuthContextType {
@@ -55,13 +55,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               if (docSnap.exists()) {
                 const userData = docSnap.data() as User;
                 userData.id = firebaseUser.uid;
-                
+
                 // Remove password field for security
                 const sessionUser = { ...userData };
                 if ('password' in sessionUser) {
                   delete sessionUser.password;
+                  // Self-healing migration: Firestore no longer stores a password
+                  // hash at all (Firebase Auth already owns it — audit S7). Strip
+                  // any hash left over from before this change, opportunistically,
+                  // as each affected user's own session loads.
+                  updateDoc(userDocRef, { password: deleteField() }).catch(() => {});
                 }
-                
+
                 const localSessionId = localStorage.getItem('activeSessionId');
                 const sessionIdTime = Number(localStorage.getItem('activeSessionIdTime') || 0);
                 const isSessionFresh = (Date.now() - sessionIdTime) < 8000; // 8 seconds window

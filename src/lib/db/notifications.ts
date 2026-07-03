@@ -210,12 +210,21 @@ export function subscribeToNotifications(
   );
 }
 
+/**
+ * @param relatedId Used for UI navigation (job id for lifecycle notifications,
+ *   review id for review notifications — see AppNotification.relatedId).
+ * @param jobId The job this notification is about, required whenever `userId`
+ *   isn't the caller's own id — Firestore rules use it to verify both the
+ *   sender and recipient are participants of that job (see firestore.rules
+ *   `isJobParticipant`). Omit only for self-notifications (e.g. welcome/security).
+ */
 export async function addNotification(
   userId: string,
   title: string,
   message: string,
   type: 'info' | 'success' | 'warning' | 'alert',
-  relatedId?: string
+  relatedId?: string,
+  jobId?: string
 ): Promise<AppNotification> {
   try {
     const id = 'notif_' + Math.random().toString(36).substr(2, 9);
@@ -227,7 +236,8 @@ export async function addNotification(
       type,
       isRead: false,
       createdAt: new Date().toISOString(),
-      relatedId
+      relatedId,
+      jobId
     };
     
     const cleanNotif = Object.fromEntries(

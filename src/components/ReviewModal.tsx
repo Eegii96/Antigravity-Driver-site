@@ -79,20 +79,20 @@ export default function ReviewModal({
       <div 
         id="review-modal-container" 
         onClick={(e) => e.stopPropagation()}
-        className="bg-[var(--bg2)] border border-[var(--color-glass-border)] max-w-md w-full rounded-xl overflow-hidden shadow-2xl"
+        className="bg-[var(--bg2)] border border-[var(--border)] max-w-md w-full rounded-xl overflow-hidden shadow-2xl"
       >
         
         {/* Header */}
-        <div className="flex justify-between items-center border-b border-[var(--color-glass-border)] px-6 py-4">
+        <div className="flex justify-between items-center border-b border-[var(--border)] px-6 py-4">
           <h3 className="text-sm font-semibold text-[var(--fg)]">Үнэлгээ & Баталгаажуулалт</h3>
-          <button id="close-review-modal" onClick={onClose} className="text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer">
+          <button id="close-review-modal" onClick={onClose} className="min-w-11 min-h-11 flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="bg-[var(--bg2)] p-3.5 rounded-lg border border-[var(--color-glass-border)] space-y-1">
+          <div className="bg-[var(--bg2)] p-3.5 rounded-lg border border-[var(--border)] space-y-1">
             <span className="text-[10px] text-[var(--muted-foreground)] uppercase tracking-widest block font-mono">Ажлын нэр</span>
             <p className="text-xs font-semibold text-[var(--accent-soft-foreground)]">{jobTitle}</p>
             <div className="pt-2 flex items-center justify-between text-xs text-[var(--muted-foreground)]">
@@ -152,7 +152,7 @@ export default function ReviewModal({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Үнэлгээ болон сэтгэгдлийн дэлгэрэнгүйг энд бичнэ үү..."
-              className="block w-full px-3 py-2 border border-[var(--color-glass-border)] rounded bg-[var(--bg2)] text-[var(--fg)] placeholder-[var(--muted-foreground)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none resize-none font-sans"
+              className="block w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] placeholder-[var(--muted-foreground)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none resize-none font-sans"
             />
           </div>
 
@@ -165,7 +165,7 @@ export default function ReviewModal({
               id="cancel-submit-review"
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 border border-[var(--color-glass-border)] text-[var(--muted-foreground)] text-xs rounded hover:bg-[var(--bg2)] transition-colors cursor-pointer"
+              className="flex-1 py-2 border border-[var(--border)] text-[var(--muted-foreground)] text-xs rounded hover:bg-[var(--bg2)] transition-colors cursor-pointer"
             >
               Буцах
             </button>

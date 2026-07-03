@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Cloud Functions is its own TS project (functions/tsconfig.json) — its
+    // compiled output and node_modules aren't part of this Next.js lint scope.
+    "functions/**",
+    // Session-local git worktrees (created by agent tooling) are separate
+    // checkouts, not part of this working tree's lint scope.
+    ".claude/worktrees/**",
   ]),
   {
     rules: {

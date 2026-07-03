@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { User, Job, Review, AppNotification } from '../types';
@@ -11,7 +11,8 @@ import {
   completeJob,
   getNotifications,
   subscribeToJobs,
-  subscribeToUsers,
+  getUsersByIds,
+  getRegisteredUserCount,
   subscribeToNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
@@ -20,8 +21,7 @@ import {
   deleteJob,
   cancelHiring,
   getReviews,
-  getSingleReview,
-  setCurrentUser
+  getSingleReview
 } from '../lib/db';
 import {
   Search,
@@ -45,26 +45,22 @@ import NotificationToasts from './jobboard/NotificationToasts';
 import ReviewDetailModal from './jobboard/ReviewDetailModal';
 import GuestBlurWarningModal from './jobboard/GuestBlurWarningModal';
 import BoardHero from './jobboard/BoardHero';
-import { auth } from '../lib/firebase';
-import { signOut } from 'firebase/auth';
+import { useAuth } from '../context/AuthContext';
 import { getFirstName, LOCATION_OPTIONS, formatNotificationDate } from '../lib/job-format';
+import { trackSearch, trackViewJob, trackApplySubmit, trackPostStarted, trackPostCompleted } from '../lib/analytics';
 
 interface JobBoardProps {
   currentUser: User | null;
-  onLogout?: () => void;
-  onNavigateToProfile?: () => void;
-  onNavigateToSettings?: () => void;
-  onNavigateToApplications?: (jobId?: string) => void;
-  onViewUserProfile?: (user: User) => void;
 }
-
 
 export default function JobBoard({
   currentUser
 }: JobBoardProps) {
   const router = useRouter();
+  const { logout } = useAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [registeredUserCount, setRegisteredUserCount] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedLocation, setSelectedLocation] = useState<string>('Бүгд');
   const [selectedType, setSelectedType] = useState<string>('Бүгд');
@@ -194,16 +190,52 @@ export default function JobBoard({
     return () => unsub();
   }, []);
 
-  // Real-time subscription to users — guests skip this entirely (they see mock data,
-  // and the Firestore users rule now requires auth). Clears on logout.
+  // Users are fetched by known id only — Firestore rules deny collection-wide
+  // `list` reads on `users` (prevents bulk PII scraping), so there is no
+  // subscribeToUsers()/getUsers() equivalent any more. Guests skip this
+  // entirely (they see mock data). Only ids referenced by the currently
+  // displayed jobs (+ the expanded job's applicants, if it's the viewer's own)
+  // are fetched.
+  const neededUserIds = useMemo(() => {
+    const ids = new Set<string>();
+    jobs.forEach(j => {
+      ids.add(j.employerId);
+      if (j.hiredOperatorId) ids.add(j.hiredOperatorId);
+    });
+    if (selectedJob && currentUser && selectedJob.employerId === currentUser.id) {
+      selectedJob.applicants.forEach(id => ids.add(id));
+    }
+    return Array.from(ids).sort();
+  }, [jobs, selectedJob, currentUser]);
+
   useEffect(() => {
-    if (!currentUser) {
+    if (!currentUser || neededUserIds.length === 0) {
       setUsers([]);
       return;
     }
-    const unsub = subscribeToUsers(setUsers);
-    return () => unsub();
-  }, [currentUser?.id]);
+    let cancelled = false;
+    getUsersByIds(neededUserIds).then(result => {
+      if (!cancelled) setUsers(result);
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id, neededUserIds.join(',')]);
+
+  // Total registered user count for the homepage stat — fetched once via a
+  // Cloud Function count aggregation (no PII, safe for guests too).
+  useEffect(() => {
+    getRegisteredUserCount().then(setRegisteredUserCount);
+  }, []);
+
+  // Debounced search/filter tracking (audit C2) — fires once ~600ms after the
+  // user stops typing/changing filters, not on every keystroke.
+  useEffect(() => {
+    if (!searchQuery && selectedLocation === 'Бүгд' && selectedType === 'Бүгд') return;
+    const timer = setTimeout(() => {
+      trackSearch(searchQuery, selectedLocation, selectedType);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [searchQuery, selectedLocation, selectedType]);
 
   // One-time notification seeding/migration (welcome & security). Live updates
   // arrive via the subscribeToNotifications listener below.
@@ -308,20 +340,22 @@ export default function JobBoard({
     });
   };
 
-  // Actions with optimistic UI updates for instantaneous responsiveness
+  // Actions with optimistic UI updates for instantaneous responsiveness.
+  // No re-fetch on success — the realtime subscribeToNotifications listener
+  // (above) already reconciles state once the write lands, and re-calling
+  // getNotifications() here was redundant (it also re-runs the welcome/
+  // security-notification seeding check on every single mark-read/delete —
+  // pure wasted reads+writes, audit S11). On failure we just revert to the
+  // last known-good snapshot instead of doing another full fetch.
   const handleMarkAsRead = async (id: string) => {
     if (!currentUser) return;
-    // Optimistically mark as read in local state
+    const previous = notificationsRef.current;
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
     try {
       await markNotificationAsRead(id);
-      const freshNotifs = await getNotifications(currentUser.id);
-      setNotifications(freshNotifs);
     } catch (err) {
       console.error(err);
-      // Rollback on failure
-      const freshNotifs = await getNotifications(currentUser.id);
-      setNotifications(freshNotifs);
+      setNotifications(previous);
       addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
     }
   };
@@ -454,51 +488,39 @@ export default function JobBoard({
 
   const handleMarkAllAsRead = async () => {
     if (!currentUser) return;
-    // Optimistically mark all as read in local state
+    const previous = notificationsRef.current;
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     try {
       await markAllNotificationsAsRead(currentUser.id);
-      const freshNotifs = await getNotifications(currentUser.id);
-      setNotifications(freshNotifs);
     } catch (err) {
       console.error(err);
-      // Rollback on failure
-      const freshNotifs = await getNotifications(currentUser.id);
-      setNotifications(freshNotifs);
+      setNotifications(previous);
       addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
     }
   };
 
   const handleDeleteNotification = async (id: string) => {
     if (!currentUser) return;
-    // Optimistically remove from local state
+    const previous = notificationsRef.current;
     setNotifications(prev => prev.filter(n => n.id !== id));
     try {
       await deleteNotification(id);
-      const freshNotifs = await getNotifications(currentUser.id);
-      setNotifications(freshNotifs);
     } catch (err) {
       console.error(err);
-      // Rollback on failure
-      const freshNotifs = await getNotifications(currentUser.id);
-      setNotifications(freshNotifs);
+      setNotifications(previous);
       addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
     }
   };
 
   const handleDeleteAllNotifications = async () => {
     if (!currentUser) return;
-    // Optimistically clear all in local state
+    const previous = notificationsRef.current;
     setNotifications([]);
     try {
       await deleteAllNotifications(currentUser.id);
-      const freshNotifs = await getNotifications(currentUser.id);
-      setNotifications(freshNotifs);
     } catch (err) {
       console.error(err);
-      // Rollback on failure
-      const freshNotifs = await getNotifications(currentUser.id);
-      setNotifications(freshNotifs);
+      setNotifications(previous);
       addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
     }
   };
@@ -514,6 +536,7 @@ export default function JobBoard({
         setSuccessMessage(msg);
         addSuccessToast('Хүсэлт илгээгдлээ 🎉', msg);
         setTimeout(() => setSuccessMessage(''), 4500);
+        trackApplySubmit(jobId);
         await refreshJobs();
       }
     } catch (err) {
@@ -650,7 +673,7 @@ export default function JobBoard({
           </div>
           <div>
             <span className="font-display font-bold uppercase tracking-tight text-[var(--fg)] block text-sm md:text-base">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>
-            <p className="text-[9px] md:text-[11px] text-[var(--muted-foreground)] font-sans tracking-wide leading-relaxed mt-0.5 max-w-xs md:max-w-xl">
+            <p className="text-[10.5px] md:text-[11px] text-[var(--muted-foreground)] font-sans tracking-wide leading-relaxed mt-0.5 max-w-xs md:max-w-xl">
               Үнэлгээ өгөх, ажлын түүх үүсгэх системээр хариуцлагатай жолооч, оператор болон найдвартай ажил олгогчдыг үүсгэх платформ
             </p>
           </div>
@@ -663,7 +686,7 @@ export default function JobBoard({
               {currentUser && (
                 <button
                   id="header-post-job-btn"
-                  onClick={() => setShowPostModal(true)}
+                  onClick={() => { trackPostStarted(); setShowPostModal(true); }}
                   className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-xs px-3.5 py-2 rounded flex items-center space-x-1.5 transition-all cursor-pointer shadow-sm"
                 >
                   <PlusCircle className="w-4 h-4" />
@@ -680,7 +703,7 @@ export default function JobBoard({
                 >
                   <Bell className="w-4 h-4" />
                   {unreadNotifs.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[var(--alert)] text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-[var(--card)] animate-bounce">
+                    <span className="absolute -top-1 -right-1 bg-[var(--alert)] text-white font-mono text-[10.5px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-[var(--card)] animate-bounce">
                       {unreadNotifs.length}
                     </span>
                   )}
@@ -690,7 +713,7 @@ export default function JobBoard({
                   <div
                     id="notifications-dropdown-menu"
                     ref={notificationsMenuRef}
-                    className="absolute right-0 mt-2.5 w-[360px] bg-[var(--card)] border border-[var(--border)] rounded-md shadow-md z-50 py-2 animate-fade-in"
+                    className="absolute right-0 mt-2.5 w-[min(360px,calc(100vw-2rem))] bg-[var(--card)] border border-[var(--border)] rounded-md shadow-md z-50 py-2 animate-fade-in"
                   >
                     <div className="px-4 py-2.5 border-b border-[var(--border)] flex items-center justify-between">
                       <span className="text-xs font-bold text-[var(--muted-foreground)] tracking-wide uppercase font-sans">Системийн мэдэгдлүүд</span>
@@ -737,7 +760,7 @@ export default function JobBoard({
                                 }`}>
                                   {notif.title}
                                 </p>
-                                <span className={`text-[8px] font-mono shrink-0 transition-colors duration-200 ${
+                                <span className={`text-[10px] font-mono shrink-0 transition-colors duration-200 ${
                                   notif.isRead
                                     ? 'text-[var(--muted-foreground)]'
                                     : 'text-[var(--accent-soft-foreground)] font-bold'
@@ -760,7 +783,7 @@ export default function JobBoard({
                                     e.stopPropagation();
                                     handleDeleteNotification(notif.id);
                                   }}
-                                  className="bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 hover:text-rose-700 border border-rose-300 px-2 py-1 rounded text-[10px] font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
+                                  className="min-h-11 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 hover:text-rose-700 border border-rose-300 px-2 rounded text-[10px] font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                   <span>Устгах</span>
@@ -802,7 +825,7 @@ export default function JobBoard({
                 >
                   <div className="hidden md:block">
                     <p className="text-xs font-semibold text-[var(--fg)] leading-none">{getFirstName(currentUser)}</p>
-                    <span className="text-[9px] text-[var(--muted-foreground)] font-mono">
+                    <span className="text-[10.5px] text-[var(--muted-foreground)] font-mono">
                       {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} • {currentUser.rating}⭐
                     </span>
                   </div>
@@ -863,12 +886,11 @@ export default function JobBoard({
                       <button
                         id="menu-logout"
                         onClick={async () => {
-                          try {
-                            await signOut(auth);
-                          } catch (err) {
-                            console.error('Error signing out:', err);
-                          }
-                          setCurrentUser(null);
+                          // Always go through useAuth().logout() — it's the single place that
+                          // clears session state consistently (AGENTS.md §1). A direct
+                          // signOut(auth) call here used to skip that and only clear the
+                          // localStorage-backed session, not the AuthContext state (audit S11).
+                          await logout();
                           router.push('/auth');
                           setShowProfileMenu(false);
                         }}
@@ -918,7 +940,7 @@ export default function JobBoard({
           <div className="bg-[var(--accent-soft)] p-3.5 border border-[var(--accent)] rounded-md shadow-sm">
             <span className="text-[10px] uppercase block font-mono font-semibold text-[var(--accent-soft-foreground)]">Бүртгэлтэй хэрэглэгч</span>
             <span className="text-xl font-display font-black text-[var(--accent-soft-foreground)]">
-              {users.length > 0 ? users.length : '...'} хэрэглэгч
+              {registeredUserCount !== null ? registeredUserCount : '...'} хэрэглэгч
             </span>
           </div>
         </div>
@@ -1042,20 +1064,40 @@ export default function JobBoard({
           </div>
 
           {displayJobs.length === 0 ? (
-            <div className="bg-[var(--card)] border border-[var(--border)] p-12 text-center rounded-md">
-              <p className="text-sm text-[var(--muted-foreground)]">Хайлтанд нийцэх ажил олдсонгүй.</p>
-              <button
-                id="reset-filters-btn"
-                onClick={() => {
-                  setSearchQuery('');
-                  setSelectedLocation('Бүгд');
-                  setSelectedType('Бүгд');
-                }}
-                className="mt-3 text-xs text-[var(--accent-soft-foreground)] hover:underline cursor-pointer"
-              >
-                Бүх шүүлтүүрийг арилгах
-              </button>
-            </div>
+            !searchQuery && selectedLocation === 'Бүгд' && selectedType === 'Бүгд' && statusFilter === 'open' ? (
+              // No filters applied and genuinely zero open jobs — a new/quiet
+              // marketplace section used to just show "no results", which reads
+              // as broken rather than inviting the first listing (audit U7).
+              <div className="bg-[var(--card)] border border-[var(--border)] p-12 text-center rounded-md space-y-3">
+                <p className="text-sm font-semibold text-[var(--fg)]">Одоогоор идэвхтэй зар алга байна 🚜</p>
+                <p className="text-xs text-[var(--muted-foreground)]">Анхны зараа үнэгүй тавьж, системийг амьдруулаарай!</p>
+                <button
+                  id="empty-board-post-job-btn"
+                  onClick={() => {
+                    if (currentUser) { trackPostStarted(); setShowPostModal(true); }
+                    else router.push('/auth?tab=register');
+                  }}
+                  className="mt-2 bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-xs px-5 py-2.5 rounded transition-all cursor-pointer shadow-sm"
+                >
+                  {currentUser ? 'Зар нэмэх' : 'Бүртгүүлээд зар тавих'}
+                </button>
+              </div>
+            ) : (
+              <div className="bg-[var(--card)] border border-[var(--border)] p-12 text-center rounded-md">
+                <p className="text-sm text-[var(--muted-foreground)]">Хайлтанд нийцэх ажил олдсонгүй.</p>
+                <button
+                  id="reset-filters-btn"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedLocation('Бүгд');
+                    setSelectedType('Бүгд');
+                  }}
+                  className="mt-3 text-xs text-[var(--accent-soft-foreground)] hover:underline cursor-pointer"
+                >
+                  Бүх шүүлтүүрийг арилгах
+                </button>
+              </div>
+            )
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {displayJobs.map((job) => (
@@ -1067,7 +1109,7 @@ export default function JobBoard({
                   users={users}
                   successMessage={successMessage}
                   shareMenuJob={shareMenuJob}
-                  onSelect={setSelectedJob}
+                  onSelect={(j) => { trackViewJob(j.id, j.status); setSelectedJob(j); }}
                   onCollapse={() => setSelectedJob(null)}
                   onShowBlurWarning={() => setShowBlurWarningModal(true)}
                   onEdit={setEditingJob}
@@ -1106,6 +1148,7 @@ export default function JobBoard({
             setShowPostModal(false);
             await refreshJobs();
             setSelectedJob(newJob);
+            trackPostCompleted(newJob.id, newJob.type);
             const msg = '🎉 Ажлын зар амжилттай нийтлэгдэж, систем дэх нээлттэй жолооч нарын үзүүрт орлоо!';
             setSuccessMessage(msg);
             addSuccessToast('Амжилттай 🎉', msg);

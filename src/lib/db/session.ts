@@ -3,9 +3,13 @@
 import { doc, getDoc, setDoc, writeBatch } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { getFunctions, httpsCallable } from 'firebase/functions';
 import { User, AppNotification } from '../../types';
-import { hashSecret } from '../crypto';
+
+// getFunctions/httpsCallable are dynamically imported inside loginUser()/
+// registerUser() below. This module is re-exported from the `lib/db` barrel
+// that nearly every page imports (just to reach getJobs/subscribeToJobs
+// etc.), so a static import here would bundle the Cloud Functions SDK into
+// pages that never call login/register (audit P2).
 
 export function getCurrentUser(): User | null {
   try {
@@ -84,6 +88,7 @@ export async function loginUser(email: string, phone: string, password?: string)
     // 1. Resolve the phone/email identifier to the Firebase Auth email via a Cloud Function.
     //    This runs with Admin SDK privileges server-side — the users collection now requires
     //    auth to read, so this lookup can no longer happen directly from the client.
+    const { getFunctions, httpsCallable } = await import('firebase/functions');
     const functions = getFunctions();
     const resolveFn = httpsCallable(functions, 'resolveLoginEmail');
     const result = await resolveFn({ email: cleanEmail || undefined, phone: cleanEmail ? undefined : cleanPhone });
@@ -160,6 +165,7 @@ export async function registerUser(
     // to read directly, so this check can no longer query Firestore from the client.
     if (onProgress) onProgress('Утасны дугаарыг шалгаж байна...');
     const phoneClean = userData.phone.trim();
+    const { getFunctions, httpsCallable } = await import('firebase/functions');
     const functions = getFunctions();
     const resolveFn = httpsCallable(functions, 'resolveLoginEmail');
     const resolveResult = await resolveFn({ phone: phoneClean });
@@ -218,15 +224,14 @@ export async function registerUser(
     setCurrentUser(sessionUser);
 
     try {
-      // Clean up any undefined properties to prevent Firestore "Unsupported field value: undefined" error
+      // Clean up any undefined properties to prevent Firestore "Unsupported field value: undefined" error.
+      // The password itself is never written to Firestore — Firebase Auth (see
+      // createUserWithEmailAndPassword above) already owns it; duplicating a
+      // hash of it here only gave an attacker who read the users collection a
+      // second, weaker target to crack (audit S7).
       const cleanUser = Object.fromEntries(
-        Object.entries(newUser).filter(([, v]) => v !== undefined)
+        Object.entries(newUser).filter(([k, v]) => v !== undefined && k !== 'password')
       ) as User;
-
-      // Hash the password before persisting to Firestore — never store plaintext
-      if (cleanUser.password) {
-        cleanUser.password = await hashSecret(cleanUser.password);
-      }
 
       // Create a 12-second timeout for Firestore write
       const timeoutPromise = new Promise((_, reject) =>

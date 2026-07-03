@@ -15,10 +15,10 @@ export default function PrivacyModal({ onClose }: PrivacyModalProps) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-[var(--card)] border border-[var(--color-glass-border)] rounded-md max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
+            className="bg-[var(--card)] border border-[var(--border)] rounded-md max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
           >
             {/* Header */}
-            <div className="sticky top-0 bg-[var(--card)] border-b border-[var(--color-glass-border)] px-6 py-4 flex items-center justify-between z-10">
+            <div className="sticky top-0 bg-[var(--card)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
               <div className="flex items-center space-x-2.5">
                 <Lock className="w-5 h-5 text-[var(--verify)]" />
                 <h3 className="text-sm font-bold text-[var(--fg)] font-sans">Нууцлалын бодлого (Privacy Policy)</h3>
@@ -65,7 +65,7 @@ export default function PrivacyModal({ onClose }: PrivacyModalProps) {
             </div>
 
             {/* Footer */}
-            <div className="border-t border-[var(--color-glass-border)] px-6 py-4 flex justify-end bg-[var(--card)]">
+            <div className="border-t border-[var(--border)] px-6 py-4 flex justify-end bg-[var(--card)]">
               <button
                 onClick={() => onClose()}
                 className="bg-[var(--verify)] hover:brightness-95 text-[var(--accent-foreground)] font-semibold px-5 py-2 rounded-md transition-all cursor-pointer text-xs font-sans"

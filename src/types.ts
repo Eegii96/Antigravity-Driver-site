@@ -79,6 +79,14 @@ export interface Job {
   additionalInfo?: string;
   imageUrl?: string;
   imageUrls?: string[];
+  /**
+   * 320px thumbnails, index-parallel to `imageUrls` (same length, same order).
+   * Collapsed job cards render these instead of the full 800px images they
+   * used to load just to display at 144px (audit P3). Optional — jobs posted
+   * before this field existed only have `imageUrls`/`imageUrl`, so display
+   * code must fall back to those.
+   */
+  thumbnailUrls?: string[];
 }
 
 export interface AppNotification {
@@ -91,6 +99,14 @@ export interface AppNotification {
   createdAt: string;
   relatedId?: string;
   isDeleted?: boolean;
+  /**
+   * The job this notification is about, used ONLY for Firestore rule
+   * authorization (see firestore.rules `isJobParticipant`) — distinct from
+   * `relatedId`, which for review notifications points at the review doc
+   * instead (used for UI navigation). Job-lifecycle notifications set both
+   * fields to the same job id.
+   */
+  jobId?: string;
 }
 
 

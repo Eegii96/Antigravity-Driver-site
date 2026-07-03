@@ -3,12 +3,11 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShieldCheck, Key, Trash2, Eye, EyeOff, Check, AlertCircle, X } from 'lucide-react';
-import { saveSingleUser, getFreshCurrentUser } from '../lib/db';
+import { saveSingleUser, getFreshCurrentUser, requestAccountDeletion } from '../lib/db';
 import { User } from '../types';
 import { auth } from '../lib/firebase';
 import { reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
 import { useAuth } from '../context/AuthContext';
-import { hashSecret, verifySecret } from '../lib/crypto';
 
 export default function SettingsView() {
   const router = useRouter();
@@ -71,6 +70,7 @@ export default function SettingsView() {
   const [otherReasonText, setOtherReasonText] = useState<string>('');
   const [deleteSuccess, setDeleteSuccess] = useState<boolean>(false);
   const [deleteError, setDeleteError] = useState<string>('');
+  const [isSubmittingDeleteRequest, setIsSubmittingDeleteRequest] = useState<boolean>(false);
 
   const deleteReasons = [
     'Ажлын санал хангалтгүй байна',
@@ -111,16 +111,11 @@ export default function SettingsView() {
         return;
       }
 
-      // 1. Verify current password against the stored PBKDF2 hash
-      if (freshUser.password) {
-        const ok = await verifySecret(currentPassword, freshUser.password);
-        if (!ok) {
-          setError('Одоогийн нууц үг буруу байна.');
-          return;
-        }
-      }
-
-      // 2. Reauthenticate with Firebase Auth (required for updatePassword)
+      // Verify the current password AND change it via Firebase Auth reauthentication —
+      // Auth already owns the password, so this is the sole check needed. (A PBKDF2
+      // hash used to be duplicated into the Firestore user doc and checked here too,
+      // but that just gave anyone who could read the doc a second, weaker target to
+      // crack — audit S7. Firestore never stores a password hash any more.)
       if (auth.currentUser && auth.currentUser.email) {
         const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPassword);
         try {
@@ -132,17 +127,12 @@ export default function SettingsView() {
         await updatePassword(auth.currentUser, newPassword);
       }
 
-      // 3. Save the new password as a PBKDF2 hash — never store plaintext
-      const hashedNewPassword = await hashSecret(newPassword);
-      const updatedUser = { ...freshUser, password: hashedNewPassword };
+      // Persist the profile as-is (no password field) — also opportunistically
+      // strips any legacy password hash still sitting on older accounts.
+      const updatedUser: User = { ...freshUser };
+      delete updatedUser.password;
       await saveSingleUser(updatedUser);
-
-      // Update localStorage session without exposing the hash
-      const sessionUser: User = { ...updatedUser };
-      if ('password' in sessionUser) {
-        delete sessionUser.password;
-      }
-      setCurrentUser(sessionUser);
+      setCurrentUser(updatedUser);
 
       setSuccess('Нууц үг амжилттай солигдлоо. Таны холболт шинэчлэгдсэн.');
       setError('');
@@ -195,7 +185,7 @@ export default function SettingsView() {
         
         {/* Left column Settings Navigator */}
         <div className="md:col-span-1 space-y-4 font-sans">
-          <div className="bg-[var(--bg2)] border border-[var(--color-glass-border)] p-5 rounded-xl space-y-4 shadow-xl relative overflow-hidden text-left font-sans">
+          <div className="bg-[var(--bg2)] border border-[var(--border)] p-5 rounded-xl space-y-4 shadow-xl relative overflow-hidden text-left font-sans">
             {/* Ambient background glow inside card */}
             <div className="absolute top-0 right-0 w-20 h-20 bg-[var(--accent-soft)] rounded-full blur-2xl pointer-events-none"></div>
 
@@ -204,7 +194,7 @@ export default function SettingsView() {
               <div className="flex items-center space-x-1.5 bg-[var(--accent-soft)] px-2 py-0.5 rounded-full border border-[var(--accent)]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-ping"></span>
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] absolute"></span>
-                <span className="text-[9px] text-[var(--accent-soft-foreground)] font-bold tracking-wider uppercase font-mono">ONLINE</span>
+                <span className="text-[10.5px] text-[var(--accent-soft-foreground)] font-bold tracking-wider uppercase font-mono">ONLINE</span>
               </div>
             </div>
 
@@ -241,7 +231,7 @@ export default function SettingsView() {
         <div className="md:col-span-2 space-y-6">
           
           {/* Change Password Panel */}
-          <div className="bg-[var(--bg2)] border border-[var(--color-glass-border)] p-6 rounded-xl space-y-4">
+          <div className="bg-[var(--bg2)] border border-[var(--border)] p-6 rounded-xl space-y-4">
             <h3 className="text-sm font-semibold text-[var(--accent-foreground)] flex items-center space-x-2 border-b border-[var(--border)] pb-2">
               <Key className="w-4 h-4 text-[var(--accent-soft-foreground)]" />
               <span>Нууц үг шинэчлэх цэс</span>
@@ -257,7 +247,7 @@ export default function SettingsView() {
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="******"
-                    className="block w-full px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
+                    className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
                   />
                   <span
                     id="toggle-pass-visibility-1"
@@ -278,7 +268,7 @@ export default function SettingsView() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Шинэ нууц үгээ оруулах"
-                    className="block w-full px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
+                    className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
                   />
                   <p className="mt-1 text-[10px] text-[var(--muted-foreground)] font-sans">
                     * Хамгийн багадаа 8 тэмдэгт, тусгай тэмдэгт (!@#$%^&* u.g) багтсан байна.
@@ -292,7 +282,7 @@ export default function SettingsView() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="давтан оруулна уу"
-                    className="block w-full px-3 py-1.5 border border-[var(--color-glass-border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
+                    className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
                   />
                 </div>
               </div>
@@ -349,11 +339,11 @@ export default function SettingsView() {
           <div 
             id="delete-account-modal-container" 
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-sm bg-[var(--bg2)] border border-[var(--color-glass-border)] rounded-xl shadow-2xl overflow-hidden font-sans"
+            className="relative w-full max-w-sm bg-[var(--bg2)] border border-[var(--border)] rounded-xl shadow-2xl overflow-hidden font-sans"
           >
             
             {/* Modal Header */}
-            <div className="flex justify-between items-center border-b border-[var(--color-glass-border)] px-5 py-4 bg-[var(--bg2)]">
+            <div className="flex justify-between items-center border-b border-[var(--border)] px-5 py-4 bg-[var(--bg2)]">
               <h3 className="text-xs font-bold text-[var(--accent-foreground)] flex items-center space-x-2 uppercase tracking-wide">
                 <Trash2 className="w-4 h-4 text-rose-400" />
                 <span>Бүртгэл устгах хүсэлт</span>
@@ -361,7 +351,7 @@ export default function SettingsView() {
               <button 
                 id="close-delete-modal-btn" 
                 onClick={() => setIsDeleteModalOpen(false)} 
-                className="text-[var(--muted-foreground)] hover:text-[var(--accent-foreground)] transition-colors cursor-pointer p-1 rounded hover:bg-[var(--bg2)]"
+                className="min-w-11 min-h-11 flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--accent-foreground)] transition-colors cursor-pointer rounded hover:bg-[var(--bg2)]"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -401,8 +391,8 @@ export default function SettingsView() {
                       key={idx}
                       className={`flex items-start space-x-2.5 p-2 rounded border transition-all cursor-pointer ${
                         deleteReason === reason 
-                          ? 'bg-rose-500/15 border-rose-500/35 text-rose-200' 
-                          : 'bg-[var(--bg2)] border-[var(--color-glass-border)] text-[var(--muted-foreground)] hover:border-[var(--color-glass-border)] hover:bg-[var(--bg2)]'
+                          ? 'bg-rose-500/15 border-rose-500/35 text-rose-700'
+                          : 'bg-[var(--bg2)] border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--border)] hover:bg-[var(--bg2)]'
                       }`}
                     >
                       <input 
@@ -414,7 +404,7 @@ export default function SettingsView() {
                           setDeleteReason(reason);
                           setDeleteError('');
                         }}
-                        className="mt-0.5 text-rose-500 focus:ring-rose-500 bg-[var(--bg2)] border-[var(--color-glass-border)]" 
+                        className="mt-0.5 text-rose-500 focus:ring-rose-500 bg-[var(--bg2)] border-[var(--border)]" 
                       />
                       <span className="text-xs font-sans text-[var(--muted-foreground)]">{reason}</span>
                     </label>
@@ -433,7 +423,7 @@ export default function SettingsView() {
                         setDeleteError('');
                       }}
                       placeholder="Энд дэлгэрэнгүй бичнэ үү..."
-                      className="block w-full px-2.5 py-1.5 border border-[var(--color-glass-border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-rose-500 focus:outline-none focus:border-rose-500"
+                      className="block w-full px-2.5 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-rose-500 focus:outline-none focus:border-rose-500"
                     />
                   </div>
                 )}
@@ -449,13 +439,14 @@ export default function SettingsView() {
                   <button
                     type="button"
                     onClick={() => setIsDeleteModalOpen(false)}
-                    className="w-1/2 bg-[var(--bg2)] hover:bg-[var(--border)] text-[var(--fg)] py-1.5 rounded text-xs font-semibold cursor-pointer transition-colors border border-[var(--color-glass-border)]"
+                    className="w-1/2 bg-[var(--bg2)] hover:bg-[var(--border)] text-[var(--fg)] py-1.5 rounded text-xs font-semibold cursor-pointer transition-colors border border-[var(--border)]"
                   >
                     Буцах
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
+                    disabled={isSubmittingDeleteRequest}
+                    onClick={async () => {
                       if (!deleteReason) {
                         setDeleteError('Устгах шалтгаанаа сонгоно уу.');
                         return;
@@ -464,11 +455,27 @@ export default function SettingsView() {
                         setDeleteError('Нэмэлт шалтгаанаа тодорхойлж бичнэ үү.');
                         return;
                       }
-                      setDeleteSuccess(true);
+                      if (!currentUser) {
+                        setDeleteError('Хэрэглэгч олдсонгүй.');
+                        return;
+                      }
+                      const resolvedReason = deleteReason === 'Бусад (Учрыг доор бичих)'
+                        ? `${deleteReason}: ${otherReasonText.trim()}`
+                        : deleteReason;
+                      setIsSubmittingDeleteRequest(true);
+                      try {
+                        await requestAccountDeletion(currentUser.id, resolvedReason);
+                        setDeleteSuccess(true);
+                      } catch (err) {
+                        console.error('Error submitting account deletion request:', err);
+                        setDeleteError('Хүсэлт илгээхэд алдаа гарлаа. Дахин оролдоно уу.');
+                      } finally {
+                        setIsSubmittingDeleteRequest(false);
+                      }
                     }}
-                    className="w-1/2 bg-rose-600 hover:bg-rose-500 text-[var(--accent-foreground)] py-1.5 rounded text-xs font-semibold cursor-pointer transition-colors shadow-md shadow-rose-950/30"
+                    className="w-1/2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 disabled:cursor-not-allowed text-[var(--accent-foreground)] py-1.5 rounded text-xs font-semibold cursor-pointer transition-colors shadow-md shadow-rose-950/30"
                   >
-                    Илгээх
+                    {isSubmittingDeleteRequest ? 'Илгээж байна...' : 'Илгээх'}
                   </button>
                 </div>
               </div>

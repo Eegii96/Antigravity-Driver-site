@@ -52,7 +52,7 @@ export default function ApplicationsTab({
   return (
         <div className="space-y-6 animate-fade-in relative z-10 text-left">
           {/* Sub-tabs for Sent Applications vs Posted Jobs */}
-          <div className="flex border-b border-[var(--color-glass-border)] space-x-6">
+          <div className="flex border-b border-[var(--border)] space-x-6">
             <button
               onClick={() => onSubTabChange('sent')}
               className={`flex items-center space-x-2 pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
@@ -78,12 +78,12 @@ export default function ApplicationsTab({
           </div>
 
           {isLoading ? (
-            <div className="panel p-12 rounded-md border border-[var(--color-glass-border)] text-center text-xs text-[var(--muted-foreground)] font-sans flex flex-col items-center justify-center space-y-4">
+            <div className="panel p-12 rounded-md border border-[var(--border)] text-center text-xs text-[var(--muted-foreground)] font-sans flex flex-col items-center justify-center space-y-4">
               <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
               <span>Мэдээллийг ачаалж байна...</span>
             </div>
           ) : driverJobs.length === 0 ? (
-            <div className="panel p-12 rounded-md border border-[var(--color-glass-border)] text-center text-xs text-[var(--muted-foreground)] font-sans">
+            <div className="panel p-12 rounded-md border border-[var(--border)] text-center text-xs text-[var(--muted-foreground)] font-sans">
               {applicationsSubTab === 'sent' 
                 ? 'Та одоогоор ямар нэгэн заранд хүсэлт илгээгээгүй байна.' 
                 : 'Та одоогоор ямар нэгэн зар оруулаагүй байна.'}
@@ -123,7 +123,7 @@ export default function ApplicationsTab({
                     statusDesc = '⏳ Таны ажилд орох хүсэлтийг захиалагч хянаж байна. Хэрэв та сонгогдвол системд шинэчлэгдэн харагдах болно.';
                   } else if (isRejected) {
                     statusText = 'Өөр жолооч сонгогдсон';
-                    badgeClass = 'bg-[var(--color-glass-bg)] text-[var(--muted-foreground)] border border-[var(--color-glass-border)]';
+                    badgeClass = 'bg-[var(--card)] text-[var(--muted-foreground)] border border-[var(--border)]';
                     statusDesc = '❌ Захиалагч энэ заранд өөр жолооч сонгон ажилласан байна. Та дараагийн зар руу хүсэлтээ илгээнэ үү.';
                   }
 
@@ -134,7 +134,7 @@ export default function ApplicationsTab({
                       className={`panel p-5 rounded-md transition-all flex flex-col justify-between space-y-4 text-left ${
                         activeHighlightJobId === job.id
                           ? 'highlighted-job-card'
-                          : 'border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)]'
+                          : 'border border-[var(--border)] hover:border-[var(--border)]'
                       }`}
                     >
                       <div className="space-y-3">
@@ -150,7 +150,7 @@ export default function ApplicationsTab({
 
                         {/* Job Image Thumbnail */}
                         {((job.imageUrls && job.imageUrls.length > 0) || job.imageUrl) && (
-                          <div className="w-full h-36 rounded-md overflow-hidden bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] relative shrink-0">
+                          <div className="w-full h-36 rounded-md overflow-hidden bg-[var(--card)] border border-[var(--border)] relative shrink-0">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl}
@@ -169,12 +169,12 @@ export default function ApplicationsTab({
 
                         {/* Additional info */}
                         {job.additionalInfo && (
-                          <p className="text-[10.5px] text-[var(--muted-foreground)] leading-relaxed italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--color-glass-border)]">
+                          <p className="text-[10.5px] text-[var(--muted-foreground)] leading-relaxed italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--border)]">
                             Нэмэлт: {job.additionalInfo}
                           </p>
                         )}
                         
-                        <div className="bg-[var(--color-glass-bg)] p-2.5 rounded-lg border border-[var(--color-glass-border)] flex justify-between items-center text-[10.5px]">
+                        <div className="bg-[var(--card)] p-2.5 rounded-lg border border-[var(--border)] flex justify-between items-center text-[10.5px]">
                           <span className="text-[var(--muted-foreground)]">Захиалагч:</span>
                           <button
                             type="button"
@@ -189,10 +189,10 @@ export default function ApplicationsTab({
 
                         {/* Status badge and description */}
                         <div className="space-y-2 pt-1.5">
-                          <span className={`inline-flex px-2.5 py-0.5 rounded text-[9.5px] font-bold font-mono tracking-wide uppercase ${badgeClass}`}>
+                          <span className={`inline-flex px-2.5 py-0.5 rounded text-[11px] font-bold font-mono tracking-wide uppercase ${badgeClass}`}>
                             {statusText}
                           </span>
-                          <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed bg-[rgba(255,255,255,0.04)] p-3 rounded-lg border border-[var(--color-glass-border)] font-sans">
+                          <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed bg-[rgba(255,255,255,0.04)] p-3 rounded-lg border border-[var(--border)] font-sans">
                             {statusDesc}
                           </p>
                         </div>
@@ -203,17 +203,17 @@ export default function ApplicationsTab({
                             <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-mono tracking-wider mb-2">Ажлын явцын төлөв:</span>
                             <div className="flex items-center space-x-2 text-xs">
                               <div className="flex items-center text-[var(--accent-soft-foreground)]">
-                                <span className="h-4 w-4 rounded-full bg-[var(--accent)] text-[var(--muted-foreground)] flex items-center justify-center text-[9px] font-bold mr-1.5">1</span>
+                                <span className="h-4 w-4 rounded-full bg-[var(--accent)] text-[var(--muted-foreground)] flex items-center justify-center text-[10.5px] font-bold mr-1.5">1</span>
                                 <span>Сонгогдсон</span>
                               </div>
                               <span className="text-[var(--muted-foreground)]">➔</span>
                               <div className="flex items-center text-[var(--accent-soft-foreground)] font-bold animate-pulse-soft">
-                                <span className="h-4 w-4 rounded-full bg-[var(--accent)] text-[var(--muted-foreground)] flex items-center justify-center text-[9px] font-bold mr-1.5 animate-ping-slow">2</span>
+                                <span className="h-4 w-4 rounded-full bg-[var(--accent)] text-[var(--muted-foreground)] flex items-center justify-center text-[10.5px] font-bold mr-1.5 animate-ping-slow">2</span>
                                 <span>Ажиллаж байна</span>
                               </div>
                               <span className="text-[var(--muted-foreground)]">➔</span>
                               <div className="flex items-center text-[var(--muted-foreground)]">
-                                <span className="h-4 w-4 rounded-full bg-[rgba(255,255,255,0.06)] text-[var(--muted-foreground)] flex items-center justify-center text-[9px] font-bold mr-1.5">3</span>
+                                <span className="h-4 w-4 rounded-full bg-[rgba(255,255,255,0.06)] text-[var(--muted-foreground)] flex items-center justify-center text-[10.5px] font-bold mr-1.5">3</span>
                                 <span>Үнэлгээ</span>
                               </div>
                             </div>
@@ -222,7 +222,7 @@ export default function ApplicationsTab({
                       </div>
 
                       {/* Footer containing received review (for completed jobs) and salary for ALL statuses */}
-                      <div className="space-y-3 pt-2 mt-auto border-t border-[var(--color-glass-border)]">
+                      <div className="space-y-3 pt-2 mt-auto border-t border-[var(--border)]">
                         {isHired && job.status === 'completed' && (() => {
                           const receivedReview = reviews.find(r => r.jobId === job.id);
                           if (!receivedReview) return null;
@@ -311,7 +311,7 @@ export default function ApplicationsTab({
                       className={`panel p-5 rounded-md transition-all flex flex-col justify-between space-y-4 text-left ${
                         activeHighlightJobId === job.id
                           ? 'highlighted-job-card'
-                          : 'border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)]'
+                          : 'border border-[var(--border)] hover:border-[var(--border)]'
                       }`}
                     >
                       <div className="space-y-3">
@@ -327,7 +327,7 @@ export default function ApplicationsTab({
 
                         {/* Job Image Thumbnail */}
                         {((job.imageUrls && job.imageUrls.length > 0) || job.imageUrl) && (
-                          <div className="w-full h-36 rounded-md overflow-hidden bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] relative shrink-0">
+                          <div className="w-full h-36 rounded-md overflow-hidden bg-[var(--card)] border border-[var(--border)] relative shrink-0">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={job.imageUrls && job.imageUrls.length > 0 ? job.imageUrls[0] : job.imageUrl}
@@ -346,23 +346,23 @@ export default function ApplicationsTab({
 
                         {/* Additional info */}
                         {job.additionalInfo && (
-                          <p className="text-[10.5px] text-[var(--muted-foreground)] leading-relaxed italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--color-glass-border)]">
+                          <p className="text-[10.5px] text-[var(--muted-foreground)] leading-relaxed italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--border)]">
                             Нэмэлт: {job.additionalInfo}
                           </p>
                         )}
 
                         {/* Status badge and description */}
                         <div className="space-y-2 pt-1.5">
-                          <span className={`inline-flex px-2.5 py-0.5 rounded text-[9.5px] font-bold font-mono tracking-wide uppercase ${badgeClass}`}>
+                          <span className={`inline-flex px-2.5 py-0.5 rounded text-[11px] font-bold font-mono tracking-wide uppercase ${badgeClass}`}>
                             {statusText}
                           </span>
-                          <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed bg-[rgba(255,255,255,0.04)] p-3 rounded-lg border border-[var(--color-glass-border)] font-sans">
+                          <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed bg-[rgba(255,255,255,0.04)] p-3 rounded-lg border border-[var(--border)] font-sans">
                             {statusDesc}
                           </p>
                         </div>
 
                         {job.hiredOperatorId && (
-                          <div className="bg-[var(--color-glass-bg)] p-2.5 rounded-lg border border-[var(--color-glass-border)] flex justify-between items-center text-[10.5px] mt-2">
+                          <div className="bg-[var(--card)] p-2.5 rounded-lg border border-[var(--border)] flex justify-between items-center text-[10.5px] mt-2">
                             <span className="text-[var(--muted-foreground)]">Томилогдсон жолооч:</span>
                             <div className="flex items-center space-x-2">
                               <button
@@ -378,7 +378,7 @@ export default function ApplicationsTab({
                                 <button
                                   type="button"
                                   onClick={() => onCancelHiring(job.id)}
-                                  className="text-[var(--muted-foreground)] hover:text-[var(--accent-soft-foreground)] bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] px-2 py-0.5 rounded text-[9.5px] font-bold cursor-pointer transition-colors"
+                                  className="text-[var(--muted-foreground)] hover:text-[var(--accent-soft-foreground)] bg-[var(--card)] border border-[var(--border)] hover:border-[var(--border)] px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer transition-colors"
                                 >
                                   Болих
                                 </button>
@@ -389,7 +389,7 @@ export default function ApplicationsTab({
 
                         {/* Applicants rendering for open jobs */}
                         {job.status === 'open' && job.applicants.length > 0 && (
-                          <div className="space-y-2 pt-2 border-t border-[var(--color-glass-border)]">
+                          <div className="space-y-2 pt-2 border-t border-[var(--border)]">
                             <span className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase font-mono tracking-wider flex items-center space-x-1.5">
                               <Users className="w-3.5 h-3.5 text-[var(--accent-soft-foreground)]" />
                               <span>Ирүүлсэн хүсэлтүүд ({job.applicants.length}):</span>
@@ -401,7 +401,7 @@ export default function ApplicationsTab({
                                 return (
                                   <div
                                     key={op.id}
-                                    className="bg-[var(--color-glass-bg)] p-2.5 rounded-md border border-[var(--color-glass-border)] flex items-center justify-between text-xs"
+                                    className="bg-[var(--card)] p-2.5 rounded-md border border-[var(--border)] flex items-center justify-between text-xs"
                                   >
                                     <div
                                       onClick={() => { window.location.href = `/profile?id=${op.id}`; }}
@@ -411,7 +411,7 @@ export default function ApplicationsTab({
                                       <img
                                         src={op.profileImage}
                                         alt={op.fullName}
-                                        className="w-7 h-7 rounded-full object-cover border border-[var(--color-glass-border)]"
+                                        className="w-7 h-7 rounded-full object-cover border border-[var(--border)]"
                                         onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }}
                                       />
                                       <div>
@@ -491,12 +491,12 @@ export default function ApplicationsTab({
 
                       {/* Action buttons (Edit/Delete) relocated to the bottom of the card */}
                       {isOwnProfile && (
-                        <div className="flex space-x-2.5 pt-2 mt-auto border-t border-[var(--color-glass-border)]">
+                        <div className="flex space-x-2.5 pt-2 mt-auto border-t border-[var(--border)]">
                           {job.status !== 'completed' && (
                             <button
                               type="button"
                               onClick={() => onEdit(job)}
-                              className="flex-1 border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] bg-[var(--color-glass-bg)] hover:bg-[var(--color-glass-bg)] text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
+                              className="flex-1 border border-[var(--border)] hover:border-[var(--border)] bg-[var(--card)] hover:bg-[var(--card)] text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
                             >
                               Засах
                             </button>
@@ -504,7 +504,7 @@ export default function ApplicationsTab({
                           <button
                             type="button"
                             onClick={() => onDelete(job)}
-                            className={`${job.status === 'completed' ? 'w-full' : 'flex-1'} border border-[var(--color-glass-border)] hover:border-[var(--color-glass-border)] bg-[var(--color-glass-bg)] hover:bg-[var(--color-glass-bg)] text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center`}
+                            className={`${job.status === 'completed' ? 'w-full' : 'flex-1'} border border-[var(--border)] hover:border-[var(--border)] bg-[var(--card)] hover:bg-[var(--card)] text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center`}
                           >
                             Устгах
                           </button>

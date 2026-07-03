@@ -60,15 +60,15 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
     }
   };
 
+  // Address is optional and password composition rules (special character)
+  // are dropped — see the matching note in Auth.tsx's handleRegister (audit C3).
   const isFormValid =
     firstName.trim() !== '' &&
     lastName.trim() !== '' &&
     (email.trim() === '' || email.includes('@')) &&
     phone.trim() !== '' &&
     phone.trim().length >= 8 &&
-    address.trim() !== '' &&
     regPassword.length >= 8 &&
-    /[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) &&
     regPassword === regConfirmPassword &&
     isAgreedToTerms;
 
@@ -198,7 +198,7 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
 
         <div>
           <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1" htmlFor="reg-address">
-            Гэрийн/Байгууллагын хаяг
+            Гэрийн/Байгууллагын хаяг (Заавал биш)
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -207,7 +207,6 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
             <input
               id="reg-address"
               type="text"
-              required
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder=""
@@ -240,15 +239,9 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
             </span>
           </div>
           {regPassword !== '' && regPassword.length < 8 && (
-            <p className="text-[10px] text-red-400 mt-1 font-sans flex items-center space-x-1">
+            <p className="text-[10px] text-red-700 mt-1 font-sans flex items-center space-x-1">
               <span className="font-bold">✗</span>
               <span>Нууц үг хамгийн багадаа 8 тэмдэгт байх шаардлагатай! (Одоо: {regPassword.length})</span>
-            </p>
-          )}
-          {regPassword !== '' && regPassword.length >= 8 && !/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) && (
-            <p className="text-[10px] text-red-400 mt-1 font-sans flex items-center space-x-1">
-              <span className="font-bold">✗</span>
-              <span>Нууц үгэнд дор хаяж нэг тусгай тэмдэгт (!@#$%^&* гэх мэт) орох шаардлагатай!</span>
             </p>
           )}
         </div>
@@ -276,7 +269,7 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
             </span>
           </div>
           {regConfirmPassword !== '' && regPassword !== regConfirmPassword && (
-            <p className="text-[10px] text-red-400 mt-1 font-sans flex items-center space-x-1">
+            <p className="text-[10px] text-red-700 mt-1 font-sans flex items-center space-x-1">
               <span className="font-bold">✗</span>
               <span>Давтан оруулсан нууц үг тохирохгүй байна!</span>
             </p>
@@ -284,12 +277,12 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
         </div>
 
         {/* Live Password Checklist */}
-        <div className="bg-[var(--color-glass-bg)] p-3 rounded-lg border border-[var(--color-glass-border)] space-y-1.5 font-sans">
+        <div className="bg-[var(--card)] p-3 rounded-lg border border-[var(--border)] space-y-1.5 font-sans">
           <span className="text-[10px] font-semibold text-[var(--muted-foreground)] block mb-1">Нууц үгэнд тавих шаардлага:</span>
           <div className="flex items-center space-x-2 text-[10.5px]">
             <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${regPassword.length >= 8
                 ? 'bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] border-[var(--accent)]'
-                : 'bg-red-500/10 text-red-400 border-red-500/30'
+                : 'bg-red-500/10 text-red-700 border-red-500/30'
               }`}>
               {regPassword.length >= 8 ? <Check className="w-2.5 h-2.5" /> : <X className="w-2.5 h-2.5" />}
             </div>
@@ -298,20 +291,9 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
             </span>
           </div>
           <div className="flex items-center space-x-2 text-[10.5px]">
-            <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword)
-                ? 'bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] border-[var(--accent)]'
-                : 'bg-red-500/10 text-red-400 border-red-500/30'
-              }`}>
-              {/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) ? <Check className="w-2.5 h-2.5" /> : <X className="w-2.5 h-2.5" />}
-            </div>
-            <span className={/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) ? 'text-[var(--accent-soft-foreground)] font-medium' : 'text-[var(--muted-foreground)]'}>
-              Дор хаяж нэг тусгай тэмдэгт (!@#$%^&* гэх мэт)
-            </span>
-          </div>
-          <div className="flex items-center space-x-2 text-[10.5px]">
             <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${(regPassword === regConfirmPassword && regConfirmPassword !== '')
                 ? 'bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] border-[var(--accent)]'
-                : 'bg-red-500/10 text-red-400 border-red-500/30'
+                : 'bg-red-500/10 text-red-700 border-red-500/30'
               }`}>
               {(regPassword === regConfirmPassword && regConfirmPassword !== '') ? <Check className="w-2.5 h-2.5" /> : <X className="w-2.5 h-2.5" />}
             </div>
@@ -431,7 +413,7 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
                   onClick={() => toggleMachine(item)}
                   className={`flex items-center space-x-1.5 py-1 px-2.5 rounded transition-colors text-left border cursor-pointer ${selectedMachines.includes(item)
                       ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)]'
-                      : 'border-[var(--color-glass-border)] bg-[var(--color-glass-bg)] text-[var(--muted-foreground)] hover:border-[var(--border)]'
+                      : 'border-[var(--border)] bg-[var(--card)] text-[var(--muted-foreground)] hover:border-[var(--border)]'
                     }`}
                 >
                   <span className="text-xs">{item}</span>
@@ -473,7 +455,7 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
                     }
                     setCustomRegMachine('');
                   }}
-                  className="px-3 bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] hover:bg-[var(--bg2)] text-[var(--accent-soft-foreground)] rounded text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-3 bg-[var(--card)] border border-[var(--border)] hover:bg-[var(--bg2)] text-[var(--accent-soft-foreground)] rounded text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Нэмэх
                 </button>
@@ -494,7 +476,7 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
                       <button
                         type="button"
                         onClick={() => toggleMachine(item)}
-                        className="text-[var(--muted-foreground)] hover:text-red-400 font-bold ml-1 text-xs cursor-pointer focus:outline-none"
+                        className="text-[var(--muted-foreground)] hover:text-red-700 font-bold ml-1 text-xs cursor-pointer focus:outline-none"
                         title="Устгах"
                       >
                         ×
@@ -510,8 +492,8 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
 
       {/* Validation warnings */}
       {!isFormValid && (
-        <div className="mt-4 p-3.5 bg-red-500/5 border border-red-500/25 text-red-300 rounded-lg text-xs space-y-1.5 font-sans animate-fade-in leading-relaxed">
-          <div className="flex items-center space-x-1.5 font-bold text-red-400 mb-1">
+        <div className="mt-4 p-3.5 bg-red-500/5 border border-red-500/25 text-red-700 rounded-lg text-xs space-y-1.5 font-sans animate-fade-in leading-relaxed">
+          <div className="flex items-center space-x-1.5 font-bold text-red-700 mb-1">
             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
             <span>Бүртгүүлэхийн тулд дараах мэдээллүүдийг гүйцээнэ үү:</span>
           </div>
@@ -521,10 +503,8 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
             {email.trim() !== '' && !email.includes('@') && <li>Зөв имэйл хаяг оруулна уу.</li>}
             {phone.trim() === '' && <li>Утасны дугаараа оруулна уу.</li>}
             {phone.trim() !== '' && phone.trim().length < 8 && <li>Утасны дугаар дор хаяж 8 оронтой байх ёстой.</li>}
-            {address.trim() === '' && <li>Гэрийн/Байгууллагын хаягаа оруулна уу.</li>}
             {regPassword === '' && <li>Нэвтрэх нууц кодоо оруулна уу.</li>}
             {regPassword !== '' && regPassword.length < 8 && <li>Нууц код хамгийн багадаа 8 тэмдэгт байх шаардлагатай.</li>}
-            {regPassword !== '' && !/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(regPassword) && <li>Нууц код дор хаяж нэг тусгай тэмдэгт (!@#$%^&* гэх мэт) агуулсан байх шаардлагатай.</li>}
             {regConfirmPassword === '' && <li>Нууц кодоо давтан оруулна уу.</li>}
             {regPassword !== '' && regConfirmPassword !== '' && regPassword !== regConfirmPassword && <li>Хоёр нууц код хоорондоо тохирохгүй байна.</li>}
             {!isAgreedToTerms && <li>Үйлчилгээний нөхцөл болон Нууцлалын бодлогыг хүлээн зөвшөөрөх шаардлагатай.</li>}
@@ -533,13 +513,13 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
       )}
 
       {/* Terms consent */}
-      <div className="flex items-start space-x-2.5 bg-[var(--color-glass-bg)] p-3.5 rounded-lg border border-[var(--color-glass-border)] mt-4 animate-fade-in">
+      <div className="flex items-start space-x-2.5 bg-[var(--card)] p-3.5 rounded-lg border border-[var(--border)] mt-4 animate-fade-in">
         <input
           id="agree-terms-checkbox"
           type="checkbox"
           checked={isAgreedToTerms}
           onChange={(e) => setIsAgreedToTerms(e.target.checked)}
-          className="w-4.5 h-4.5 rounded text-[var(--accent-soft-foreground)] bg-[var(--color-glass-bg)] border-[var(--color-glass-border)] focus:ring-[var(--accent)] focus:ring-offset-[var(--card)] accent-[var(--accent)] shrink-0 mt-0.5 cursor-pointer"
+          className="w-4.5 h-4.5 rounded text-[var(--accent-soft-foreground)] bg-[var(--card)] border-[var(--border)] focus:ring-[var(--accent)] focus:ring-offset-[var(--card)] accent-[var(--accent)] shrink-0 mt-0.5 cursor-pointer"
         />
         <label htmlFor="agree-terms-checkbox" className="text-xs text-[var(--muted-foreground)] leading-normal select-none font-sans">
           Би энэхүү платформын{' '}
@@ -570,7 +550,7 @@ export default function RegisterForm({ form, onRegister, onOptimizeBio }: Regist
           </div>
         )}
         {error && (
-          <div className="mt-3.5 bg-red-500/10 border border-red-500/40 text-red-300 px-4 py-2.5 rounded-lg text-xs flex items-center justify-center text-center animate-fade-in font-sans">
+          <div className="mt-3.5 bg-red-500/10 border border-red-500/40 text-red-700 px-4 py-2.5 rounded-lg text-xs flex items-center justify-center text-center animate-fade-in font-sans">
             <span>{error}</span>
           </div>
         )}

@@ -66,8 +66,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const job = await getSingleJob(id);
   
   if (!job) {
+    // No "| Жолооч Монголиа" suffix here — the root layout's title template
+    // (`%s | Жолооч Монголиа`) already appends it; adding it here too produced
+    // a doubled-up title tag in the rendered HTML.
     return {
-      title: 'Ажлын зар олдсонгүй | Барилга, Механизмын Ажлын Нэгдсэн Систем',
+      title: 'Ажлын зар олдсонгүй',
       description: 'Манай системээс ажлын зарын дэлгэрэнгүйг харна уу.'
     };
   }
@@ -76,17 +79,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   // Format title like: "Дундговьд ажиллах Ковш оператор яаралтай авна - Цалин 3.5 сая"
   const title = job.salary === 0
-    ? `${job.title} - Цалин тохиролцоно | Жолооч Монголиа`
-    : `${job.title} - Цалин ${formattedSalary} | Жолооч Монголиа`;
-  const description = `${job.employerName} захиалагчаас зарласан ажил: ${job.description.slice(0, 150)}... Шалгуур: ${job.requirements.join(', ')}`;
+    ? `${job.title} - Цалин тохиролцоно`
+    : `${job.title} - Цалин ${formattedSalary}`;
+  const description = `${formatMongolianLocation(job.location)} ${job.employerName} захиалагчаас зарласан ажил: ${job.description.slice(0, 150)}... Шалгуур: ${job.requirements.join(', ')}`;
+  const jobImage = job.imageUrls?.[0] || job.imageUrl;
 
   return {
     title,
     description,
+    alternates: {
+      canonical: `/jobs/${job.id}`,
+    },
+    // Filled/closed jobs shouldn't stay indexed as if they were still hiring —
+    // Google for Jobs explicitly penalizes stale listings that no longer accept
+    // applicants (audit P5).
+    robots: job.status === 'open' ? undefined : { index: false, follow: true },
     openGraph: {
-      title,
+      title: `${title} | Жолооч Монголиа`,
       description,
-      type: 'website'
+      type: 'website',
+      ...(jobImage && { images: [jobImage] }),
     }
   };
 }
@@ -116,7 +128,10 @@ export default async function JobPage({ params }: Props) {
     'Төслөөр': 'CONTRACTOR',
   };
 
-  const jsonLd = job
+  // Only actively-open jobs get JobPosting structured data — Google for Jobs
+  // treats a JobPosting whose position is already filled as a stale/spam
+  // signal (audit P5).
+  const jsonLd = job && job.status === 'open'
     ? {
         '@context': 'https://schema.org',
         '@type': 'JobPosting',

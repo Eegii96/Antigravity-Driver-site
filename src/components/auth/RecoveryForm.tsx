@@ -80,7 +80,7 @@ export default function RecoveryForm({ form, onVerifyAccount, onResetPassword }:
                   /* STEP 2: Answer Questions and Reset Password */
                   <div className="space-y-3.5 animate-fade-in">
                     {/* Security Question 1 */}
-                    <div className="bg-[var(--color-glass-bg)] p-3 rounded-lg border border-[var(--color-glass-border)] font-sans space-y-2 text-left">
+                    <div className="bg-[var(--card)] p-3 rounded-lg border border-[var(--border)] font-sans space-y-2 text-left">
                       <span className="text-[11px] font-semibold text-[var(--accent-soft-foreground)] block">🔒 Аюулгүй байдлын асуулт 1:</span>
                       <p className="text-xs text-[var(--fg)] leading-relaxed font-sans">{securityQ1}</p>
                       <input
@@ -95,7 +95,7 @@ export default function RecoveryForm({ form, onVerifyAccount, onResetPassword }:
                     </div>
 
                     {/* Security Question 2 */}
-                    <div className="bg-[var(--color-glass-bg)] p-3 rounded-lg border border-[var(--color-glass-border)] font-sans space-y-2 text-left">
+                    <div className="bg-[var(--card)] p-3 rounded-lg border border-[var(--border)] font-sans space-y-2 text-left">
                       <span className="text-[11px] font-semibold text-[var(--accent-soft-foreground)] block">🔒 Аюулгүй байдлын асуулт 2:</span>
                       <p className="text-xs text-[var(--fg)] leading-relaxed font-sans">{securityQ2}</p>
                       <input
@@ -133,13 +133,13 @@ export default function RecoveryForm({ form, onVerifyAccount, onResetPassword }:
                           </span>
                         </div>
                         {forgotNewPassword !== '' && forgotNewPassword.length < 8 && (
-                          <p className="text-[10px] text-red-400 mt-1 font-sans flex items-center space-x-1">
+                          <p className="text-[10px] text-red-700 mt-1 font-sans flex items-center space-x-1">
                             <span className="font-bold">✗</span>
                             <span>Нууц код хамгийн багадаа 8 тэмдэгт байх шаардлагатай! (Одоо: {forgotNewPassword.length})</span>
                           </p>
                         )}
                         {forgotNewPassword !== '' && forgotNewPassword.length >= 8 && !/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(forgotNewPassword) && (
-                          <p className="text-[10px] text-red-400 mt-1 font-sans flex items-center space-x-1">
+                          <p className="text-[10px] text-red-700 mt-1 font-sans flex items-center space-x-1">
                             <span className="font-bold">✗</span>
                             <span>Нууц үгэнд дор хаяж нэг тусгай тэмдэгт (!@#$%^&* гэх мэт) орох шаардлагатай!</span>
                           </p>
@@ -168,7 +168,7 @@ export default function RecoveryForm({ form, onVerifyAccount, onResetPassword }:
                           </span>
                         </div>
                         {forgotConfirmNewPassword !== '' && forgotNewPassword !== forgotConfirmNewPassword && (
-                          <p className="text-[10px] text-red-400 mt-1 font-sans flex items-center space-x-1">
+                          <p className="text-[10px] text-red-700 mt-1 font-sans flex items-center space-x-1">
                             <span className="font-bold">✗</span>
                             <span>Давтан оруулсан нууц код тохирохгүй байна!</span>
                           </p>
@@ -194,7 +194,7 @@ export default function RecoveryForm({ form, onVerifyAccount, onResetPassword }:
                     </div>
                   )}
                   {error && (
-                    <div className="mt-3.5 bg-red-500/10 border border-red-500/40 text-red-300 px-4 py-2.5 rounded-lg text-xs flex items-center justify-center text-center animate-fade-in font-sans">
+                    <div className="mt-3.5 bg-red-500/10 border border-red-500/40 text-red-700 px-4 py-2.5 rounded-lg text-xs flex items-center justify-center text-center animate-fade-in font-sans">
                       <span>{error}</span>
                     </div>
                   )}
