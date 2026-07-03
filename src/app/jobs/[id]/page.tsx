@@ -1,40 +1,10 @@
 import { Metadata } from 'next';
 import { getSingleJob, getJobs } from '../../../lib/db';
+import { formatMongolianSalary, formatMongolianLocation } from '../../../lib/job-format';
 import JobDetailClient from './JobDetailClient';
 
 interface Props {
   params: Promise<{ id: string }>;
-}
-
-// Format Mongolian salary to human-readable form (e.g. 3500000 -> 3.5 сая, 120000 -> 120 мянга)
-function formatMongolianSalary(salary: number): string {
-  if (salary === 0) {
-    return 'тохиролцоно';
-  }
-  if (salary >= 1000000) {
-    const millions = salary / 1000000;
-    return `${Number(millions.toFixed(1))} сая`;
-  } else if (salary >= 1000) {
-    const thousands = salary / 1000;
-    return `${Number(thousands.toFixed(1))} мянга`;
-  }
-  return salary.toString();
-}
-
-// Append correct Mongolian location suffixes (e.g. Дундговь -> Дундговьд, Сонгинохайрхан дүүрэг -> Сонгинохайрхан дүүрэгт)
-function formatMongolianLocation(location: string): string {
-  const loc = location.trim();
-  if (loc.endsWith('аймаг')) {
-    return `${loc}т`;
-  } else if (loc.endsWith('дүүрэг')) {
-    return `${loc}т`;
-  } else if (loc.endsWith('сум')) {
-    return `${loc}анд`;
-  } else if (loc.endsWith('хот')) {
-    return `${loc}од`;
-  } else {
-    return `${loc}д`;
-  }
 }
 
 // Generate static params for Next.js static export

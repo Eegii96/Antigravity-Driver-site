@@ -52,6 +52,28 @@ export function subscribeToJobs(callback: (jobs: Job[]) => void): () => void {
   );
 }
 
+/**
+ * Jobs in a single location, newest first — backs the aimag landing pages (audit P7).
+ * Sorts client-side rather than adding `orderBy('createdAt')` to the query: combining
+ * it with the `where('location', ...)` equality filter would require a composite
+ * Firestore index that doesn't exist yet, and job volume per location is small enough
+ * that an extra production index deploy isn't worth it for this.
+ */
+export async function getJobsByLocation(location: string): Promise<Job[]> {
+  try {
+    const q = query(
+      collection(db, 'jobs'),
+      where('location', '==', location),
+      limit(50)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(mapJobDoc).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  } catch (err) {
+    console.error('Error fetching jobs by location from Firestore:', err);
+    return [];
+  }
+}
+
 export async function getSingleJob(jobId: string): Promise<Job | null> {
   try {
     const snap = await getDoc(doc(db, 'jobs', jobId));

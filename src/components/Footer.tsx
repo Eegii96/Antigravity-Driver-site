@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Mail, Phone, MapPin, X, FileText, Lock } from 'lucide-react';
+import { AIMAG_SLUGS } from '../lib/aimag-slugs';
 
 export default function Footer() {
   const [showTerms, setShowTerms] = useState<boolean>(false);
@@ -62,7 +64,19 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto border-t border-[var(--border)] mt-8 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-[var(--muted-foreground)] font-sans">
+      <div className="max-w-7xl mx-auto border-t border-[var(--border)] mt-8 pt-6 text-[10px] text-[var(--muted-foreground)] font-sans">
+        <span className="font-semibold">Аймгаар хайх:</span>{' '}
+        {AIMAG_SLUGS.map(({ location, slug }, idx) => (
+          <span key={slug}>
+            <Link href={`/jobs/aimag/${slug}`} className="hover:text-[var(--fg)] transition-colors">
+              {location}
+            </Link>
+            {idx < AIMAG_SLUGS.length - 1 && ' · '}
+          </span>
+        ))}
+      </div>
+
+      <div className="max-w-7xl mx-auto border-t border-[var(--border)] mt-6 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-[var(--muted-foreground)] font-sans">
         <p>© {new Date().getFullYear()} Хүнд машин, механизм & Газар шорооны ажлын сайт. Бүх эрх хуулиар хамгаалагдсан.</p>
         <div className="flex space-x-6 mt-4 md:mt-0">
           <span 

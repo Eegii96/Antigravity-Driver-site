@@ -54,6 +54,24 @@ export const getFirstName = (userOrName?: User | string | null): string => {
   return '';
 };
 
+/** Format a salary in MNT to human-readable Mongolian (e.g. 3500000 -> "3.5 сая"). */
+export const formatMongolianSalary = (salary: number): string => {
+  if (salary === 0) return 'тохиролцоно';
+  if (salary >= 1000000) return `${Number((salary / 1000000).toFixed(1))} сая`;
+  if (salary >= 1000) return `${Number((salary / 1000).toFixed(1))} мянга`;
+  return salary.toString();
+};
+
+/** Append the correct Mongolian location suffix (AGENTS.md §4 grammar rules). */
+export const formatMongolianLocation = (location: string): string => {
+  const loc = location.trim();
+  if (loc.endsWith('аймаг')) return `${loc}т`;
+  if (loc.endsWith('дүүрэг')) return `${loc}т`;
+  if (loc.endsWith('сум')) return `${loc}анд`;
+  if (loc.endsWith('хот')) return `${loc}од`;
+  return `${loc}д`;
+};
+
 /** Format an ISO date string as `YYYY.MM.DD`. Returns the input unchanged if unparseable. */
 export const formatDate = (isoString?: string): string => {
   if (!isoString) return '';
