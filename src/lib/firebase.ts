@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { initializeFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -26,5 +27,19 @@ export const db = initializeFirestore(app, {
 });
 export const auth = getAuth(app);
 export const storage = getStorage(app);
+
+// App Check (audit S4/S10) — proves requests come from the real web app, not
+// a script hitting Firestore/Storage/Functions directly. No-ops until
+// NEXT_PUBLIC_RECAPTCHA_V3_SITE_KEY is set (see .env.example): shipping this
+// SDK call is safe on its own, since nothing enforces App Check tokens yet —
+// that's a separate, deliberately staged Firebase Console setting per
+// service (Monitor mode first, then Enforce, done outside this codebase).
+const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_V3_SITE_KEY;
+if (typeof window !== 'undefined' && recaptchaSiteKey) {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaV3Provider(recaptchaSiteKey),
+    isTokenAutoRefreshEnabled: true,
+  });
+}
 
 export default app;
