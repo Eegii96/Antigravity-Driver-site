@@ -79,23 +79,23 @@ export default function GivenReviewsList({ givenReviews, allJobs, onEditReview, 
                           {[1, 2, 3, 4, 5].map((s) => (
                             <Star key={s} className={`w-2.5 h-2.5 ${s <= rev.rating ? 'text-[var(--accent-soft-foreground)] fill-[var(--accent)]' : 'text-[var(--muted-foreground)]'}`} />
                           ))}
-                          <span className="text-[10px] text-[var(--fg)] font-bold ml-1 font-mono">{rev.rating}.0</span>
+                          <span className="text-xs text-[var(--fg)] font-bold ml-1 font-mono">{rev.rating}.0</span>
                         </div>
 
                         {/* Edit/Delete Actions */}
                         <div className="flex items-center space-x-2">
-                          <button 
+                          <button
                             type="button"
                             onClick={() => onEditReview(rev)}
-                            className="text-[10px] bg-[var(--card)] hover:bg-[var(--card)] border border-[var(--border)] hover:border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--fg)] px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
+                            className="text-xs bg-[var(--card)] hover:bg-[var(--card)] border border-[var(--border)] hover:border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--fg)] px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
                           >
                             <Edit className="w-2.5 h-2.5 text-[var(--accent-soft-foreground)]" />
                             <span>Засах</span>
                           </button>
-                          <button 
+                          <button
                             type="button"
                             onClick={() => onDeleteReview(rev.id)}
-                            className="text-[10px] bg-[var(--card)] hover:bg-[var(--card)] border border-[var(--border)] hover:border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--accent-soft-foreground)] px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
+                            className="text-xs bg-[var(--card)] hover:bg-[var(--card)] border border-[var(--border)] hover:border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--accent-soft-foreground)] px-2 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
                           >
                             <Trash2 className="w-2.5 h-2.5 text-[var(--accent-soft-foreground)]" />
                             <span>Устгах</span>
@@ -108,7 +108,7 @@ export default function GivenReviewsList({ givenReviews, allJobs, onEditReview, 
                       &ldquo;{rev.comment}&rdquo;
                     </p>
 
-                    <div className="flex justify-end items-center text-[10px] text-[var(--muted-foreground)] font-mono border-t border-[var(--border)] pt-2">
+                    <div className="flex justify-end items-center text-xs text-[var(--muted-foreground)] font-mono border-t border-[var(--border)] pt-2">
                       <span className="text-[var(--muted-foreground)]">{formatReviewDate(rev.createdAt)}</span>
                     </div>
                   </div>

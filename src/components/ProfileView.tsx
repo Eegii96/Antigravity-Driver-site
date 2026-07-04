@@ -447,12 +447,12 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
             </span>
             <button
               onClick={() => setShowEdit(true)}
-              className="bg-[var(--alert)] hover:brightness-95 text-[var(--muted-foreground)] px-3.5 py-1 rounded-lg font-bold text-[10.5px] transition-colors cursor-pointer font-sans"
+              className="bg-[var(--alert)] hover:brightness-95 text-[var(--muted-foreground)] px-3.5 py-1 rounded-lg font-bold text-xs transition-colors cursor-pointer font-sans"
             >
               Асуулт тохируулах (Хамгаалах)
             </button>
           </div>
-          <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed font-sans">
+          <p className="text-sm text-[var(--muted-foreground)] leading-relaxed font-sans">
             Та аюулгүй байдлын 2 нууц асуултыг тохируулаагүй байна. Нууц асуултыг тохируулснаар нууц үгээ мартсан үедээ утасны дугаараар найдвартай сэргээх боломж бүрдэж, бусад хүмүүс таны хаягийг хулгайлахаас 100% сэргийлнэ.
           </p>
         </div>
@@ -472,7 +472,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
               referrerPolicy="no-referrer"
               onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }}
             />
-            <div className={`absolute bottom-0 right-1 px-3 py-0.5 rounded-full text-[10px] font-bold font-mono text-[var(--accent-foreground)] tracking-wider ${
+            <div className={`absolute bottom-0 right-1 px-3 py-0.5 rounded-full text-xs font-bold font-mono text-[var(--accent-foreground)] tracking-wider ${
               profileUser.rating >= 4.5 ? 'bg-[var(--verify)]' : profileUser.rating >= 3.5 ? 'bg-[var(--accent)]' : 'bg-[var(--alert)]'
             }`}>
               {profileUser.type === 'operator' ? 'ЖОЛООЧ' : 'ЗАХИАЛАГЧ'}
@@ -486,17 +486,17 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                 <span className="block text-xs font-semibold text-[var(--accent-soft-foreground)] mt-1">{profileUser.companyName}</span>
               )}
             </h3>
-            <p className="text-[10px] text-[var(--muted-foreground)] mt-1 font-mono">ID: {profileUser.id}</p>
+            <p className="text-xs text-[var(--muted-foreground)] mt-1 font-mono">ID: {profileUser.id}</p>
           </div>
 
           {/* Rating overview */}
           <div className="bg-[var(--card)] border border-[var(--border)] p-3.5 rounded-md w-full text-center">
-            <p className="text-[11px] text-[var(--muted-foreground)] font-medium">Дундаж үнэлгээ</p>
+            <p className="text-xs text-[var(--muted-foreground)] font-medium">Дундаж үнэлгээ</p>
             <div className="flex items-center justify-center space-x-1 mt-1">
               <Star className="w-5 h-5 text-[var(--accent-soft-foreground)] fill-[var(--accent)] drop-shadow-[0_0_5px_rgba(245,158,11,0.4)]" />
               <span className="text-2xl font-black font-mono text-[var(--fg)]">{(profileUser.rating ?? 5).toFixed(1)}</span>
             </div>
-            <p className="text-[10px] text-[var(--muted-foreground)] mt-1.5 font-semibold">{displayReviews.length} удаагийн ажил дуусгасан</p>
+            <p className="text-xs text-[var(--muted-foreground)] mt-1.5 font-semibold">{displayReviews.length} удаагийн ажил дуусгасан</p>
           </div>
         </div>
 
@@ -527,14 +527,14 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                   <span className="font-semibold text-[var(--muted-foreground)]">Имэйл хаяг:</span>
                   <span className="select-all font-sans text-[var(--fg)]">{profileUser.email ? profileUser.email : 'бөглөөгүй'}</span>
                   {isOwnProfile && profileUser.emailVisible === false && (
-                    <span className="text-[10px] bg-[var(--bg2)] text-[var(--muted-foreground)] border border-[var(--border)] px-2 py-0.5 rounded font-medium ml-2 shrink-0">Бусдад харагдахгүй</span>
+                    <span className="text-xs bg-[var(--bg2)] text-[var(--muted-foreground)] border border-[var(--border)] px-2 py-0.5 rounded font-medium ml-2 shrink-0">Бусдад харагдахгүй</span>
                   )}
                 </div>
               ) : (
                 <div className="flex items-center space-x-2 text-[var(--muted-foreground)]">
                   <Mail className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
                   <span className="font-semibold text-[var(--muted-foreground)]">Имэйл хаяг:</span>
-                  <span className="italic text-[10px] text-[var(--muted-foreground)] font-sans">(Нууцалсан)</span>
+                  <span className="italic text-xs text-[var(--muted-foreground)] font-sans">(Нууцалсан)</span>
                 </div>
               )}
 
@@ -544,14 +544,14 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                   <span className="font-semibold text-[var(--muted-foreground)]">Утас:</span>
                   <span className="select-all font-mono font-bold text-[var(--accent-soft-foreground)]">{profileUser.phone}</span>
                   {isOwnProfile && profileUser.phoneVisible === false && (
-                    <span className="text-[10px] bg-[var(--bg2)] text-[var(--muted-foreground)] border border-[var(--border)] px-2 py-0.5 rounded font-medium ml-2 shrink-0">Бусдад харагдахгүй</span>
+                    <span className="text-xs bg-[var(--bg2)] text-[var(--muted-foreground)] border border-[var(--border)] px-2 py-0.5 rounded font-medium ml-2 shrink-0">Бусдад харагдахгүй</span>
                   )}
                 </div>
               ) : (
                 <div className="flex items-center space-x-2 text-[var(--muted-foreground)]">
                   <Phone className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
                   <span className="font-semibold text-[var(--muted-foreground)]">Утас:</span>
-                  <span className="italic text-[10px] text-[var(--muted-foreground)] font-sans">(Нууцалсан)</span>
+                  <span className="italic text-xs text-[var(--muted-foreground)] font-sans">(Нууцалсан)</span>
                 </div>
               )}
 
@@ -616,7 +616,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
             <CheckCircle className="w-4.5 h-4.5 text-[var(--accent-soft-foreground)] drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
             <span>Баталгаажсан Ажлын Түүх ({profileUser.historyVisible !== false || isOwnProfile ? historyItems.length : 0})</span>
             {isOwnProfile && profileUser.historyVisible === false && (
-              <span className="text-[10.5px] bg-[var(--bg2)] text-[var(--muted-foreground)] border border-[var(--border)] px-2 py-0.5 rounded font-normal normal-case ml-2 shrink-0">Бусдад харагдахгүй</span>
+              <span className="text-xs bg-[var(--bg2)] text-[var(--muted-foreground)] border border-[var(--border)] px-2 py-0.5 rounded font-normal normal-case ml-2 shrink-0">Бусдад харагдахгүй</span>
             )}
           </h3>
 
@@ -631,19 +631,19 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                   <div key={item.id} className="panel p-4 rounded-md border border-[var(--border)] hover:border-[var(--border)] space-y-2 relative overflow-hidden group">
                     <div className="flex justify-between items-start">
                       <h4 className="text-xs font-bold text-[var(--fg)] block max-w-[70%] truncate group-hover:text-[var(--verify)] transition-colors">{item.title}</h4>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono tracking-wide uppercase ${
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold font-mono tracking-wide uppercase ${
                         item.status === 'completed' ? 'bg-[rgba(34,211,238,0.15)] text-[#22d3ee] border border-[rgba(34,211,238,0.3)]' : 'bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] border border-[var(--accent)]'
                       }`}>
                         {item.status === 'completed' ? 'Гүйцэтгэсэн' : 'Идэвхтэй'}
                       </span>
                     </div>
                     
-                    <div className="flex justify-between text-[11px] text-[var(--muted-foreground)] font-mono">
+                    <div className="flex justify-between text-xs text-[var(--muted-foreground)] font-mono">
                       <span>Хамтарсан тал:</span>
                       <span className="text-[var(--muted-foreground)] font-sans font-medium">{item.partnerName}</span>
                     </div>
 
-                    <div className="flex justify-between text-[11px] text-[var(--muted-foreground)] font-mono">
+                    <div className="flex justify-between text-xs text-[var(--muted-foreground)] font-mono">
                       <span>Хугацаа:</span>
                       <span className="text-[var(--muted-foreground)]">{item.dateRange}</span>
                     </div>
@@ -776,13 +776,13 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
             {/* Form */}
             <form onSubmit={handleEditReviewSubmit} className="p-6 space-y-4">
               <div className="bg-[rgba(255,255,255,0.06)] p-3.5 rounded-lg border border-[var(--border)] space-y-1">
-                <span className="text-[10px] text-[var(--muted-foreground)] uppercase tracking-widest block font-mono">Ажлын нэр</span>
+                <span className="text-xs text-[var(--muted-foreground)] uppercase tracking-widest block font-mono">Ажлын нэр</span>
                 <p className="text-xs font-semibold text-[var(--accent-soft-foreground)]">{editingReview.jobTitle}</p>
               </div>
 
               {/* Rating selection */}
               <div className="flex flex-col items-center py-3 space-y-2 bg-[rgba(255,255,255,0.04)] border border-[var(--border)] rounded-lg">
-                <span className="text-[10px] text-[var(--muted-foreground)] uppercase tracking-widest font-mono">Үнэлгээ</span>
+                <span className="text-xs text-[var(--muted-foreground)] uppercase tracking-widest font-mono">Үнэлгээ</span>
                 <div className="flex items-center space-x-1.5">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -813,7 +813,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
               {/* Comment field */}
               <div className="space-y-1.5">
-                <label htmlFor="edit-review-comment" className="block text-[10px] text-[var(--muted-foreground)] uppercase tracking-widest font-mono">Сэтгэгдэл, тайлбар</label>
+                <label htmlFor="edit-review-comment" className="block text-xs text-[var(--muted-foreground)] uppercase tracking-widest font-mono">Сэтгэгдэл, тайлбар</label>
                 <textarea
                   id="edit-review-comment"
                   required
@@ -827,7 +827,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
               {/* Error */}
               {editError && (
-                <div className="text-[11px] text-[var(--accent-soft-foreground)] bg-[var(--accent-soft)] border border-[var(--accent)] p-2.5 rounded-lg text-center font-semibold">
+                <div className="text-sm text-[var(--accent-soft-foreground)] bg-[var(--accent-soft)] border border-[var(--accent)] p-2.5 rounded-lg text-center font-semibold">
                   {editError}
                 </div>
               )}

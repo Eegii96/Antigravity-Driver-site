@@ -197,7 +197,7 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
             </span>
           </div>
           {regPassword !== '' && regPassword.length < 8 && (
-            <p className="text-[10px] text-red-700 mt-1 font-sans flex items-center space-x-1">
+            <p className="text-sm text-red-700 mt-1 font-sans flex items-center space-x-1">
               <span className="font-bold">✗</span>
               <span>Нууц үг хамгийн багадаа 8 тэмдэгт байх шаардлагатай! (Одоо: {regPassword.length})</span>
             </p>
@@ -227,7 +227,7 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
             </span>
           </div>
           {regConfirmPassword !== '' && regPassword !== regConfirmPassword && (
-            <p className="text-[10px] text-red-700 mt-1 font-sans flex items-center space-x-1">
+            <p className="text-sm text-red-700 mt-1 font-sans flex items-center space-x-1">
               <span className="font-bold">✗</span>
               <span>Давтан оруулсан нууц үг тохирохгүй байна!</span>
             </p>
@@ -236,8 +236,8 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
 
         {/* Live Password Checklist */}
         <div className="bg-[var(--card)] p-3 rounded-lg border border-[var(--border)] space-y-1.5 font-sans">
-          <span className="text-[10px] font-semibold text-[var(--muted-foreground)] block mb-1">Нууц үгэнд тавих шаардлага:</span>
-          <div className="flex items-center space-x-2 text-[10.5px]">
+          <span className="text-xs font-semibold text-[var(--muted-foreground)] block mb-1">Нууц үгэнд тавих шаардлага:</span>
+          <div className="flex items-center space-x-2 text-sm">
             <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${regPassword.length >= 8
                 ? 'bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] border-[var(--accent)]'
                 : 'bg-red-500/10 text-red-700 border-red-500/30'
@@ -248,7 +248,7 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
               Хамгийн багадаа 8 тэмдэгт (Одоогийн урт: {regPassword.length})
             </span>
           </div>
-          <div className="flex items-center space-x-2 text-[10.5px]">
+          <div className="flex items-center space-x-2 text-sm">
             <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${(regPassword === regConfirmPassword && regConfirmPassword !== '')
                 ? 'bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] border-[var(--accent)]'
                 : 'bg-red-500/10 text-red-700 border-red-500/30'
@@ -269,7 +269,7 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
             <span>Бүртгүүлэхийн тулд дараах мэдээллүүдийг гүйцээнэ үү:</span>
           </div>
-          <ul className="list-disc pl-4.5 space-y-1 text-[10.5px] text-[var(--muted-foreground)]">
+          <ul className="list-disc pl-4.5 space-y-1 text-sm text-[var(--muted-foreground)]">
             {lastName.trim() === '' && <li>Овгоо оруулна уу.</li>}
             {firstName.trim() === '' && <li>Нэрээ оруулна уу.</li>}
             {email.trim() !== '' && !email.includes('@') && <li>Зөв имэйл хаяг оруулна уу.</li>}
@@ -304,7 +304,7 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
 
       {/* Submit */}
       <div className="pt-3">
-        <p className="text-[10.5px] text-[var(--muted-foreground)] text-center mb-2.5 font-sans">
+        <p className="text-sm text-[var(--muted-foreground)] text-center mb-2.5 font-sans">
           Профайл зураг, био, туршлагаа дараа нэмж болно — одоохондоо эдгээрийг л бөглөнө үү.
         </p>
         <button

@@ -86,7 +86,7 @@ export default function JobCard({
                           <ChevronLeft className="w-4 h-4" />
                           <span className="text-xs text-[var(--muted-foreground)]">Буцах</span>
                         </button>
-                        <span className="font-mono text-[10px] text-[var(--muted-foreground)]">{formatRelativeDate(job.createdAt)}</span>
+                        <span className="font-mono text-xs text-[var(--muted-foreground)]">{formatRelativeDate(job.createdAt)}</span>
                       </div>
 
                       {/* ── CREATOR INFO ROW (Name on left, Phone on right) ── */}
@@ -141,7 +141,7 @@ export default function JobCard({
                         <h2 className="text-base font-display font-extrabold uppercase tracking-tight text-[var(--fg)] leading-snug">{job.title}</h2>
                         <p className="text-[12px] text-[var(--muted-foreground)] leading-relaxed">{job.description}</p>
                         {job.additionalInfo && (
-                          <p className="text-[11px] text-[var(--muted-foreground)] italic bg-[var(--bg2)] p-2.5 rounded-md border border-[var(--border)] leading-relaxed">
+                          <p className="text-sm text-[var(--muted-foreground)] italic bg-[var(--bg2)] p-2.5 rounded-md border border-[var(--border)] leading-relaxed">
                             {job.additionalInfo}
                           </p>
                         )}
@@ -160,14 +160,14 @@ export default function JobCard({
                                   decoding="async"
                                   className="w-full h-full object-contain"
                                 />
-                                <div className="absolute bottom-2 right-2 bg-[var(--fg)]/75 text-[var(--card)] text-[10.5px] font-bold px-2 py-0.5 rounded-full font-sans">
+                                <div className="absolute bottom-2 right-2 bg-[var(--fg)]/75 text-[var(--card)] text-xs font-bold px-2 py-0.5 rounded-full font-sans">
                                   {idx + 1} / {job.imageUrls?.length}
                                 </div>
                               </div>
                             ))}
                           </div>
                           {job.imageUrls.length > 1 && (
-                            <p className="text-[10.5px] text-[var(--muted-foreground)] text-center font-sans select-none">
+                            <p className="text-xs text-[var(--muted-foreground)] text-center font-sans select-none">
                               ↔️ Хажуу тийш гүйлгэж үзнэ үү
                             </p>
                           )}
@@ -187,16 +187,16 @@ export default function JobCard({
                       {/* ── SALARY + LOCATION 2-column grid ── */}
                       <div className="grid grid-cols-2 gap-3">
                         <div className="bg-[var(--bg2)] p-3.5 rounded-md border border-[var(--border)]">
-                          <span className="text-[11px] text-[var(--muted-foreground)] uppercase tracking-wider font-bold block mb-1">Цалин / Төлбөр</span>
+                          <span className="text-xs text-[var(--muted-foreground)] uppercase tracking-wider font-bold block mb-1">Цалин / Төлбөр</span>
                           <span className="font-mono font-bold text-[var(--verify)] text-sm">
                             {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
                           </span>
                           {job.salaryUnit && job.salaryUnit !== 'Өдрөөр' && (
-                            <span className="text-[10.5px] text-[var(--muted-foreground)] block mt-0.5">{job.salaryUnit}</span>
+                            <span className="text-xs text-[var(--muted-foreground)] block mt-0.5">{job.salaryUnit}</span>
                           )}
                         </div>
                         <div className="bg-[var(--bg2)] p-3.5 rounded-md border border-[var(--border)]">
-                          <span className="text-[11px] text-[var(--muted-foreground)] uppercase tracking-wider font-bold block mb-1">Байршил</span>
+                          <span className="text-xs text-[var(--muted-foreground)] uppercase tracking-wider font-bold block mb-1">Байршил</span>
                           <span className="font-semibold text-[var(--fg)] text-xs flex items-start gap-1">
                             <MapPin className="w-3.5 h-3.5 text-[var(--muted-foreground)] shrink-0 mt-0.5" />
                             {job.location}
@@ -209,14 +209,14 @@ export default function JobCard({
                         {(() => {
                           if (job.status === 'open') {
                             return (
-                              <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-sm border border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)]">
+                              <span className="inline-flex items-center text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-sm border border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)]">
                                 <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-[var(--accent)] animate-pulse" />
                                 Нээлттэй (Идэвхтэй)
                               </span>
                             );
                           } else if (job.status === 'in_progress') {
                             return (
-                              <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)]">
+                              <span className="inline-flex items-center text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)]">
                                 <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-[var(--alert)] animate-pulse" />
                                 Ажиллаж байгаа
                               </span>
@@ -225,13 +225,13 @@ export default function JobCard({
                             const isReviewed = job.isReviewedByEmployer;
                             if (isReviewed) {
                               return (
-                                <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-sm border border-[var(--verify)] bg-[rgba(31,138,76,0.1)] text-[var(--verify)]">
+                                <span className="inline-flex items-center text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-sm border border-[var(--verify)] bg-[rgba(31,138,76,0.1)] text-[var(--verify)]">
                                   Үнэлэгдсэн • Хаагдсан ✓
                                 </span>
                               );
                             } else {
                               return (
-                                <span className="inline-flex items-center text-[10.5px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)] animate-pulse">
+                                <span className="inline-flex items-center text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)] animate-pulse">
                                   <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-[var(--alert)]" />
                                   Ажил дууссан • Үнэлэх шаардлагатай ⚠️
                                 </span>
@@ -266,15 +266,15 @@ export default function JobCard({
                                 {currentUser.id === job.employerId ? (
                                   <div className="space-y-3">
                                     <div className="bg-[var(--bg2)] p-3.5 rounded-md border border-[var(--border)] space-y-3">
-                                      <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-mono tracking-wider">Зарын Тохиргоо:</span>
+                                      <span className="text-xs text-[var(--muted-foreground)] block uppercase font-mono tracking-wider">Зарын Тохиргоо:</span>
                                       <div className="flex space-x-2.5">
-                                        <button type="button" onClick={() => onEdit(job)} className="flex-1 border border-[var(--border)] hover:border-[var(--border-strong)] bg-[var(--card)] hover:bg-[var(--bg2)] text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold text-[10.5px] py-1.5 px-2.5 rounded transition-colors cursor-pointer text-center">
+                                        <button type="button" onClick={() => onEdit(job)} className="flex-1 border border-[var(--border)] hover:border-[var(--border-strong)] bg-[var(--card)] hover:bg-[var(--bg2)] text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold text-xs py-1.5 px-2.5 rounded transition-colors cursor-pointer text-center">
                                           Засах
                                         </button>
                                         <button
                                           type="button"
                                           onClick={() => onDelete(job)}
-                                          className="flex-1 border border-rose-300 hover:border-rose-400 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 font-semibold text-[10.5px] py-1.5 px-2.5 rounded transition-colors cursor-pointer text-center"
+                                          className="flex-1 border border-rose-300 hover:border-rose-400 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 font-semibold text-xs py-1.5 px-2.5 rounded transition-colors cursor-pointer text-center"
                                         >
                                           Устгах
                                         </button>
@@ -284,7 +284,7 @@ export default function JobCard({
                                       <span className="font-bold text-[var(--fg)]">Хүсэлт ирүүлсэн харилцагч ({job.applicants.length})</span>
                                     </div>
                                     {job.applicants.length === 0 ? (
-                                      <p className="text-[11px] text-[var(--muted-foreground)] text-center py-2">Ирүүлсэн хүсэлт байхгүй байна.</p>
+                                      <p className="text-xs text-[var(--muted-foreground)] text-center py-2">Ирүүлсэн хүсэлт байхгүй байна.</p>
                                     ) : (
                                       <div className="space-y-2 max-h-48 overflow-y-auto pr-1 overscroll-contain">
                                         {job.applicants.map((opId) => {
@@ -295,7 +295,7 @@ export default function JobCard({
                                               <button type="button" onClick={() => onNavigate(`/profile?id=${op.id}`)} className="text-xs text-[var(--fg)] font-medium hover:underline hover:text-[var(--accent-soft-foreground)] text-left focus:outline-none">
                                                 {op.fullName} {op.type === 'operator' && `(${op.experienceYears || 0} жил)`}
                                               </button>
-                                              <button onClick={() => onHire(job.id, op.id)} className="min-h-11 bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] text-[10px] font-bold px-3 rounded transition-all cursor-pointer">
+                                              <button onClick={() => onHire(job.id, op.id)} className="min-h-11 bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] text-xs font-bold px-3 rounded transition-all cursor-pointer">
                                                 Сонгох
                                               </button>
                                             </div>
@@ -313,7 +313,7 @@ export default function JobCard({
                                       {successMessage && successMessage.includes('хүсэлт') && (
                                         <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] text-[var(--verify)] p-3.5 rounded-md text-xs flex items-start space-x-2 animate-fade-in text-left">
                                           <CheckCircle className="w-4 h-4 text-[var(--verify)] shrink-0 mt-0.5" />
-                                          <span className="font-sans leading-normal text-[11px]">{successMessage}</span>
+                                          <span className="font-sans leading-normal text-sm">{successMessage}</span>
                                         </div>
                                       )}
                                     </div>
@@ -338,7 +338,7 @@ export default function JobCard({
                                   </span>
                                 </div>
                                 {successMessage && successMessage.includes('томиллоо') && (
-                                  <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] text-[var(--verify)] p-3 rounded-md text-[11px] flex items-start space-x-2 animate-fade-in text-left">
+                                  <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] text-[var(--verify)] p-3 rounded-md text-sm flex items-start space-x-2 animate-fade-in text-left">
                                     <CheckCircle className="w-4 h-4 text-[var(--verify)] shrink-0 mt-0.5" />
                                     <span className="font-sans leading-normal">{successMessage}</span>
                                   </div>
@@ -349,7 +349,7 @@ export default function JobCard({
                                   </button>
                                 )}
                                 {currentUser.id !== job.employerId && (
-                                  <p className="text-[10px] text-[var(--muted-foreground)]">Ажил олгогч ажлыг дууссаныг тэмдэглэсний дараа та үнэлгээ өгөх боломжтой болно.</p>
+                                  <p className="text-sm text-[var(--muted-foreground)]">Ажил олгогч ажлыг дууссаныг тэмдэглэсний дараа та үнэлгээ өгөх боломжтой болно.</p>
                                 )}
                               </div>
                             )}
@@ -384,7 +384,7 @@ export default function JobCard({
 
                                 {((currentUser.type === 'operator' && job.isReviewedByOperator) ||
                                   (currentUser.type === 'employer' && job.isReviewedByEmployer)) && (
-                                  <div className="text-[11px] text-[var(--muted-foreground)] text-center italic">
+                                  <div className="text-sm text-[var(--muted-foreground)] text-center italic">
                                     Таны үнэлгээ системд хэдийн бүртгэгдсэн байна. Таны хариуцлагатай оролцоонд баярлалаа!
                                   </div>
                                 )}
@@ -420,7 +420,7 @@ export default function JobCard({
                               onToggleShareMenu(shareMenuJob === job.id ? null : job.id);
                             }
                           }}
-                          className="flex items-center space-x-1.5 text-[11px] text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer"
+                          className="flex items-center space-x-1.5 text-xs text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer"
                         >
                           <Share2 className="w-3.5 h-3.5" />
                           <span>Хуваалцах</span>
@@ -432,7 +432,7 @@ export default function JobCard({
                             className="absolute bottom-full left-0 mb-2 bg-[var(--card)] border border-[var(--border)] rounded-md shadow-md p-3 z-50 w-64 animate-fade-in"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <p className="text-[11px] text-[var(--muted-foreground)] uppercase font-bold tracking-wider mb-2">Хуваалцах платформ</p>
+                            <p className="text-xs text-[var(--muted-foreground)] uppercase font-bold tracking-wider mb-2">Хуваалцах платформ</p>
                             <div className="grid grid-cols-3 gap-2">
                               {(() => {
                                 const jobUrl = typeof window !== 'undefined' ? `${window.location.origin}/jobs/${job.id}` : '';
@@ -502,7 +502,7 @@ export default function JobCard({
                                     trackShareJob(job.id, label.toLowerCase());
                                     onToggleShareMenu(null);
                                   }}
-                                  className="flex flex-col items-center justify-center bg-[var(--bg2)] hover:bg-[var(--border)] border border-[var(--border)] hover:border-[var(--border-strong)] rounded p-2 text-[10px] text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer gap-1"
+                                  className="flex flex-col items-center justify-center bg-[var(--bg2)] hover:bg-[var(--border)] border border-[var(--border)] hover:border-[var(--border-strong)] rounded p-2 text-xs text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer gap-1"
                                 >
                                   <span className="text-base">{emoji}</span>
                                   <span>{label}</span>
@@ -527,7 +527,7 @@ export default function JobCard({
                     >
                       <div className="space-y-3">
                         {/* Employer name and Date */}
-                        <div className="flex justify-between items-center text-[11px] text-[var(--muted-foreground)]">
+                        <div className="flex justify-between items-center text-xs text-[var(--muted-foreground)]">
                           {!currentUser ? (
                             <span
                               onClick={(e) => {
@@ -609,21 +609,21 @@ export default function JobCard({
                         {/* Salary and Status */}
                         <div className="flex flex-col items-end space-y-2 shrink-0">
                           <span className="font-sans font-bold text-[var(--fg)] flex items-center gap-1.5">
-                            <span className="text-[10.5px] text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">Цалин / Төлбөр:</span>
+                            <span className="text-xs text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">Цалин / Төлбөр:</span>
                             <span className="font-mono text-xs text-[var(--verify)]">{job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}</span>
                           </span>
 
                           {(() => {
                             if (job.status === 'open') {
                               return (
-                                <span className="inline-flex items-center text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)]">
+                                <span className="inline-flex items-center text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)]">
                                   <span className="w-1 h-1 rounded-full mr-1 bg-[var(--accent)] animate-pulse" />
                                   <span>Нээлттэй</span>
                                 </span>
                               );
                             } else if (job.status === 'in_progress') {
                               return (
-                                <span className="inline-flex items-center text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)]">
+                                <span className="inline-flex items-center text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)]">
                                   <span className="w-1 h-1 rounded-full mr-1 bg-[var(--alert)] animate-pulse" />
                                   <span>Ажиллаж байгаа</span>
                                 </span>
@@ -632,13 +632,13 @@ export default function JobCard({
                               const isReviewed = job.isReviewedByEmployer;
                               if (isReviewed) {
                                 return (
-                                  <span className="inline-flex items-center text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--verify)] bg-[rgba(31,138,76,0.1)] text-[var(--verify)]">
+                                  <span className="inline-flex items-center text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--verify)] bg-[rgba(31,138,76,0.1)] text-[var(--verify)]">
                                     <span>Хаагдсан ✓</span>
                                   </span>
                                 );
                               } else {
                                 return (
-                                  <span className="inline-flex items-center text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)] animate-pulse">
+                                  <span className="inline-flex items-center text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-sm border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-[var(--alert)] animate-pulse">
                                     <span className="w-1 h-1 rounded-full mr-1 bg-[var(--alert)]" />
                                     <span>Ажил дууссан ⚠️</span>
                                   </span>

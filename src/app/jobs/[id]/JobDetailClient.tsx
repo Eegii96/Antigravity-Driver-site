@@ -139,7 +139,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
           </button>
           <div>
             <h1 className="text-sm font-black tracking-wide text-[var(--fg)] uppercase text-left font-display">Жолооч Монголиа</h1>
-            <p className="text-[10px] text-[var(--muted-foreground)] font-medium">Хүнд машин, механизм & Газар шорооны ажлын сайт</p>
+            <p className="text-xs text-[var(--muted-foreground)] font-medium">Хүнд машин, механизм & Газар шорооны ажлын сайт</p>
           </div>
         </div>
 
@@ -155,7 +155,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
             >
               <div className="hidden md:block">
                 <p className="text-xs font-semibold text-[var(--fg)] leading-none">{getFirstName(currentUser)}</p>
-                <span className="text-[10.5px] text-[var(--muted-foreground)] font-mono">
+                <span className="text-xs text-[var(--muted-foreground)] font-mono">
                   {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} • {currentUser.rating}⭐
                 </span>
               </div>
@@ -280,7 +280,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
 
 
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono text-[10px] text-[var(--muted-foreground)]">
+                <span className="font-mono text-xs text-[var(--muted-foreground)]">
                   {job.createdAt ? new Date(job.createdAt).toLocaleDateString('mn-MN').replace(/\//g, '.') : ''}
                 </span>
                 <span className="text-xs text-[var(--muted-foreground)] flex items-center space-x-1">
@@ -305,14 +305,14 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                         alt={`Slide ${idx + 1}`}
                         className="w-full h-full object-contain"
                       />
-                      <div className="absolute bottom-2.5 right-2.5 bg-[var(--fg)]/75 text-[var(--card)] text-[11px] font-bold px-2 py-0.5 rounded-full font-sans">
+                      <div className="absolute bottom-2.5 right-2.5 bg-[var(--fg)]/75 text-[var(--card)] text-xs font-bold px-2 py-0.5 rounded-full font-sans">
                         {idx + 1} / {job.imageUrls?.length}
                       </div>
                     </div>
                   ))}
                 </div>
                 {job.imageUrls.length > 1 && (
-                  <p className="text-[10px] text-[var(--muted-foreground)] text-center font-sans select-none">
+                  <p className="text-xs text-[var(--muted-foreground)] text-center font-sans select-none">
                     ↔️ Хажуу тийш гүйлгэж үзнэ үү
                   </p>
                 )}
@@ -331,13 +331,13 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
             {/* Quick Details Card Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-left">
               <div className="bg-[var(--bg2)] p-4 rounded-md border border-[var(--border)]">
-                <span className="text-[10px] text-[var(--muted-foreground)] block font-mono">ТӨЛБӨРИЙН ХЭМЖЭЭ</span>
+                <span className="text-xs text-[var(--muted-foreground)] block font-mono">ТӨЛБӨРИЙН ХЭМЖЭЭ</span>
                 <span className="font-bold text-lg text-[var(--verify)] block font-mono mt-1">
                   {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString('mn-MN')} ₮`}
                 </span>
               </div>
               <div className="bg-[var(--bg2)] p-4 rounded-md border border-[var(--border)]">
-                <span className="text-[10px] text-[var(--muted-foreground)] block font-mono">АЖЛЫН ХУГАЦАА</span>
+                <span className="text-xs text-[var(--muted-foreground)] block font-mono">АЖЛЫН ХУГАЦАА</span>
                 <span className="font-bold text-lg text-[var(--fg)] block mt-1">
                   {job.duration}
                 </span>
@@ -389,7 +389,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                       {successMessage && (
                         <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] text-[var(--verify)] p-3.5 rounded-md text-xs flex items-start space-x-2 animate-fade-in text-left">
                           <CheckCircle className="w-4.5 h-4.5 text-[var(--verify)] shrink-0 mt-0.5" />
-                          <span className="font-sans leading-normal text-[11px]">{successMessage}</span>
+                          <span className="font-sans leading-normal text-sm">{successMessage}</span>
                         </div>
                       )}
                     </div>
@@ -418,7 +418,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 <div className="bg-[var(--bg2)] p-5 rounded-md border border-[var(--border)] text-center space-y-4">
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-[var(--fg)]">Та энэ заранд хүсэлт илгээх үү?</p>
-                    <p className="text-[10.5px] text-[var(--muted-foreground)]">
+                    <p className="text-sm text-[var(--muted-foreground)]">
                       Хувийн үнэлгээ, ажлын түүхээ хавсаргаж хүсэлт илгээхийн тулд системд нэвтэрсэн байх шаардлагатай.
                     </p>
                   </div>

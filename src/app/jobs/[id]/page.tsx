@@ -51,7 +51,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = job.salary === 0
     ? `${job.title} - Цалин тохиролцоно`
     : `${job.title} - Цалин ${formattedSalary}`;
-  const description = `${formatMongolianLocation(job.location)} ${job.employerName} захиалагчаас зарласан ажил: ${job.description.slice(0, 150)}... Шалгуур: ${job.requirements.join(', ')}`;
+  // Never interpolate the real employer name into prerendered/static output —
+  // it's guest-blurred everywhere else in the UI (AGENTS.md §2), so it must not
+  // leak through meta description/JSON-LD, which crawlers and view-source can
+  // read before any auth check runs (audit S8).
+  const description = `${formatMongolianLocation(job.location)} зарласан ажил: ${job.description.slice(0, 150)}... Шалгуур: ${job.requirements.join(', ')}`;
   const jobImage = job.imageUrls?.[0] || job.imageUrl;
 
   return {
@@ -129,9 +133,12 @@ export default async function JobPage({ params }: Props) {
             },
           },
         }),
+        // Real employer name is guest-blurred in the UI (AGENTS.md §2) and must
+        // not leak through static JSON-LD either — always attribute the
+        // posting to the platform itself here (audit S8).
         hiringOrganization: {
           '@type': 'Organization',
-          name: job.employerName || 'Jolooch.net',
+          name: 'Жолооч Монголиа',
           sameAs: 'https://jolooch.net',
         },
         identifier: {

@@ -31,10 +31,10 @@ export default function NotificationToasts({ toasts, onToastClick, onDismiss }: 
               } font-mono`}>
                 {t.type === 'alert' ? 'Алдаа ⚠️' : 'Амжилттай 🎉'}
               </span>
-              <span className="text-[10.5px] text-[var(--muted-foreground)] font-mono mr-2">{formatNotificationDate(t.createdAt)}</span>
+              <span className="text-xs text-[var(--muted-foreground)] font-mono mr-2">{formatNotificationDate(t.createdAt)}</span>
             </div>
             <p className="text-xs font-bold text-[var(--fg)] mt-1 leading-snug">{t.title}</p>
-            <p className="text-[10px] text-[var(--muted-foreground)] leading-relaxed mt-0.5">{t.message}</p>
+            <p className="text-sm text-[var(--muted-foreground)] leading-relaxed mt-0.5">{t.message}</p>
           </div>
 
           {/* Close Button */}

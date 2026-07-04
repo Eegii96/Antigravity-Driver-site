@@ -93,7 +93,7 @@ export default function ReviewModal({
         {/* Content body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="bg-[var(--bg2)] p-3.5 rounded-lg border border-[var(--border)] space-y-1">
-            <span className="text-[10px] text-[var(--muted-foreground)] uppercase tracking-widest block font-mono">Ажлын нэр</span>
+            <span className="text-xs text-[var(--muted-foreground)] uppercase tracking-widest block font-mono">Ажлын нэр</span>
             <p className="text-xs font-semibold text-[var(--accent-soft-foreground)]">{jobTitle}</p>
             <div className="pt-2 flex items-center justify-between text-xs text-[var(--muted-foreground)]">
               <span>Үнэлгээ авах хүн:</span>
@@ -156,7 +156,7 @@ export default function ReviewModal({
             />
           </div>
 
-          <p className="text-[10px] text-[var(--muted-foreground)] leading-normal">
+          <p className="text-sm text-[var(--muted-foreground)] leading-normal">
             🛡️ Санамж: Таны бичсэн үнэлгээ устгах боломжгүй бөгөөд тухайн хэрэглэгчийн бүртгэлийн түүхэнд байнга хадгалагдан харагдана. Үнэн зөв мэдээлнэ үү.
           </p>
 

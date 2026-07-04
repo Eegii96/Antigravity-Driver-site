@@ -19,7 +19,7 @@ export default function ReceivedReviewsList({ reviews, reviewsVisible, isOwnProf
             <Star className="w-4.5 h-4.5 text-[var(--accent-soft-foreground)] drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
             <span>Надад өгсөн үнэлгээнүүд ({reviewsVisible || isOwnProfile ? reviews.length : 0})</span>
             {isOwnProfile && !reviewsVisible && (
-              <span className="text-[10.5px] bg-[var(--bg2)] text-[var(--muted-foreground)] border border-[var(--border)] px-2 py-0.5 rounded font-normal normal-case ml-2 shrink-0">Бусдад харагдахгүй</span>
+              <span className="text-xs bg-[var(--bg2)] text-[var(--muted-foreground)] border border-[var(--border)] px-2 py-0.5 rounded font-normal normal-case ml-2 shrink-0">Бусдад харагдахгүй</span>
             )}
           </h3>
 
@@ -54,7 +54,7 @@ export default function ReceivedReviewsList({ reviews, reviewsVisible, isOwnProf
                         {[1, 2, 3, 4, 5].map((s) => (
                           <Star key={s} className={`w-2.5 h-2.5 ${s <= rev.rating ? 'text-[var(--accent-soft-foreground)] fill-[var(--accent)]' : 'text-[var(--muted-foreground)]'}`} />
                         ))}
-                        <span className="text-[10px] text-[var(--fg)] font-bold ml-1 font-mono">{rev.rating}.0</span>
+                        <span className="text-xs text-[var(--fg)] font-bold ml-1 font-mono">{rev.rating}.0</span>
                       </div>
                     </div>
 
@@ -62,7 +62,7 @@ export default function ReceivedReviewsList({ reviews, reviewsVisible, isOwnProf
                       &ldquo;{rev.comment}&rdquo;
                     </p>
 
-                    <div className="flex justify-end items-center text-[10px] text-[var(--muted-foreground)] font-mono border-t border-[var(--border)] pt-2">
+                    <div className="flex justify-end items-center text-xs text-[var(--muted-foreground)] font-mono border-t border-[var(--border)] pt-2">
                       <span className="text-[var(--muted-foreground)]">{formatReviewDate(rev.createdAt)}</span>
                     </div>
                   </div>

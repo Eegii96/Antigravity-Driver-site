@@ -139,8 +139,8 @@ export default function ApplicationsTab({
                     >
                       <div className="space-y-3">
                         <div className="flex justify-between items-start gap-1">
-                          <span className="font-mono text-[10px] text-[var(--muted-foreground)]">{formatDate(job.createdAt)}</span>
-                          <span className="text-[10px] text-[var(--muted-foreground)] shrink-0 flex items-center space-x-1">
+                          <span className="font-mono text-xs text-[var(--muted-foreground)]">{formatDate(job.createdAt)}</span>
+                          <span className="text-xs text-[var(--muted-foreground)] shrink-0 flex items-center space-x-1">
                             <MapPin className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
                             <span>{job.location.split(',')[0]}</span>
                           </span>
@@ -162,19 +162,19 @@ export default function ApplicationsTab({
 
                         {/* Description */}
                         {job.description && (
-                          <p className="text-[11px] text-[var(--muted-foreground)] line-clamp-2 leading-relaxed font-sans">
+                          <p className="text-sm text-[var(--muted-foreground)] line-clamp-2 leading-relaxed font-sans">
                             {job.description}
                           </p>
                         )}
 
                         {/* Additional info */}
                         {job.additionalInfo && (
-                          <p className="text-[10.5px] text-[var(--muted-foreground)] leading-relaxed italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--border)]">
+                          <p className="text-sm text-[var(--muted-foreground)] leading-relaxed italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--border)]">
                             Нэмэлт: {job.additionalInfo}
                           </p>
                         )}
-                        
-                        <div className="bg-[var(--card)] p-2.5 rounded-lg border border-[var(--border)] flex justify-between items-center text-[10.5px]">
+
+                        <div className="bg-[var(--card)] p-2.5 rounded-lg border border-[var(--border)] flex justify-between items-center text-xs">
                           <span className="text-[var(--muted-foreground)]">Захиалагч:</span>
                           <button
                             type="button"
@@ -189,10 +189,10 @@ export default function ApplicationsTab({
 
                         {/* Status badge and description */}
                         <div className="space-y-2 pt-1.5">
-                          <span className={`inline-flex px-2.5 py-0.5 rounded text-[11px] font-bold font-mono tracking-wide uppercase ${badgeClass}`}>
+                          <span className={`inline-flex px-2.5 py-0.5 rounded text-xs font-bold font-mono tracking-wide uppercase ${badgeClass}`}>
                             {statusText}
                           </span>
-                          <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed bg-[rgba(255,255,255,0.04)] p-3 rounded-lg border border-[var(--border)] font-sans">
+                          <p className="text-sm text-[var(--muted-foreground)] leading-relaxed bg-[rgba(255,255,255,0.04)] p-3 rounded-lg border border-[var(--border)] font-sans">
                             {statusDesc}
                           </p>
                         </div>
@@ -200,20 +200,20 @@ export default function ApplicationsTab({
                         {/* Step Indicator for active jobs */}
                         {isHired && job.status === 'in_progress' && (
                           <div className="pt-2">
-                            <span className="text-[10px] text-[var(--muted-foreground)] block uppercase font-mono tracking-wider mb-2">Ажлын явцын төлөв:</span>
+                            <span className="text-xs text-[var(--muted-foreground)] block uppercase font-mono tracking-wider mb-2">Ажлын явцын төлөв:</span>
                             <div className="flex items-center space-x-2 text-xs">
                               <div className="flex items-center text-[var(--accent-soft-foreground)]">
-                                <span className="h-4 w-4 rounded-full bg-[var(--accent)] text-[var(--muted-foreground)] flex items-center justify-center text-[10.5px] font-bold mr-1.5">1</span>
+                                <span className="h-4 w-4 rounded-full bg-[var(--accent)] text-[var(--muted-foreground)] flex items-center justify-center text-xs font-bold mr-1.5">1</span>
                                 <span>Сонгогдсон</span>
                               </div>
                               <span className="text-[var(--muted-foreground)]">➔</span>
                               <div className="flex items-center text-[var(--accent-soft-foreground)] font-bold animate-pulse-soft">
-                                <span className="h-4 w-4 rounded-full bg-[var(--accent)] text-[var(--muted-foreground)] flex items-center justify-center text-[10.5px] font-bold mr-1.5 animate-ping-slow">2</span>
+                                <span className="h-4 w-4 rounded-full bg-[var(--accent)] text-[var(--muted-foreground)] flex items-center justify-center text-xs font-bold mr-1.5 animate-ping-slow">2</span>
                                 <span>Ажиллаж байна</span>
                               </div>
                               <span className="text-[var(--muted-foreground)]">➔</span>
                               <div className="flex items-center text-[var(--muted-foreground)]">
-                                <span className="h-4 w-4 rounded-full bg-[rgba(255,255,255,0.06)] text-[var(--muted-foreground)] flex items-center justify-center text-[10.5px] font-bold mr-1.5">3</span>
+                                <span className="h-4 w-4 rounded-full bg-[rgba(255,255,255,0.06)] text-[var(--muted-foreground)] flex items-center justify-center text-xs font-bold mr-1.5">3</span>
                                 <span>Үнэлгээ</span>
                               </div>
                             </div>
@@ -228,19 +228,19 @@ export default function ApplicationsTab({
                           if (!receivedReview) return null;
                           return (
                             <div className="bg-[var(--accent-soft)] border border-[var(--accent)] p-3 rounded-lg text-xs space-y-1.5">
-                              <div className="flex justify-between items-center text-[10.5px]">
+                              <div className="flex justify-between items-center text-xs">
                                 <span className="font-bold text-[var(--accent-soft-foreground)]">Захиалагчийн үнэлгээ:</span>
                                 <div className="flex items-center space-x-0.5">
                                   {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star 
-                                      key={star} 
-                                      className={`w-3 h-3 ${star <= receivedReview.rating ? 'fill-[var(--accent)] text-[var(--accent-soft-foreground)]' : 'text-[var(--muted-foreground)]'}`} 
+                                    <Star
+                                      key={star}
+                                      className={`w-3 h-3 ${star <= receivedReview.rating ? 'fill-[var(--accent)] text-[var(--accent-soft-foreground)]' : 'text-[var(--muted-foreground)]'}`}
                                     />
                                   ))}
                                   <span className="font-bold font-mono ml-1 text-[var(--fg)]">{receivedReview.rating}.0</span>
                                 </div>
                               </div>
-                              <p className="text-[11px] text-[var(--muted-foreground)] italic">&ldquo;{receivedReview.comment}&rdquo;</p>
+                              <p className="text-sm text-[var(--muted-foreground)] italic">&ldquo;{receivedReview.comment}&rdquo;</p>
                             </div>
                           );
                         })()}
@@ -252,21 +252,21 @@ export default function ApplicationsTab({
                               {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
                             </span>
                             {job.salaryUnit && job.salaryUnit !== 'Өдрөөр' && (
-                              <span className="text-[10px] text-[var(--muted-foreground)] font-mono"> / {job.salaryUnit}</span>
+                              <span className="text-xs text-[var(--muted-foreground)] font-mono"> / {job.salaryUnit}</span>
                             )}
                           </div>
 
                           {isHired && job.status === 'completed' && (
                             <div>
                               {job.isReviewedByOperator ? (
-                                <span className="text-[10px] text-[var(--accent-soft-foreground)] bg-[var(--accent-soft)] px-2 py-1 rounded font-semibold border border-[var(--accent)]">
+                                <span className="text-xs text-[var(--accent-soft-foreground)] bg-[var(--accent-soft)] px-2 py-1 rounded font-semibold border border-[var(--accent)]">
                                   ✓ Захиалагчийг үнэлсэн
                                 </span>
                               ) : (
                                 <button
                                   type="button"
                                   onClick={() => onReview(job)}
-                                  className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
+                                  className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-xs py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
                                 >
                                   Захиалагчийг Үнэлэх
                                 </button>
@@ -316,8 +316,8 @@ export default function ApplicationsTab({
                     >
                       <div className="space-y-3">
                         <div className="flex justify-between items-start gap-1">
-                          <span className="font-mono text-[10px] text-[var(--muted-foreground)]">{formatDate(job.createdAt)}</span>
-                          <span className="text-[10px] text-[var(--muted-foreground)] shrink-0 flex items-center space-x-1">
+                          <span className="font-mono text-xs text-[var(--muted-foreground)]">{formatDate(job.createdAt)}</span>
+                          <span className="text-xs text-[var(--muted-foreground)] shrink-0 flex items-center space-x-1">
                             <MapPin className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
                             <span>{job.location.split(',')[0]}</span>
                           </span>
@@ -339,30 +339,30 @@ export default function ApplicationsTab({
 
                         {/* Description */}
                         {job.description && (
-                          <p className="text-[11px] text-[var(--muted-foreground)] line-clamp-2 leading-relaxed font-sans">
+                          <p className="text-sm text-[var(--muted-foreground)] line-clamp-2 leading-relaxed font-sans">
                             {job.description}
                           </p>
                         )}
 
                         {/* Additional info */}
                         {job.additionalInfo && (
-                          <p className="text-[10.5px] text-[var(--muted-foreground)] leading-relaxed italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--border)]">
+                          <p className="text-sm text-[var(--muted-foreground)] leading-relaxed italic font-sans bg-[rgba(255,255,255,0.04)] p-2.5 rounded-lg border border-[var(--border)]">
                             Нэмэлт: {job.additionalInfo}
                           </p>
                         )}
 
                         {/* Status badge and description */}
                         <div className="space-y-2 pt-1.5">
-                          <span className={`inline-flex px-2.5 py-0.5 rounded text-[11px] font-bold font-mono tracking-wide uppercase ${badgeClass}`}>
+                          <span className={`inline-flex px-2.5 py-0.5 rounded text-xs font-bold font-mono tracking-wide uppercase ${badgeClass}`}>
                             {statusText}
                           </span>
-                          <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed bg-[rgba(255,255,255,0.04)] p-3 rounded-lg border border-[var(--border)] font-sans">
+                          <p className="text-sm text-[var(--muted-foreground)] leading-relaxed bg-[rgba(255,255,255,0.04)] p-3 rounded-lg border border-[var(--border)] font-sans">
                             {statusDesc}
                           </p>
                         </div>
 
                         {job.hiredOperatorId && (
-                          <div className="bg-[var(--card)] p-2.5 rounded-lg border border-[var(--border)] flex justify-between items-center text-[10.5px] mt-2">
+                          <div className="bg-[var(--card)] p-2.5 rounded-lg border border-[var(--border)] flex justify-between items-center text-xs mt-2">
                             <span className="text-[var(--muted-foreground)]">Томилогдсон жолооч:</span>
                             <div className="flex items-center space-x-2">
                               <button
@@ -378,7 +378,7 @@ export default function ApplicationsTab({
                                 <button
                                   type="button"
                                   onClick={() => onCancelHiring(job.id)}
-                                  className="text-[var(--muted-foreground)] hover:text-[var(--accent-soft-foreground)] bg-[var(--card)] border border-[var(--border)] hover:border-[var(--border)] px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer transition-colors"
+                                  className="text-[var(--muted-foreground)] hover:text-[var(--accent-soft-foreground)] bg-[var(--card)] border border-[var(--border)] hover:border-[var(--border)] px-2 py-0.5 rounded text-xs font-bold cursor-pointer transition-colors"
                                 >
                                   Болих
                                 </button>
@@ -390,7 +390,7 @@ export default function ApplicationsTab({
                         {/* Applicants rendering for open jobs */}
                         {job.status === 'open' && job.applicants.length > 0 && (
                           <div className="space-y-2 pt-2 border-t border-[var(--border)]">
-                            <span className="text-[10px] font-bold text-[var(--muted-foreground)] uppercase font-mono tracking-wider flex items-center space-x-1.5">
+                            <span className="text-xs font-bold text-[var(--muted-foreground)] uppercase font-mono tracking-wider flex items-center space-x-1.5">
                               <Users className="w-3.5 h-3.5 text-[var(--accent-soft-foreground)]" />
                               <span>Ирүүлсэн хүсэлтүүд ({job.applicants.length}):</span>
                             </span>
@@ -416,7 +416,7 @@ export default function ApplicationsTab({
                                       />
                                       <div>
                                         <div className="font-bold text-[var(--fg)] hover:text-[var(--accent-soft-foreground)] hover:underline">{op.fullName}</div>
-                                        <div className="text-[10px] text-[var(--accent-soft-foreground)] flex items-center space-x-0.5">
+                                        <div className="text-xs text-[var(--accent-soft-foreground)] flex items-center space-x-0.5">
                                           <Star className="w-2.5 h-2.5 fill-[var(--accent)] text-[var(--accent-soft-foreground)]" />
                                           <span>{op.rating.toFixed(1)} ({op.experienceYears || 0} жил)</span>
                                         </div>
@@ -425,7 +425,7 @@ export default function ApplicationsTab({
                                     <button
                                       type="button"
                                       onClick={() => onHire(job.id, op.id)}
-                                      className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-[10px] py-1 px-2.5 rounded-lg transition-colors cursor-pointer"
+                                      className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-xs py-1 px-2.5 rounded-lg transition-colors cursor-pointer"
                                     >
                                       Томилох
                                     </button>
@@ -458,19 +458,19 @@ export default function ApplicationsTab({
                             if (!receivedReview) return null;
                             return (
                               <div className="bg-[var(--accent-soft)] border border-[var(--accent)] p-3 rounded-lg text-xs space-y-1.5 mt-2">
-                                <div className="flex justify-between items-center text-[10.5px]">
+                                <div className="flex justify-between items-center text-xs">
                                   <span className="font-bold text-[var(--accent-soft-foreground)]">Жолоочийн үнэлгээ:</span>
                                   <div className="flex items-center space-x-0.5">
                                     {[1, 2, 3, 4, 5].map((star) => (
-                                      <Star 
-                                        key={star} 
-                                        className={`w-3 h-3 ${star <= receivedReview.rating ? 'fill-[var(--accent)] text-[var(--accent-soft-foreground)]' : 'text-[var(--muted-foreground)]'}`} 
+                                      <Star
+                                        key={star}
+                                        className={`w-3 h-3 ${star <= receivedReview.rating ? 'fill-[var(--accent)] text-[var(--accent-soft-foreground)]' : 'text-[var(--muted-foreground)]'}`}
                                       />
                                     ))}
                                     <span className="font-bold font-mono ml-1 text-[var(--fg)]">{receivedReview.rating}.0</span>
                                   </div>
                                 </div>
-                                <p className="text-[11px] text-[var(--muted-foreground)] italic">&ldquo;{receivedReview.comment}&rdquo;</p>
+                                <p className="text-sm text-[var(--muted-foreground)] italic">&ldquo;{receivedReview.comment}&rdquo;</p>
                               </div>
                             );
                           })()}
@@ -480,7 +480,7 @@ export default function ApplicationsTab({
                               <button
                                 type="button"
                                 onClick={() => onReview(job)}
-                                className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-[10.5px] py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
+                                className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-xs py-1.5 px-3.5 rounded-lg transition-colors cursor-pointer"
                               >
                                 Жолоочийг Үнэлэх
                               </button>
@@ -496,7 +496,7 @@ export default function ApplicationsTab({
                             <button
                               type="button"
                               onClick={() => onEdit(job)}
-                              className="flex-1 border border-[var(--border)] hover:border-[var(--border)] bg-[var(--card)] hover:bg-[var(--card)] text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
+                              className="flex-1 border border-[var(--border)] hover:border-[var(--border)] bg-[var(--card)] hover:bg-[var(--card)] text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold text-xs py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center"
                             >
                               Засах
                             </button>
@@ -504,7 +504,7 @@ export default function ApplicationsTab({
                           <button
                             type="button"
                             onClick={() => onDelete(job)}
-                            className={`${job.status === 'completed' ? 'w-full' : 'flex-1'} border border-[var(--border)] hover:border-[var(--border)] bg-[var(--card)] hover:bg-[var(--card)] text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold text-[10.5px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center`}
+                            className={`${job.status === 'completed' ? 'w-full' : 'flex-1'} border border-[var(--border)] hover:border-[var(--border)] bg-[var(--card)] hover:bg-[var(--card)] text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold text-xs py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer text-center`}
                           >
                             Устгах
                           </button>

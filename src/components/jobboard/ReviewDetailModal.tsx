@@ -57,7 +57,7 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
                 />
               ))}
             </div>
-            <span className="text-[10px] text-[var(--muted-foreground)] font-mono mt-2 uppercase tracking-widest">Үнэлгээний оноо</span>
+            <span className="text-xs text-[var(--muted-foreground)] font-mono mt-2 uppercase tracking-widest">Үнэлгээний оноо</span>
           </div>
 
           {/* Reviewer & Job info */}
@@ -78,7 +78,7 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
 
           {/* Comment text block */}
           <div className="space-y-2 text-left">
-            <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-mono tracking-wider block">Бичсэн сэтгэгдэл:</span>
+            <span className="text-xs text-[var(--muted-foreground)] uppercase font-mono tracking-wider block">Бичсэн сэтгэгдэл:</span>
             <div className="relative bg-[var(--bg2)] p-4.5 rounded-md border border-[var(--border)] italic text-xs text-[var(--fg)] leading-relaxed font-sans">
               <span className="absolute -top-1 left-2 text-3xl text-[var(--concrete)] font-serif pointer-events-none">“</span>
               <p className="relative z-10 px-2">&ldquo;{review.comment}&rdquo;</p>
@@ -87,7 +87,7 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
           </div>
 
           {/* Footer info/warning */}
-          <p className="text-[11px] text-[var(--muted-foreground)] leading-normal text-center bg-[var(--bg2)] p-2 rounded border border-[var(--border)]">
+          <p className="text-sm text-[var(--muted-foreground)] leading-normal text-center bg-[var(--bg2)] p-2 rounded border border-[var(--border)]">
             🛡️ Энэхүү үнэлгээ нь таны профайлын дундаж үнэлгээ болон ажилчны түүхэнд шууд нөлөөлж, бусад хэрэглэгчдэд харагдах болно.
           </p>
 

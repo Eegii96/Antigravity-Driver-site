@@ -35,7 +35,7 @@ export default function PrivacyModal({ onClose }: PrivacyModalProps) {
             <div className="p-6 space-y-5 text-xs text-[var(--muted-foreground)] leading-relaxed font-sans">
               <div className="bg-[rgba(31,138,76,0.1)] border border-[var(--verify)] p-4 rounded-md space-y-1.5">
                 <p className="font-bold text-[var(--verify)] text-sm">Хувь хүний мэдээллийн аюулгүй байдал</p>
-                <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
+                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
                   Энэхүү нууцлалын бодлого нь Монгол Улсын Хувь хүний мэдээлэл хамгаалах тухай хуульд бүрэн нийцсэн бөгөөд таны хувийн мэдээллийг цуглуулах, боловсруулах, хамгаалахад баримтлах үндсэн зарчмыг тодорхойлно.
                 </p>
               </div>

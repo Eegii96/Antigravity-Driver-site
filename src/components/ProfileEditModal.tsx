@@ -383,7 +383,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
           <div>
             <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 flex justify-between">
               <span>Профайл зураг солих</span>
-              <span className="text-[10px] text-[var(--muted-foreground)] font-sans">(компьютер эсвэл утаснаас зураг сонгож оруулна уу)</span>
+              <span className="text-xs text-[var(--muted-foreground)] font-sans">(компьютер эсвэл утаснаас зураг сонгож оруулна уу)</span>
             </label>
             <div className="space-y-3">
               {/* File upload input */}
@@ -391,7 +391,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                 <label className="flex flex-col items-center justify-center w-full h-16 border border-[var(--border)] border-dashed rounded-lg cursor-pointer bg-[var(--bg2)] hover:bg-[var(--bg2)] transition-all">
                   <div className="flex flex-col items-center justify-center py-1">
                     <span className="text-xs text-[var(--accent-soft-foreground)] font-semibold">Шинэ зураг хуулах (Upload)</span>
-                    <span className="text-[10px] text-[var(--muted-foreground)] font-sans">PNG, JPG, JPEG формат</span>
+                    <span className="text-xs text-[var(--muted-foreground)] font-sans">PNG, JPG, JPEG формат</span>
                   </div>
                   <input
                     id="upload-avatar-input"
@@ -427,7 +427,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                 />
                 <div>
                   <span className="text-xs font-bold text-[var(--fg)] block">Идэвхтэй зураг</span>
-                  <span className="text-[10px] text-[var(--accent-soft-foreground)] font-medium font-sans mt-0.5 block flex items-center space-x-1">
+                  <span className="text-xs text-[var(--accent-soft-foreground)] font-medium font-sans mt-0.5 block flex items-center space-x-1">
                     <span>✓ Одоогоор сонгогдсон байна</span>
                   </span>
                 </div>
@@ -443,7 +443,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                 type="button"
                 onClick={handleOptimizeBio}
                 disabled={isOptimizing}
-                className="text-[10px] text-[var(--accent-soft-foreground)] hover:text-[var(--accent-soft-foreground)] flex items-center space-x-1 border border-[var(--accent)] bg-[var(--accent-soft)] px-2.5 py-1 rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-sans"
+                className="text-xs text-[var(--accent-soft-foreground)] hover:text-[var(--accent-soft-foreground)] flex items-center space-x-1 border border-[var(--accent)] bg-[var(--accent-soft)] px-2.5 py-1 rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-sans"
               >
                 <Sparkles className={`w-3 h-3 ${isOptimizing ? 'animate-spin' : ''}`} />
                 <span>{isOptimizing ? 'AI сайжруулж байна...' : (hasOptimized ? 'Өөр загвар гаргах' : 'AI-аар сайжруулах')}</span>
@@ -493,7 +493,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
 
               <div>
                 <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5">Мэргэшсэн Хүнд Машин Механизмууд</label>
-                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                <div className="grid grid-cols-2 gap-2 text-xs">
                   {MACHINE_OPTIONS.map((item, idx) => (
                     <button
                       id={`edit-machine-option-${idx}`}
@@ -513,7 +513,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
 
                 {/* Hand-written custom machine entry box */}
                 <div className="mt-3.5 pt-3 border-t border-[var(--border)]">
-                  <label className="block text-[11px] font-medium text-[var(--muted-foreground)] mb-1">
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">
                     Бусад машин механизм нэмэх (Гараар бичих)
                   </label>
                   <div className="flex space-x-2">
@@ -559,12 +559,12 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                 {/* Selected machines not in standard MACHINE_OPTIONS */}
                 {machineTypes.some(m => !MACHINE_OPTIONS.includes(m)) && (
                   <div className="mt-2.5 space-y-1">
-                    <span className="text-[10px] text-[var(--muted-foreground)] block font-sans">Нэмэлтээр оруулсан хүнд техникүүд:</span>
+                    <span className="text-xs text-[var(--muted-foreground)] block font-sans">Нэмэлтээр оруулсан хүнд техникүүд:</span>
                     <div className="flex flex-wrap gap-1.5">
                       {machineTypes.filter(m => !MACHINE_OPTIONS.includes(m)).map((item, idx) => (
                         <span
                           key={idx}
-                          className="inline-flex items-center space-x-1.5 py-1 px-2 rounded-md bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] text-[10.5px]"
+                          className="inline-flex items-center space-x-1.5 py-1 px-2 rounded-md bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] text-xs"
                         >
                           <span>{item}</span>
                           <button
@@ -595,7 +595,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                   <Lock className={`w-3.5 h-3.5 ${isSecured ? 'text-[var(--color-neon-teal)]' : 'text-[var(--accent-soft-foreground)]'}`} />
                   <span>Бүртгэлийн аюулгүй байдал</span>
                 </span>
-                <span className={`text-[10px] px-2 py-0.5 rounded font-bold transition-all ${
+                <span className={`text-xs px-2 py-0.5 rounded font-bold transition-all ${
                   isSecured 
                     ? 'bg-[rgba(31,138,76,0.1)] text-[var(--verify)] border border-[rgba(31,138,76,0.3)]' 
                     : 'bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] border border-[var(--accent)]'
@@ -609,7 +609,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                 <div className={`h-full rounded-full transition-all duration-500 ${isSecured ? 'bg-[var(--color-neon-teal)] w-full' : 'bg-[var(--accent)] w-[75%]'}`}></div>
               </div>
 
-              <p className="text-[10px] text-[var(--muted-foreground)] leading-relaxed font-sans">
+              <p className="text-sm text-[var(--muted-foreground)] leading-relaxed font-sans">
                 💡 <strong className="font-semibold text-[var(--muted-foreground)]">Нууц асуултын ач холбогдол:</strong> Нууц үгээ утасны дугаараар мартсан үед сэргээхэд энэхүү асуултуудыг асуух болно. Зөвхөн та хариулж чадах тул бусад хүмүүс таны хаягийг хулгайлахаас 100% сэргийлнэ. Заавал тохируулах шаардлагагүй боловч таны хаяг аюулгүй үлдэхэд маш чухал юм.
               </p>
             </div>

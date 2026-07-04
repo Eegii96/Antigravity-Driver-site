@@ -49,7 +49,7 @@ export default async function AimagLandingPage({ params }: Props) {
       <section className="relative overflow-hidden bg-[var(--bg2)] border-b border-[var(--border)]">
         <div className="hazard-stripe h-1.5 w-full" />
         <div className="max-w-4xl mx-auto w-full px-6 py-9 md:py-12">
-          <span className="inline-block text-[10px] md:text-xs font-bold uppercase tracking-wider text-[var(--accent-soft-foreground)] bg-[var(--accent-soft)] border border-[var(--accent)] px-3 py-1 rounded-sm">
+          <span className="inline-block text-xs font-bold uppercase tracking-wider text-[var(--accent-soft-foreground)] bg-[var(--accent-soft)] border border-[var(--accent)] px-3 py-1 rounded-sm">
             {location}
           </span>
           <h1 className="mt-3 text-2xl md:text-4xl font-display font-black uppercase tracking-tight text-[var(--fg)] leading-tight">

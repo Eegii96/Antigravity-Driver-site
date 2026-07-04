@@ -104,7 +104,7 @@ export default function LoginForm({ form, onLogin }: LoginFormProps) {
             <span>{error}</span>
           </div>
         )}
-        <p className="mt-3 text-[10.5px] text-[var(--muted-foreground)] text-center font-sans">
+        <p className="mt-3 text-sm text-[var(--muted-foreground)] text-center font-sans">
           Та нэвтэрснээр манай{' '}
           <button type="button" onClick={() => setShowTerms(true)} className="text-[var(--accent-soft-foreground)] hover:text-[var(--accent-soft-foreground)] underline transition-colors cursor-pointer bg-transparent border-none p-0 font-medium">Үйлчилгээний нөхцөл</button>
           {' '}болон{' '}

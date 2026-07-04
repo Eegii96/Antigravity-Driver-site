@@ -64,7 +64,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto border-t border-[var(--border)] mt-8 pt-6 text-[10px] text-[var(--muted-foreground)] font-sans">
+      <div className="max-w-7xl mx-auto border-t border-[var(--border)] mt-8 pt-6 text-xs text-[var(--muted-foreground)] font-sans">
         <span className="font-semibold">Аймгаар хайх:</span>{' '}
         {AIMAG_SLUGS.map(({ location, slug }, idx) => (
           <span key={slug}>
@@ -125,7 +125,7 @@ export default function Footer() {
             <div className="p-6 space-y-5 text-xs text-[var(--fg)] leading-relaxed font-sans">
               <div className="bg-[var(--accent-soft)] border border-[var(--accent)] p-4 rounded-md space-y-1.5">
                 <p className="font-bold text-[var(--accent-soft-foreground)] text-sm">Хэрэглэгчийн аюулгүй байдлын баталгаа</p>
-                <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
+                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
                   Энэхүү үйлчилгээний нөхцөл нь Монгол Улсын Иргэний хууль, Хэрэглэгчийн эрхийг хамгаалах тухай хууль болон бусад холбогдох хууль тогтоомжийн дагуу боловсруулагдсан болно.
                 </p>
               </div>
@@ -197,7 +197,7 @@ export default function Footer() {
             <div className="p-6 space-y-5 text-xs text-[var(--fg)] leading-relaxed font-sans">
               <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] p-4 rounded-md space-y-1.5">
                 <p className="font-bold text-[var(--verify)] text-sm">Хувь хүний мэдээллийн аюулгүй байдал</p>
-                <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
+                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
                   Энэхүү нууцлалын бодлого нь Монгол Улсын Хувь хүний мэдээлэл хамгаалах тухай хуульд бүрэн нийцсэн бөгөөд таны хувийн мэдээллийг цуглуулах, боловсруулах, хамгаалахад баримтлах үндсэн зарчмыг тодорхойлно.
                 </p>
               </div>

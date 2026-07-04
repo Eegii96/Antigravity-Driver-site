@@ -35,7 +35,7 @@ export default function TermsModal({ onClose }: TermsModalProps) {
             <div className="p-6 space-y-5 text-xs text-[var(--muted-foreground)] leading-relaxed font-sans">
               <div className="bg-[var(--accent-soft)] border border-[var(--accent)] p-4 rounded-md space-y-1.5">
                 <p className="font-bold text-[var(--accent-soft-foreground)] text-sm">Хэрэглэгчийн аюулгүй байдлын баталгаа</p>
-                <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
+                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
                   Энэхүү үйлчилгээний нөхцөл нь Монгол Улсын Иргэний хууль, Хэрэглэгчийн эрхийг хамгаалах тухай хууль болон бусад холбогдох хууль тогтоомжийн дагуу боловсруулагдсан болно.
                 </p>
               </div>

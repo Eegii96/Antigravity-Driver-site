@@ -65,7 +65,7 @@ export default function AimagLandingClient({ location }: AimagLandingClientProps
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="text-sm font-bold text-[var(--fg)] truncate">{job.title}</h2>
-                <div className="mt-1 flex items-center flex-wrap gap-x-3 gap-y-1 text-[11px] text-[var(--muted-foreground)]">
+                <div className="mt-1 flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-[var(--muted-foreground)]">
                   <span className="flex items-center gap-1">
                     <MapPin className="w-3 h-3 shrink-0" />
                     {job.location}
@@ -81,7 +81,7 @@ export default function AimagLandingClient({ location }: AimagLandingClientProps
                 <div className="font-mono text-xs font-bold text-[var(--verify)]">
                   {job.salary === 0 ? 'Тохиролцоно' : `${formatMongolianSalary(job.salary)}₮`}
                 </div>
-                <div className="text-[10px] text-[var(--muted-foreground)] mt-0.5">
+                <div className="text-xs text-[var(--muted-foreground)] mt-0.5">
                   {currentUser ? getFirstName(job.employerName) : getMockEmployerName(job.id)}
                 </div>
               </div>

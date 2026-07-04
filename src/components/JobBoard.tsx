@@ -704,7 +704,7 @@ export default function JobBoard({
   return (
     <div id="job-board-root" className="flex-grow bg-[var(--bg)] text-[var(--fg)] font-sans flex flex-col relative overflow-x-hidden">
       {/* Warning Banner — safety-orange alert strip (blacklist compliance warning) */}
-      <div className="bg-[rgba(255,92,40,0.1)] border-b border-[rgba(255,92,40,0.25)] text-[var(--alert)] px-4 py-2 text-center text-[10px] md:text-xs font-medium flex items-center justify-center gap-2 z-50">
+      <div className="bg-[rgba(255,92,40,0.1)] border-b border-[rgba(255,92,40,0.25)] text-[var(--alert)] px-4 py-2 text-center text-xs md:text-sm font-medium flex items-center justify-center gap-2 z-50">
         <AlertTriangle className="w-3.5 h-3.5 md:w-4 md:h-4 text-[var(--alert)] shrink-0" />
         <span>
           <span className="font-bold text-[var(--alert)]">Анхаар:</span> Ажил таслах, цалин олгохгүй байх, согтуу ажиллах зэрэг ноцтой зөрчил гаргасан хэрэглэгч хар дансанд бүртгэгдэж, системийн эрх хаагдаж болзошгүй.
@@ -720,7 +720,7 @@ export default function JobBoard({
           </div>
           <div>
             <span className="font-display font-bold uppercase tracking-tight text-[var(--fg)] block text-sm md:text-base">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>
-            <p className="text-[10.5px] md:text-[11px] text-[var(--muted-foreground)] font-sans tracking-wide leading-relaxed mt-0.5 max-w-xs md:max-w-xl">
+            <p className="text-xs md:text-sm text-[var(--muted-foreground)] font-sans tracking-wide leading-relaxed mt-0.5 max-w-xs md:max-w-xl">
               Үнэлгээ өгөх, ажлын түүх үүсгэх системээр хариуцлагатай жолооч, оператор болон найдвартай ажил олгогчдыг үүсгэх платформ
             </p>
           </div>
@@ -750,7 +750,7 @@ export default function JobBoard({
                 >
                   <Bell className="w-4 h-4" />
                   {unreadNotifs.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[var(--alert)] text-white font-mono text-[10.5px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-[var(--card)] animate-bounce">
+                    <span className="absolute -top-1 -right-1 bg-[var(--alert)] text-white font-mono text-xs font-bold h-4 w-4 rounded-full flex items-center justify-center border border-[var(--card)] animate-bounce">
                       {unreadNotifs.length}
                     </span>
                   )}
@@ -768,7 +768,7 @@ export default function JobBoard({
                         <button
                           type="button"
                           onClick={handleMarkAllAsRead}
-                          className="text-[10px] bg-[var(--accent-soft)] hover:brightness-95 text-[var(--accent-soft-foreground)] border border-[var(--accent)] px-2.5 py-1 rounded font-bold transition-all cursor-pointer"
+                          className="text-xs bg-[var(--accent-soft)] hover:brightness-95 text-[var(--accent-soft-foreground)] border border-[var(--accent)] px-2.5 py-1 rounded font-bold transition-all cursor-pointer"
                         >
                           Бүгдийг уншсанаар тэмдэглэх
                         </button>
@@ -807,7 +807,7 @@ export default function JobBoard({
                                 }`}>
                                   {notif.title}
                                 </p>
-                                <span className={`text-[10px] font-mono shrink-0 transition-colors duration-200 ${
+                                <span className={`text-xs font-mono shrink-0 transition-colors duration-200 ${
                                   notif.isRead
                                     ? 'text-[var(--muted-foreground)]'
                                     : 'text-[var(--accent-soft-foreground)] font-bold'
@@ -815,7 +815,7 @@ export default function JobBoard({
                                   {formatNotificationDate(notif.createdAt)}
                                 </span>
                               </div>
-                              <p className={`text-[11px] leading-relaxed mt-1 font-sans transition-colors duration-200 ${
+                              <p className={`text-sm leading-relaxed mt-1 font-sans transition-colors duration-200 ${
                                 notif.isRead
                                   ? 'text-[var(--muted-foreground)]'
                                   : 'text-[var(--fg)]'
@@ -830,7 +830,7 @@ export default function JobBoard({
                                     e.stopPropagation();
                                     handleDeleteNotification(notif.id);
                                   }}
-                                  className="min-h-11 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 hover:text-rose-700 border border-rose-300 px-2 rounded text-[10px] font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
+                                  className="min-h-11 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 hover:text-rose-700 border border-rose-300 px-2 rounded text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                   <span>Устгах</span>
@@ -847,7 +847,7 @@ export default function JobBoard({
                         <button
                           type="button"
                           onClick={handleDeleteAllNotifications}
-                          className="w-full bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-300 hover:border-rose-400 text-rose-600 hover:text-rose-700 py-1.5 rounded text-[10px] font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer font-sans"
+                          className="w-full bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-300 hover:border-rose-400 text-rose-600 hover:text-rose-700 py-1.5 rounded text-xs font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer font-sans"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>БҮХ МЭДЭГДЛИЙГ УСТГАХ</span>
@@ -872,7 +872,7 @@ export default function JobBoard({
                 >
                   <div className="hidden md:block">
                     <p className="text-xs font-semibold text-[var(--fg)] leading-none">{getFirstName(currentUser)}</p>
-                    <span className="text-[10.5px] text-[var(--muted-foreground)] font-mono">
+                    <span className="text-xs text-[var(--muted-foreground)] font-mono">
                       {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} • {currentUser.rating}⭐
                     </span>
                   </div>
@@ -897,7 +897,7 @@ export default function JobBoard({
                     onMouseLeave={() => setShowProfileMenu(false)}
                   >
                     <div className="bg-[var(--card)] border border-[var(--border)] rounded-md shadow-md py-2">
-                      <div className="px-3.5 py-2 border-b border-[var(--border)] text-[11px] text-[var(--muted-foreground)] font-semibold font-mono">
+                      <div className="px-3.5 py-2 border-b border-[var(--border)] text-xs text-[var(--muted-foreground)] font-semibold font-mono">
                         Сонголтууд
                       </div>
 
@@ -981,11 +981,11 @@ export default function JobBoard({
 
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-[var(--card)] p-3.5 border border-[var(--border)] rounded-md shadow-sm">
-            <span className="text-[10px] uppercase block font-mono font-semibold text-[var(--muted-foreground)]">Нийт зар</span>
+            <span className="text-xs uppercase block font-mono font-semibold text-[var(--muted-foreground)]">Нийт зар</span>
             <span className="text-xl font-display font-black text-[var(--fg)]">{jobs.length} зар</span>
           </div>
           <div className="bg-[var(--accent-soft)] p-3.5 border border-[var(--accent)] rounded-md shadow-sm">
-            <span className="text-[10px] uppercase block font-mono font-semibold text-[var(--accent-soft-foreground)]">Бүртгэлтэй хэрэглэгч</span>
+            <span className="text-xs uppercase block font-mono font-semibold text-[var(--accent-soft-foreground)]">Бүртгэлтэй хэрэглэгч</span>
             <span className="text-xl font-display font-black text-[var(--accent-soft-foreground)]">
               {registeredUserCount !== null ? registeredUserCount : '...'} хэрэглэгч
             </span>
@@ -1020,7 +1020,7 @@ export default function JobBoard({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Type Category */}
             <div className="flex flex-col space-y-1.5">
-              <label htmlFor="filter-type" className="text-[10px] text-[var(--muted-foreground)] font-bold uppercase tracking-wider text-left">Зарын төрөл</label>
+              <label htmlFor="filter-type" className="text-xs text-[var(--muted-foreground)] font-bold uppercase tracking-wider text-left">Зарын төрөл</label>
               <div className="relative">
                 <select
                   id="filter-type"
@@ -1038,7 +1038,7 @@ export default function JobBoard({
 
             {/* Aimag location */}
             <div className="flex flex-col space-y-1.5">
-              <label htmlFor="filter-location" className="text-[10px] text-[var(--muted-foreground)] font-bold uppercase tracking-wider text-left">Аймаг / Байршил</label>
+              <label htmlFor="filter-location" className="text-xs text-[var(--muted-foreground)] font-bold uppercase tracking-wider text-left">Аймаг / Байршил</label>
               <div className="relative">
                 <select
                   id="filter-location"
@@ -1058,7 +1058,7 @@ export default function JobBoard({
 
           {/* Active Filters Summary */}
           {(searchQuery || selectedLocation !== 'Бүгд' || selectedType !== 'Бүгд') && (
-            <div className="flex items-center justify-between text-[10px] bg-[var(--accent-soft)] border border-[var(--accent)] p-2.5 rounded-md animate-fade-in">
+            <div className="flex items-center justify-between text-xs bg-[var(--accent-soft)] border border-[var(--accent)] p-2.5 rounded-md animate-fade-in">
               <div className="flex flex-wrap items-center gap-1.5 text-[var(--muted-foreground)]">
                 <Filter className="w-3.5 h-3.5 text-[var(--accent-soft-foreground)]" />
                 <span>Шүүлтүүр:</span>

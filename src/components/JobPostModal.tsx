@@ -312,7 +312,7 @@ export default function JobPostModal({
                     }}
                     className="w-3.5 h-3.5 rounded border-[var(--border)] bg-[var(--bg2)] text-[var(--accent-soft-foreground)] focus:ring-0 cursor-pointer"
                   />
-                  <span className="text-[10px] text-[var(--muted-foreground)] font-sans">Тохиролцоно</span>
+                  <span className="text-xs text-[var(--muted-foreground)] font-sans">Тохиролцоно</span>
                 </label>
               </div>
               <input
@@ -405,7 +405,7 @@ export default function JobPostModal({
           <div>
             <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1 flex justify-between">
               <span>Зургийн хавсралт (Сонгох)</span>
-              <span className="text-[10px] text-[var(--muted-foreground)] font-sans">({imageUrls.length}/4 зураг оруулах боломжтой)</span>
+              <span className="text-xs text-[var(--muted-foreground)] font-sans">({imageUrls.length}/4 зураг оруулах боломжтой)</span>
             </label>
             <div className="flex flex-wrap gap-3 mt-1.5">
               {/* Render uploaded image thumbnails */}
@@ -439,12 +439,12 @@ export default function JobPostModal({
               {imageUrls.length < 4 && (
                 <label className="flex flex-col items-center justify-center w-20 h-20 border border-[var(--border)] border-dashed rounded-lg cursor-pointer bg-[var(--bg2)] hover:bg-[var(--bg2)] transition-all text-center">
                   {isImageUploading ? (
-                    <span className="text-[10px] text-[var(--muted-foreground)] font-medium px-1 leading-tight">Шахаж байна...</span>
+                    <span className="text-xs text-[var(--muted-foreground)] font-medium px-1 leading-tight">Шахаж байна...</span>
                   ) : (
                     <>
                       <Camera className="w-4 h-4 text-[var(--accent-soft-foreground)] mb-0.5" />
-                      <span className="text-[10px] text-[var(--accent-soft-foreground)] font-bold">Нэмэх</span>
-                      <span className="text-[10px] text-[var(--muted-foreground)] font-sans mt-0.5">{imageUrls.length}/4</span>
+                      <span className="text-xs text-[var(--accent-soft-foreground)] font-bold">Нэмэх</span>
+                      <span className="text-xs text-[var(--muted-foreground)] font-sans mt-0.5">{imageUrls.length}/4</span>
                     </>
                   )}
                   <input
@@ -480,7 +480,7 @@ export default function JobPostModal({
             </div>
           </div>
 
-          <div className="bg-[var(--card)] p-3.5 rounded-lg border border-[var(--border)] flex items-center space-x-2 text-[10px] text-[var(--muted-foreground)]">
+          <div className="bg-[var(--card)] p-3.5 rounded-lg border border-[var(--border)] flex items-center space-x-2 text-sm text-[var(--muted-foreground)]">
             <span className="text-[var(--accent-soft-foreground)]">🛡️</span>
             <span>Санамж: Ажил олгогчоор бүртгүүлсэн таны нэр, өнөөгийн үнэлгээ ({employerRating}⭐) энэхүү заранд хамт байршиж, жолооч нарт харагдана.</span>
           </div>
