@@ -59,15 +59,24 @@ interface JobBoardProps {
    * static build (audit P1) and as a general deep-link target.
    */
   initialJobId?: string;
+  /**
+   * Build-time job snapshot from the server page component. Seeds the first
+   * render so the board isn't empty while the real-time listener spins up —
+   * without it, `jobs` started at `[]` and the whole page (footer included)
+   * jumped in height once Firestore data arrived, which measured as a CLS
+   * score of 1 in production (PageSpeed Insights, 2026-07-05).
+   */
+  initialJobs?: Job[];
 }
 
 export default function JobBoard({
   currentUser,
-  initialJobId
+  initialJobId,
+  initialJobs = []
 }: JobBoardProps) {
   const router = useRouter();
   const { logout, setCurrentUser } = useAuth();
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobs, setJobs] = useState<Job[]>(initialJobs);
   const [users, setUsers] = useState<User[]>([]);
   const [registeredUserCount, setRegisteredUserCount] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
