@@ -47,6 +47,7 @@ import NotificationToasts from './jobboard/NotificationToasts';
 import ReviewDetailModal from './jobboard/ReviewDetailModal';
 import GuestBlurWarningModal from './jobboard/GuestBlurWarningModal';
 import BoardHero from './jobboard/BoardHero';
+import BoardInfoSections from './jobboard/BoardInfoSections';
 import { useAuth } from '../context/AuthContext';
 import { getFirstName, LOCATION_OPTIONS, formatNotificationDate } from '../lib/job-format';
 import { trackSearch, trackViewJob, trackApplySubmit, trackPostStarted, trackPostCompleted } from '../lib/analytics';
@@ -720,20 +721,29 @@ export default function JobBoard({
         </span>
       </div>
 
-      {/* Nav bar */}
-      <header className="bg-[var(--card)] border-b border-[var(--border)] sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center space-x-3">
+      {/* Nav bar — slim nameplate header; the long descriptor copy lives in the hero now */}
+      <header className="bg-[var(--card)] border-b border-[var(--border)] sticky top-0 z-40 px-4 md:px-6 py-3 flex items-center justify-between gap-3 shadow-sm">
+        <a href="/" className="flex items-center space-x-3 shrink-0">
           <div className="w-10 h-10 rounded-md bg-[var(--bg2)] border border-[var(--border-strong)] flex items-center justify-center relative overflow-hidden shrink-0 shadow-sm">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" loading="eager" width="40" height="40" />
+            <img className="w-full h-full object-cover" src="/logo.jpg" alt="Жолооч Монголиа лого" loading="eager" width="40" height="40" />
           </div>
           <div>
-            <span className="font-display font-bold uppercase tracking-tight text-[var(--fg)] block text-sm md:text-base">Хүнд машин, механизм & Газар шорооны ажлын сайт</span>
-            <p className="text-xs md:text-sm text-[var(--muted-foreground)] font-sans tracking-wide leading-relaxed mt-0.5 max-w-xs md:max-w-xl">
-              Үнэлгээ өгөх, ажлын түүх үүсгэх системээр хариуцлагатай жолооч, оператор болон найдвартай ажил олгогчдыг үүсгэх платформ
-            </p>
+            <span className="font-display font-black uppercase tracking-tight text-[var(--fg)] block text-base md:text-lg leading-none">
+              Жолооч <span className="text-[var(--accent-soft-foreground)]">Монголиа</span>
+            </span>
+            <span className="hidden sm:block text-xs text-[var(--muted-foreground)] font-sans mt-1 leading-none">
+              Хүнд машин, механизм & газар шорооны ажлын зах зээл
+            </span>
           </div>
-        </div>
+        </a>
+
+        {/* Primary site navigation (semantic, crawlable) */}
+        <nav aria-label="Үндсэн цэс" className="hidden lg:flex items-center gap-1 text-sm font-semibold text-[var(--muted-foreground)]">
+          <a href="#job-board" className="px-3 py-2 rounded hover:bg-[var(--bg2)] hover:text-[var(--fg)] transition-colors">Ажлын зар</a>
+          <a href="#how-it-works" className="px-3 py-2 rounded hover:bg-[var(--bg2)] hover:text-[var(--fg)] transition-colors">Хэрхэн ажилладаг</a>
+          <a href="#faq" className="px-3 py-2 rounded hover:bg-[var(--bg2)] hover:text-[var(--fg)] transition-colors">Түгээмэл асуулт</a>
+        </nav>
 
         {/* Profile and Notifications triggers */}
         <div className="flex items-center space-x-3.5">
@@ -961,48 +971,66 @@ export default function JobBoard({
               </div>
             </>
           ) : (
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => router.push('/auth?tab=login')}
-                className="text-xs text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold px-3.5 py-2 transition-all cursor-pointer hover:bg-[var(--bg2)] rounded"
+            <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
+              <a
+                href="/auth?tab=login"
+                className="hidden sm:block text-sm text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold px-3.5 py-2.5 transition-all cursor-pointer hover:bg-[var(--bg2)] rounded"
               >
                 Нэвтрэх
-              </button>
-              <button
-                onClick={() => router.push('/auth?tab=register')}
-                className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-xs px-3.5 py-2 rounded transition-all cursor-pointer shadow-sm"
+              </a>
+              <a
+                href="/auth?tab=register"
+                className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-sm px-3.5 sm:px-4 py-2.5 rounded transition-all cursor-pointer shadow-sm whitespace-nowrap"
               >
                 Бүртгүүлэх
-              </button>
+              </a>
             </div>
           )}
 
         </div>
       </header>
 
-      <BoardHero isLoggedIn={!!currentUser} />
+      <BoardHero
+        isLoggedIn={!!currentUser}
+        jobsCount={jobs.length}
+        userCount={registeredUserCount}
+        onPostJob={() => { trackPostStarted(); setShowPostModal(true); }}
+      />
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-8 space-y-6">
-        
+      {/* <section>, not <main> — layout.tsx already provides the single page <main> landmark */}
+      <section id="job-board" aria-label="Ажлын зарууд" className="flex-1 max-w-4xl mx-auto w-full px-4 md:px-6 py-8 space-y-6 scroll-mt-16">
+
         {/* Top Success Banner removed to prevent out-of-view notifications. Inline success alerts & floating mouse-anchored toasts are used instead. */}
 
+        {/* Section heading — proper h1→h2 document outline (audit: heading skip) */}
+        <div className="flex items-end justify-between gap-3">
+          <h2 className="text-xl md:text-2xl font-display font-black uppercase tracking-tight text-[var(--fg)]">
+            Ажлын зарууд
+          </h2>
+          <span className="font-mono text-xs text-[var(--muted-foreground)] pb-1">
+            {jobs.length} зар · шинэ нь эхэндээ
+          </span>
+        </div>
 
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-[var(--card)] p-3.5 border border-[var(--border)] rounded-md shadow-sm">
-            <span className="text-xs uppercase block font-mono font-semibold text-[var(--muted-foreground)]">Нийт зар</span>
-            <span className="text-xl font-display font-black text-[var(--fg)]">{jobs.length} зар</span>
-          </div>
-          <div className="bg-[var(--accent-soft)] p-3.5 border border-[var(--accent)] rounded-md shadow-sm">
-            <span className="text-xs uppercase block font-mono font-semibold text-[var(--accent-soft-foreground)]">Бүртгэлтэй хэрэглэгч</span>
-            <span className="text-xl font-display font-black text-[var(--accent-soft-foreground)]">
-              {registeredUserCount !== null ? registeredUserCount : '...'} хэрэглэгч
-            </span>
-          </div>
+        {/* Category quick-filter chips — one-tap filtering for mobile users */}
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap overscroll-contain" role="group" aria-label="Зарын төрлөөр шүүх">
+          {getUniqueJobTypes().map((t) => (
+            <button
+              key={t.value}
+              onClick={() => setSelectedType(t.value)}
+              className={`shrink-0 text-sm font-semibold px-4 py-2.5 rounded border transition-all cursor-pointer ${
+                selectedType === t.value
+                  ? 'bg-[var(--fg)] text-[var(--bg)] border-[var(--fg)] shadow-sm'
+                  : 'bg-[var(--card)] text-[var(--muted-foreground)] border-[var(--border)] hover:border-[var(--border-strong)] hover:text-[var(--fg)]'
+              }`}
+            >
+              {t.value === 'Бүгд' ? 'Бүгд' : t.label}
+            </button>
+          ))}
         </div>
 
         {/* Search bar & filter buttons */}
-        <div className="bg-[var(--card)] p-5 border border-[var(--border)] rounded-md space-y-4 shadow-sm">
+        <div className="bg-[var(--card)] p-4 md:p-5 border border-[var(--border)] rounded-md space-y-4 shadow-sm">
 
           {/* Search inputs */}
           <div className="relative">
@@ -1013,7 +1041,7 @@ export default function JobBoard({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Экскаватор, Шакман жолооч, Дамп, Өмнөговь гэж хайх..."
-              className="w-full pl-10 pr-10 py-2.5 bg-[var(--bg2)] border border-[var(--border)] hover:border-[var(--border-strong)] rounded-md text-xs text-[var(--fg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--accent)] transition-all placeholder-[var(--muted-foreground)] font-sans"
+              className="w-full pl-10 pr-10 py-3 bg-[var(--bg2)] border border-[var(--border)] hover:border-[var(--border-strong)] rounded-md text-sm text-[var(--fg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--accent)] transition-all placeholder-[var(--muted-foreground)] font-sans"
             />
             {searchQuery && (
               <button
@@ -1035,7 +1063,7 @@ export default function JobBoard({
                   id="filter-type"
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
-                  className="w-full bg-[var(--bg2)] border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--fg)] text-xs px-3.5 py-2.5 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--accent)] transition-all cursor-pointer appearance-none"
+                  className="w-full bg-[var(--bg2)] border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--fg)] text-sm px-3.5 py-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--accent)] transition-all cursor-pointer appearance-none"
                 >
                   {getUniqueJobTypes().map((t, idx) => (
                     <option key={idx} value={t.value}>{t.label}</option>
@@ -1053,7 +1081,7 @@ export default function JobBoard({
                   id="filter-location"
                   value={selectedLocation}
                   onChange={(e) => setSelectedLocation(e.target.value)}
-                  className="w-full bg-[var(--bg2)] border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--fg)] text-xs px-3.5 py-2.5 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--accent)] transition-all cursor-pointer appearance-none"
+                  className="w-full bg-[var(--bg2)] border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--fg)] text-sm px-3.5 py-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--accent)] transition-all cursor-pointer appearance-none"
                 >
                   <option value="Бүгд">Бүх байршил (21 аймаг + Хот)</option>
                   {LOCATION_OPTIONS.filter(l => l !== 'Бүгд').map((l, id) => (
@@ -1096,10 +1124,10 @@ export default function JobBoard({
 
         {/* Job listings container */}
         <div className="space-y-4">
-          <div className="flex items-center space-x-4 border-b border-[var(--border)] pb-2">
+          <div className="flex items-center space-x-2 border-b border-[var(--border)]">
             <button
               onClick={() => setStatusFilter('open')}
-              className={`text-xs font-display font-bold tracking-wider uppercase pb-1 transition-all cursor-pointer border-b-2 ${
+              className={`text-sm font-display font-bold tracking-wider uppercase px-3 py-2.5 -mb-px transition-all cursor-pointer border-b-2 ${
                 statusFilter === 'open'
                   ? 'text-[var(--fg)] border-[var(--accent)] font-extrabold'
                   : 'text-[var(--muted-foreground)] border-transparent hover:text-[var(--fg)]'
@@ -1109,7 +1137,7 @@ export default function JobBoard({
             </button>
             <button
               onClick={() => setStatusFilter('completed')}
-              className={`text-xs font-display font-bold tracking-wider uppercase pb-1 transition-all cursor-pointer border-b-2 ${
+              className={`text-sm font-display font-bold tracking-wider uppercase px-3 py-2.5 -mb-px transition-all cursor-pointer border-b-2 ${
                 statusFilter === 'completed'
                   ? 'text-[var(--fg)] border-[var(--verify)] font-extrabold'
                   : 'text-[var(--muted-foreground)] border-transparent hover:text-[var(--fg)]'
@@ -1184,7 +1212,10 @@ export default function JobBoard({
           )}
         </div>
 
-      </main>
+      </section>
+
+      {/* Copy/conversion sections — how it works, trust, FAQ, CTA band (audit: COPY 48, CONVERSION 15) */}
+      <BoardInfoSections isLoggedIn={!!currentUser} onPostJob={() => { trackPostStarted(); setShowPostModal(true); }} />
 
       {/* Floating Toast Notification Containers */}
       <NotificationToasts

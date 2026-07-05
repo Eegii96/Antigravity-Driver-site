@@ -5,11 +5,23 @@ import { getJobs } from '../lib/db';
 export const metadata: Metadata = {
   title: 'Барилга, Механизмын Ажлын Нэгдсэн Систем',
   description: 'Барилга, замын газар шорооны ажил, хүнд машин механизм түрээс ба жолооч нарын үнэлгээ, түүх бүхий нэгдсэн зарын систем.',
+  // NOTE: a page-level `openGraph` object REPLACES layout.tsx's openGraph
+  // wholesale (Next merges metadata per-field, not deep) — so images must be
+  // repeated here or the homepage ships with no og:image (savage-audit SEO
+  // finding: "Open Graph image missing").
   openGraph: {
     title: 'Барилга, Механизмын Ажлын Нэгдсэн Систем | Жолооч Монголиа',
     description: 'Хүнд машин, механизм & Газар шорооны ажлын зарыг нэг дороос хайж, мэргэшсэн операторуудтай холбогдоорой.',
     url: 'https://jolooch.net',
     type: 'website',
+    images: [
+      {
+        url: '/og.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Жолооч Монголиа — газар шорооны ажлын зах зээл',
+      },
+    ],
   },
 };
 

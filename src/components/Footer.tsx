@@ -47,24 +47,31 @@ export default function Footer() {
 
         <div>
           <h2 className="text-[var(--fg)] font-medium mb-4 text-sm font-sans">Холбоо барих</h2>
-          <ul className="space-y-2.5 text-xs font-sans">
-            <li className="flex items-center space-x-2">
-              <Mail className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
-              <span>enkhyondoo@gmail.com</span>
-            </li>
-            <li className="flex items-center space-x-2">
-              <Phone className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
-              <span>+976 99106339 (Даваа - Баасан)</span>
-            </li>
-            <li className="flex items-center space-x-2">
-              <MapPin className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
-              <span>Улаанбаатар хот, Сүхбаатар дүүрэг, 1-р хороо</span>
-            </li>
-          </ul>
+          <address className="not-italic">
+            <ul className="space-y-2.5 text-sm font-sans">
+              <li className="flex items-center space-x-2">
+                <Mail className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
+                <a href="mailto:enkhyondoo@gmail.com" className="hover:text-[var(--fg)] underline decoration-[var(--border)] underline-offset-2 transition-colors">
+                  enkhyondoo@gmail.com
+                </a>
+              </li>
+              <li className="flex items-center space-x-2">
+                <Phone className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
+                <a href="tel:+97699106339" className="hover:text-[var(--fg)] underline decoration-[var(--border)] underline-offset-2 transition-colors font-mono">
+                  +976 99106339
+                </a>
+                <span className="text-xs text-[var(--muted-foreground)]">(Даваа - Баасан)</span>
+              </li>
+              <li className="flex items-center space-x-2">
+                <MapPin className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
+                <span>Улаанбаатар хот, Сүхбаатар дүүрэг, 1-р хороо</span>
+              </li>
+            </ul>
+          </address>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto border-t border-[var(--border)] mt-8 pt-6 text-xs text-[var(--muted-foreground)] font-sans">
+      <nav aria-label="Аймгаар хайх" className="max-w-7xl mx-auto border-t border-[var(--border)] mt-8 pt-6 text-xs text-[var(--muted-foreground)] font-sans">
         <span className="font-semibold">Аймгаар хайх:</span>{' '}
         {AIMAG_SLUGS.map(({ location, slug }, idx) => (
           <span key={slug}>
@@ -74,7 +81,7 @@ export default function Footer() {
             {idx < AIMAG_SLUGS.length - 1 && ' · '}
           </span>
         ))}
-      </div>
+      </nav>
 
       <div className="max-w-7xl mx-auto border-t border-[var(--border)] mt-6 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-[var(--muted-foreground)] font-sans">
         <p>© {new Date().getFullYear()} Хүнд машин, механизм & Газар шорооны ажлын сайт. Бүх эрх хуулиар хамгаалагдсан.</p>
