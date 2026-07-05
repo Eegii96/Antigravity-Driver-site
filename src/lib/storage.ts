@@ -1,5 +1,12 @@
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { storage } from './firebase';
+import app from './firebase';
+
+// firebase/storage is dynamically imported below so it ships as its own
+// chunk instead of the shared vendor bundle every page loads — only the
+// job-post image upload flow ever touches Cloud Storage.
+async function getStorageApi() {
+  const { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } = await import('firebase/storage');
+  return { storage: getStorage(app), ref, uploadBytes, getDownloadURL, deleteObject };
+}
 
 const THUMBNAIL_MAX = 320;
 const FULL_MAX = 800;
@@ -44,7 +51,8 @@ function compressToBlob(file: File, maxSize: number): Promise<Blob> {
  * images it never actually needed at that resolution (audit P3).
  */
 export async function uploadJobImage(jobId: string, file: File): Promise<{ url: string; thumbUrl: string }> {
-  const [fullBlob, thumbBlob] = await Promise.all([
+  const [{ storage, ref, uploadBytes, getDownloadURL }, fullBlob, thumbBlob] = await Promise.all([
+    getStorageApi(),
     compressToBlob(file, FULL_MAX),
     compressToBlob(file, THUMBNAIL_MAX),
   ]);
@@ -66,6 +74,7 @@ export async function uploadJobImage(jobId: string, file: File): Promise<{ url: 
 // Delete a job image from Firebase Storage by its download URL
 export async function deleteJobImage(url: string): Promise<void> {
   try {
+    const { storage, ref, deleteObject } = await getStorageApi();
     const storageRef = ref(storage, url);
     await deleteObject(storageRef);
   } catch {
