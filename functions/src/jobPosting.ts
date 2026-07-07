@@ -66,7 +66,10 @@ export const createJob = onCall(
       type: data.type || 'earthwork',
       machineryType: data.machineryType || 'Бусад',
       salary: data.salary ?? 0,
-      salaryUnit: data.salaryUnit || 'Өдрөөр',
+      // ?? not || — '' is a legitimate value ("Заагаагүй", unit deliberately
+      // not specified by the poster); || would silently coerce it back to
+      // 'Өдрөөр' and the client's choice would never persist.
+      salaryUnit: data.salaryUnit ?? 'Өдрөөр',
       duration: data.duration || 'Тохиролцоно',
       location: data.location || 'Улаанбаатар хот',
       requirements: data.requirements || [],

@@ -72,7 +72,10 @@ export interface Job {
   type: string;
   machineryType: string; // Ex: Экскаватор, Дамп / Өөрөө буулгагч, Ковш
   salary: number;
-  salaryUnit: 'Өдрөөр' | 'Цагаар' | 'Төслөөр';
+  // '' = unit deliberately not specified by the poster ("Заагаагүй") — UI
+  // hides the unit entirely in that case. Display code must guard with
+  // truthiness (job.salaryUnit && ...), never assume one of the named units.
+  salaryUnit: 'Өдрөөр' | 'Цагаар' | 'Төслөөр' | '';
   duration: string;
   location: string;
   requirements: string[];

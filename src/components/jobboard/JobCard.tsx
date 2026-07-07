@@ -401,7 +401,10 @@ export default function JobCard({
                           onClick={async (e) => {
                             e.stopPropagation();
                             const jobUrl = `${window.location.origin}/jobs/${job.id}`;
-                            const shareText = `${job.title} — ${job.location}\nЦалин: ${job.salary.toLocaleString()}₮ (${job.salaryUnit})\n\n${jobUrl}`;
+                            const salaryText = job.salary === 0
+                              ? 'Тохиролцоно'
+                              : `${job.salary.toLocaleString()}₮${job.salaryUnit ? ` (${job.salaryUnit})` : ''}`;
+                            const shareText = `${job.title} — ${job.location}\nЦалин: ${salaryText}\n\n${jobUrl}`;
 
                             // Mobile: use native OS share sheet (Web Share API)
                             if (navigator.share) {

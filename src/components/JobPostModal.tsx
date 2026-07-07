@@ -109,7 +109,10 @@ export default function JobPostModal({
   // (audit C4). Now real form fields, defaulting to the same values so
   // existing behavior doesn't change until the poster picks something else.
   const [machineryType, setMachineryType] = useState<string>(jobToEdit?.machineryType || 'Бусад');
-  const [salaryUnit, setSalaryUnit] = useState<'Өдрөөр' | 'Цагаар' | 'Төслөөр'>(jobToEdit?.salaryUnit || 'Өдрөөр');
+  // '' = "Заагаагүй" — the poster isn't forced to pick a unit (user feedback:
+  // three mandatory choices felt overbearing). New jobs default to unspecified;
+  // edits keep whatever the job already stores.
+  const [salaryUnit, setSalaryUnit] = useState<'Өдрөөр' | 'Цагаар' | 'Төслөөр' | ''>(jobToEdit?.salaryUnit ?? '');
   const [duration] = useState<string>('Тохиролцоно');
   const [requirements] = useState<string[]>([
     'Архидан согтуурахаас хол, хариуцлагатай байх',
@@ -358,9 +361,10 @@ export default function JobPostModal({
               <select
                 id="job-salary-unit"
                 value={salaryUnit}
-                onChange={(e) => setSalaryUnit(e.target.value as 'Өдрөөр' | 'Цагаар' | 'Төслөөр')}
+                onChange={(e) => setSalaryUnit(e.target.value as 'Өдрөөр' | 'Цагаар' | 'Төслөөр' | '')}
                 className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
               >
+                <option value="" className="bg-[var(--bg2)] text-[var(--fg)]">Заагаагүй</option>
                 <option value="Өдрөөр" className="bg-[var(--bg2)] text-[var(--fg)]">Өдрөөр</option>
                 <option value="Цагаар" className="bg-[var(--bg2)] text-[var(--fg)]">Цагаар</option>
                 <option value="Төслөөр" className="bg-[var(--bg2)] text-[var(--fg)]">Төслөөр</option>
