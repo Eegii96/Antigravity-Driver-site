@@ -1183,30 +1183,46 @@ export default function JobBoard({
               </div>
             )
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {displayJobs.map((job) => (
-                <JobCard
-                  key={job.id}
-                  job={job}
-                  isExpanded={selectedJob?.id === job.id}
-                  currentUser={currentUser}
-                  users={users}
-                  successMessage={successMessage}
-                  shareMenuJob={shareMenuJob}
-                  onSelect={(j) => { trackViewJob(j.id, j.status); setSelectedJob(j); }}
-                  onCollapse={() => setSelectedJob(null)}
-                  onShowBlurWarning={() => setShowBlurWarningModal(true)}
-                  onEdit={setEditingJob}
-                  onReview={setActiveReviewJob}
-                  onHire={handleHire}
-                  onApply={handleApply}
-                  onCompleteAndReview={handleCompleteAndReviewTrigger}
-                  onDelete={handleDeleteJob}
-                  onCancelHiring={handleCancelHiring}
-                  onToggleShareMenu={setShareMenuJob}
-                  onCopied={() => addSuccessToast('Хуулагдлаа', 'Холбоос clipboard-д хуулагдлаа.')}
-                  onNavigate={(path) => router.push(path)}
-                />
+            /* Masonry: on md+ the cards flow into two independently-stacked
+               columns, so a short text-only card packs tightly under the
+               previous one instead of stretching its grid row to match a tall
+               image card (which left large background gaps). Below md the
+               column wrappers become `display: contents` and the per-card
+               `order` (original index) restores chronological order in the
+               single-column flow — each card stays a single DOM node, which
+               the click-outside collapse logic (getElementById) relies on. */
+            <div className="flex flex-col gap-4 md:flex-row md:items-start">
+              {[0, 1].map((column) => (
+                <div key={column} className="contents md:flex md:min-w-0 md:flex-1 md:flex-col md:gap-4">
+                  {displayJobs
+                    .map((job, index) => ({ job, index }))
+                    .filter(({ index }) => index % 2 === column)
+                    .map(({ job, index }) => (
+                      <div key={job.id} style={{ order: index }} className="min-w-0">
+                        <JobCard
+                          job={job}
+                          isExpanded={selectedJob?.id === job.id}
+                          currentUser={currentUser}
+                          users={users}
+                          successMessage={successMessage}
+                          shareMenuJob={shareMenuJob}
+                          onSelect={(j) => { trackViewJob(j.id, j.status); setSelectedJob(j); }}
+                          onCollapse={() => setSelectedJob(null)}
+                          onShowBlurWarning={() => setShowBlurWarningModal(true)}
+                          onEdit={setEditingJob}
+                          onReview={setActiveReviewJob}
+                          onHire={handleHire}
+                          onApply={handleApply}
+                          onCompleteAndReview={handleCompleteAndReviewTrigger}
+                          onDelete={handleDeleteJob}
+                          onCancelHiring={handleCancelHiring}
+                          onToggleShareMenu={setShareMenuJob}
+                          onCopied={() => addSuccessToast('Хуулагдлаа', 'Холбоос clipboard-д хуулагдлаа.')}
+                          onNavigate={(path) => router.push(path)}
+                        />
+                      </div>
+                    ))}
+                </div>
               ))}
             </div>
           )}
