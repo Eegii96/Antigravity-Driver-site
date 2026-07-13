@@ -56,3 +56,6 @@ deploy.bat
 # test artifacts
 /playwright-report/
 /test-results/
+
+# AI agent local memory (internal notes, not site source)
+/memory/
