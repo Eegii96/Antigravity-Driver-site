@@ -1,22 +1,21 @@
 import type { Metadata } from "next";
-import { Oswald, Inter, Geist_Mono } from "next/font/google";
+import { Manrope, Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "../components/Footer";
 import { AuthProvider } from "../context/AuthContext";
 import InAppBrowserGuard from "../components/InAppBrowserGuard";
 import ErrorBoundary from "../components/ErrorBoundary";
 
-// "Hi-vis Industrial" canonical fonts (AGENTS.md §4):
-// Oswald (condensed grotesque, nameplate feel — the AGENTS.md-approved alternate
-// to Saira Condensed) for headings/display, Inter for body/UI text, Geist Mono
-// for numbers/codes/dates. Both display and body fonts load the "cyrillic"
-// subset — the site's content is ~100% Mongolian Cyrillic, and Saira Condensed
-// has no Cyrillic glyphs at all, which was silently falling back to the system
-// font for every heading.
-const saira = Oswald({
-  variable: "--font-saira",
+// "Calm Professional" canonical fonts (AGENTS.md §4):
+// Manrope (modern humanist grotesque, sentence-case headings) for display,
+// Inter for body/UI text, Geist Mono only for phone numbers where already
+// wired. Both display and body fonts load the "cyrillic" subset — the site's
+// content is ~100% Mongolian Cyrillic; a Latin-only display font silently
+// falls back to the system font on every heading.
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin", "cyrillic"],
-  weight: ["500", "600", "700"],
+  weight: ["500", "600", "700", "800"],
 });
 
 const inter = Inter({
@@ -98,7 +97,7 @@ export default function RootLayout({
   return (
     <html
       lang="mn"
-      className={`${saira.variable} ${inter.variable} ${geistMono.variable} antialiased`}
+      className={`${manrope.variable} ${inter.variable} ${geistMono.variable} antialiased`}
     >
       <head>
         <link rel="preconnect" href="https://firestore.googleapis.com" />

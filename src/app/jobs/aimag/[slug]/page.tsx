@@ -47,15 +47,14 @@ export default async function AimagLandingPage({ params }: Props) {
   return (
     <div className="bg-[var(--bg)] flex-grow">
       <section className="relative overflow-hidden bg-[var(--bg2)] border-b border-[var(--border)]">
-        <div className="hazard-stripe h-1.5 w-full" />
         <div className="max-w-4xl mx-auto w-full px-6 py-9 md:py-12">
-          <span className="inline-block text-xs font-bold uppercase tracking-wider text-[var(--accent-soft-foreground)] bg-[var(--accent-soft)] border border-[var(--accent)] px-3 py-1 rounded-sm">
+          <span className="inline-block text-[13px] font-semibold text-[var(--accent-soft-foreground)] bg-[var(--accent-soft)] px-4 py-1.5 rounded-full">
             {location}
           </span>
-          <h1 className="mt-3 text-2xl md:text-4xl font-display font-black uppercase tracking-tight text-[var(--fg)] leading-tight">
+          <h1 className="mt-4 text-2xl md:text-4xl font-display font-bold tracking-tight text-[var(--fg)] leading-tight">
             {locationDative} ажиллах ажлын байрууд
           </h1>
-          <p className="mt-2.5 text-xs md:text-sm text-[var(--muted-foreground)] max-w-2xl leading-relaxed">
+          <p className="mt-3 text-[15px] text-[var(--muted-foreground)] max-w-2xl leading-relaxed">
             {locationDative} хүнд машин механизм, газар шорооны ажлын зарууд эндээс. Жолооч,
             оператор, ажил олгогч бүрийн ажлын түүх, бодит үнэлгээ ил тод — хэн хариуцлагатай,
             хэн шударга болохыг өмнөх түүх нь харуулна.

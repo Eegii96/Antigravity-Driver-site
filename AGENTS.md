@@ -61,38 +61,29 @@ The canonical source of truth for all data types is `src/types.ts`. Key rules:
 
 ## 4. Design, Styling & Mongolian Grammar Rules
 
-### Design System: "Hi-vis Industrial" (canonical, 2026-06-28)
+### Design System: "Calm Professional" — CANONICAL (2026-07-13)
 
 > [!IMPORTANT]
-> This is the **single canonical design system** for Jolooch.net, chosen by the product owner to give the site a distinctive identity grounded in its actual subject — heavy machinery and earthworks — instead of a generic "premium SaaS" look. It supersedes the retired **"Glass Premium Violet"** system and every earlier slate/emerald/amber/sky/rose reference. Every page, modal, header, and footer MUST converge on these tokens — no exceptions, no one-off colors.
->
-> **The design thesis**: this is a tool for excavator/bulldozer/crane operators and the people who hire them. It should feel like premium heavy-equipment branding (think CAT, Hilti, Liebherr nameplates) — rugged, high-contrast, utilitarian, and unmistakably about machinery. It is a LIGHT, structural, solid-surface system. It is deliberately NOT dark-mode, NOT glassmorphism, NOT neon-glow, NOT violet — those are the retired look and read as templated/AI-generated.
+> The former **"Hi-vis Industrial"** system (and the earlier "Glass Premium Violet") is **RETIRED** by product-owner decision (2026-07-13). The canonical system is now **"Calm Professional"**, built from the product owner's reference (smilifye.webflow.io — warm premium service-marketplace look) with the `ui-ux-pro-max` skill. Phase 1 (tokens, fonts, homepage: hero, board, cards, info sections) shipped 2026-07-13; remaining pages (JobDetailClient, Auth, ProfileView, SettingsView, modals) inherit the tokens automatically and get typography/radius polish in phase 2.
+
+**Calm Professional rules (canonical):**
+
+- **Mood**: calm, trustworthy, premium marketplace. Warm paper background, solid white cards, ONE deep teal-ink brand color, sage tint highlights, generous whitespace. NO industrial styling: no hazard stripes, no condensed/uppercase display type, no hi-vis yellow, no pulsing dots, no emoji in UI (Lucide icons only).
+- **Tokens** (values live in `globals.css`; consume via `var(--...)` only): `--bg` #FAF9F6 paper · `--bg2` #F1EFE9 cream · `--card` #FFFFFF · `--border` #E8E5DD · `--border-strong` #D9D5CB · `--fg` #172629 teal-ink (text + dark brand bands) · `--muted-foreground` #5C6763 · `--accent` #172629 (primary CTA fill = ink pill, `--accent-foreground` #FFFFFF) · `--accent-soft` #EAF0EC sage (`--accent-soft-foreground` #33604C) · `--verify` #237952 · `--alert` #BC4F24 terracotta · `--tint` #8FB3BE steel-blue (heading highlight on dark bands only, never small text).
+- **Typography**: display = Manrope (600–800, **sentence case always** — never uppercase headings), body = Inter, Geist Mono only for phone numbers. All via `next/font` with `cyrillic` subset (`--font-manrope`, `--font-inter`, `--font-geist-mono`).
+- **Type scale (mobile-first)**: body/descriptions 15–16px, card titles 17–18px, section headings 26–34px, hero 34/52px, meta 13–14px, 12px absolute minimum. Search/text inputs ≥16px (prevents iOS auto-zoom).
+- **Radii**: cards/panels `rounded-2xl`, inputs `rounded-xl`, buttons & chips `rounded-full` (pills), images `rounded-xl`, inset dark CTA bands `rounded-3xl`.
+- **Buttons**: primary = ink pill (`bg-[var(--accent)] text-[var(--accent-foreground)] rounded-full`); on dark bands = paper-white pill with a rotating arrow-circle (`ArrowUpRight` in a `--fg` circle). Secondary = bordered pill. Hover = `hover:opacity-90` or `hover:brightness-95`, never color swaps.
+- **Status semantics**: `open` = NO badge on collapsed cards (default state shows nothing; expanded view may show a sage "Нээлттэй зар" chip) · `in_progress` / completed-unreviewed = terracotta chip · completed+reviewed = green chip. Chips are `rounded-full`, tint bg + colored text, no borders, no animation.
+- **Empty content**: never render the legacy placeholder string "Нэмэлт мэдээлэл оруулаагүй." — hide empty descriptions entirely (see `hasRealDescription` in `JobCard.tsx`).
+
+Design-system-agnostic rules that remain in force regardless of the visual design:
 
 - **Target Audience**: Jolooch.net is primarily accessed on mobile phones by users aged 30–50 (blue-collar operators and employers). All UI must be minimal, highly legible in daylight/outdoors, touch-optimized, and confidence-inspiring.
-- **Canonical Color Tokens** (defined in `globals.css`, consumed via Tailwind arbitrary-value classes like `bg-[var(--accent)]`):
-  - `--bg: #F4F5F2` — base page background (steel white). Never use `bg-black`, `bg-gray-900`, dark surfaces, or system defaults.
-  - `--bg2: #EBEDE8` — secondary/alternating section background.
-  - `--card: #FFFFFF` — solid card/panel fill. Surfaces are SOLID and opaque — no translucency, no `backdrop-blur` for content panels.
-  - `--border: #D5D7D1` — default hairline divider/card border (1px). `--border-strong: #1A1C1E` — crisp graphite border (1–1.5px) for emphasis/"machined" panels.
-  - `--fg: #1A1C1E` — primary text (graphite). `--muted-foreground: #5A5D58` — secondary text (must keep ≥4.5:1 contrast on `--bg`). `--concrete: #9A9C98` — decorative/disabled gray ONLY, never body text.
-  - `--accent: #FFC400` (hi-vis yellow) — primary brand accent: primary CTA buttons, active states, key highlights, the hazard-stripe signature. **Yellow is a FILL/accent color only — never use it for text or thin lines.** Text/icons placed on `--accent` MUST be `--accent-foreground: #1A1C1E` (graphite), never white.
-  - `--accent-soft: rgba(255,196,0,0.16)` with `--accent-soft-foreground: #8A6A00` — soft yellow badge/icon backgrounds and subtle highlights (the dark amber foreground keeps text legible).
-  - `--verify: #1F8A4C` (safety green) — secondary accent reserved for trust/verification/success signals: "verified" badges, checkmarks, salary highlights, and the **completed** job status. Never use green and yellow for the same semantic meaning on one screen.
-  - `--alert: #FF5C28` (safety orange) — workflow-attention only: "needs review / in-progress" badges and non-destructive warnings that must stand apart from the yellow=open / green=completed status pair.
-  - **Status semantics (strict)**: open job = `--accent` (hi-vis yellow), completed job = `--verify` (green), in-progress/needs-review = `--alert` (orange). Keep the `Нийт зар` / `Дууссан зар` tab partition (AGENTS.md §3) mapped to yellow/green respectively.
-  - **Retired palette**: violet `#8b5cf6`, teal `#22d3ee`, the mislabeled `--color-neon-emerald`/`--color-neon-violet`, all `--bg: #0c0f17`-era dark surfaces, `sky-*`, and `gold`/`#caa03d` must all be migrated to the tokens above. Do not introduce new ad-hoc Tailwind color utilities for brand/trust/CTA/status meaning — always reference the CSS variables.
-  - **Exception — destructive states**: `rose-*`/`red-*` remain valid ONLY for genuinely destructive actions (delete account, cancel hiring, remove applicant) and hard error/validation states. They are not brand colors and must stay visually distinct from yellow/green/orange. The amber/blacklist compliance-warning banner (e.g. "согтуу ажиллах... хар дансанд бүртгэгдэнэ") now uses `--alert` (safety orange), not a separate amber.
-- **Dark graphite brand bands (2026-07-05, product-owner approved)**: The homepage hero and the closing CTA band render as full-width DARK graphite (`bg-[var(--fg)]`) sections with light text (`--bg` as foreground, `rgba(244,245,242,0.6-0.75)` for muted-on-dark) and yellow accents. These are deliberate nameplate "brand moments" — bookends on an otherwise light page — NOT a move to dark mode. Content surfaces (cards, panels, forms, the job grid) remain light/solid per the rules below. Do not add more dark bands beyond hero + closing CTA without explicit product-owner sign-off, and never place data-dense UI (forms, job cards, tables) on dark surfaces.
-- **Surfaces & Panels (solid, structural)**: Primary content panels are SOLID white (`bg-[var(--card)]`) with a crisp `border border-[var(--border)]` and a tight, low, hard shadow (e.g. `0 1px 2px rgba(26,28,30,0.08)`) — NOT large soft blurred shadows. Use the `.panel` and `.panel-machined` utility classes in `globals.css`. The retired `.glass-panel`/`.glass-card`/`.glass-input` (translucent + `backdrop-blur`) classes and all `.glow-blob`/neon `text-shadow`/`box-shadow` glow effects must NOT be used and should be removed during migration.
-- **Corner radius (restrained)**: Industrial = crisp, not pill-soft. Use small radii (`rounded-md` ≈ 6px for cards/inputs, `rounded` for buttons). Avoid `rounded-full`/`rounded-2xl` on content surfaces; reserve full radius for avatars and small status dots only.
-- **Signature element — hazard stripe**: A 45° repeating yellow/graphite caution stripe (`.hazard-stripe` utility) is the single memorable signature. Use it SPARINGLY and with discipline: a thin strip (≈6–8px) at the top edge of the hero and as a key section/divider accent — never as a large fill or behind text. This is where the design spends its boldness (frontend-design skill: "spend your boldness in one place"); keep everything else quiet.
+- **Tokens over hardcodes**: All brand/status/CTA colors must be defined as CSS variables in `globals.css` and consumed via Tailwind arbitrary-value classes (e.g. `bg-[var(--accent)]`) — never as scattered ad-hoc hex values or one-off Tailwind color utilities.
 - **No Placeholder Images**: Never use `<img src="placeholder.jpg">`. Use Lucide React icons or styled SVG avatars instead.
-- **Typography**:
-  - Headings (`h1`–`h3`, hero copy, section titles): a **condensed grotesque** display face (`Saira Condensed`, with `Archivo`/`Oswald` as acceptable alternates) loaded via `next/font/google` in `layout.tsx`, wired to `--font-display`/`font-display`. Evokes stamped equipment serial-plates; set key headings in uppercase with tight tracking for the nameplate feel — but not every heading. The retired `Fraunces` serif must be removed.
-  - Body text, UI labels, buttons: `Inter`, loaded via `next/font/google`, wired to `--font-sans`/`font-sans`.
-  - Numbers, codes, phone numbers, salaries, dates: keep `font-mono` (Geist Mono) — reinforces the spec-sheet feel.
-  - Do NOT hardcode `'Inter'`, `'Saira Condensed'`, or any raw `font-family` string anywhere — it must always resolve through the `next/font` CSS variable so fonts are self-hosted at build time, not silently falling back to system fonts.
-- **Motion (disciplined)**: Prefer crisp, short, functional transitions (hover lift on cards, fade-in). NO ambient floating blobs, NO pulsing neon glows — the retired animated glow effects read as AI-generated and must go. Respect `prefers-reduced-motion`.
+- **Fonts via `next/font` only**: All fonts load through `next/font/google` in `layout.tsx`, wired to CSS variables (`--font-display`, `--font-sans`, etc.). Never hardcode a raw `font-family` string — fonts must be self-hosted at build time, not silently falling back to system fonts.
+- **Motion**: Respect `prefers-reduced-motion` in all animations.
 
 ### Mongolian Grammar & SEO Rules
 - **Location Suffixes**: Always append correct Mongolian location suffixes:

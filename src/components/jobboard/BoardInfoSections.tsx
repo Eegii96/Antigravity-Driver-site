@@ -1,6 +1,6 @@
 'use client';
 
-import { UserPlus, FileText, PhoneCall, Star, ShieldCheck, Ban, History, ArrowRight, Phone } from 'lucide-react';
+import { UserPlus, FileText, PhoneCall, Star, ShieldCheck, Ban, History, Plus, Phone, ArrowUpRight } from 'lucide-react';
 
 interface BoardInfoSectionsProps {
   isLoggedIn: boolean;
@@ -82,30 +82,30 @@ export default function BoardInfoSections({ isLoggedIn, onPostJob }: BoardInfoSe
     <>
       {/* ── How it works ── */}
       <section id="how-it-works" aria-label="Хэрхэн ажилладаг вэ" className="bg-[var(--card)] border-t border-[var(--border)] scroll-mt-16">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 py-12 md:py-16">
-          <span className="inline-block text-xs font-bold uppercase tracking-widest text-[var(--accent-soft-foreground)] bg-[var(--accent-soft)] border border-[var(--accent)] px-3 py-1.5 rounded-sm">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 py-14 md:py-20">
+          <span className="inline-block text-[13px] font-semibold text-[var(--accent-soft-foreground)] bg-[var(--accent-soft)] px-4 py-1.5 rounded-full">
             Энгийн 4 алхам
           </span>
-          <h2 className="mt-3 text-2xl md:text-3xl font-display font-black uppercase tracking-tight text-[var(--fg)]">
+          <h2 className="mt-4 text-[26px] md:text-[34px] font-display font-bold tracking-tight text-[var(--fg)] leading-tight">
             Хэрхэн ажилладаг вэ?
           </h2>
-          <p className="mt-2 text-sm md:text-base text-[var(--muted-foreground)] max-w-2xl leading-relaxed">
+          <p className="mt-3 text-[15px] md:text-base text-[var(--muted-foreground)] max-w-2xl leading-relaxed">
             Бүртгүүлснээс эхлээд ажлаа дуусгаж үнэлгээ авах хүртэл — бүх алхам энгийн,
             ил тод, төлбөргүй.
           </p>
 
-          <ol className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <ol className="mt-9 grid grid-cols-1 sm:grid-cols-2 gap-4">
             {STEPS.map((step) => (
-              <li key={step.num} className="relative bg-[var(--bg)] border border-[var(--border)] rounded-md p-5 flex gap-4">
-                <span className="font-mono text-2xl font-bold text-[var(--concrete)] leading-none select-none" aria-hidden="true">
+              <li key={step.num} className="relative bg-[var(--bg)] border border-[var(--border)] rounded-2xl p-6 flex gap-5">
+                <span className="font-display text-[26px] font-bold text-[var(--concrete)] leading-none select-none" aria-hidden="true">
                   {step.num}
                 </span>
                 <div>
                   <div className="flex items-center gap-2">
                     <step.icon className="w-4.5 h-4.5 text-[var(--accent-soft-foreground)]" aria-hidden="true" />
-                    <h3 className="text-sm md:text-base font-bold text-[var(--fg)]">{step.title}</h3>
+                    <h3 className="text-base font-display font-bold text-[var(--fg)]">{step.title}</h3>
                   </div>
-                  <p className="mt-1.5 text-sm text-[var(--muted-foreground)] leading-relaxed">{step.body}</p>
+                  <p className="mt-2 text-sm text-[var(--muted-foreground)] leading-relaxed">{step.body}</p>
                 </div>
               </li>
             ))}
@@ -115,21 +115,23 @@ export default function BoardInfoSections({ isLoggedIn, onPostJob }: BoardInfoSe
 
       {/* ── Trust / why believe us ── */}
       <section aria-label="Яагаад итгэж болох вэ" className="bg-[var(--bg2)] border-t border-[var(--border)]">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 py-12 md:py-16">
-          <h2 className="text-2xl md:text-3xl font-display font-black uppercase tracking-tight text-[var(--fg)]">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 py-14 md:py-20">
+          <h2 className="text-[26px] md:text-[34px] font-display font-bold tracking-tight text-[var(--fg)] leading-tight">
             Яагаад итгэж болох вэ?
           </h2>
-          <p className="mt-2 text-sm md:text-base text-[var(--muted-foreground)] max-w-2xl leading-relaxed">
+          <p className="mt-3 text-[15px] md:text-base text-[var(--muted-foreground)] max-w-2xl leading-relaxed">
             Энэ салбарт хамгийн их дутагддаг зүйл бол итгэл. Бид итгэлийг амлалтаар биш —
             бүртгэгдсэн түүх, бодит үнэлгээгээр бий болгодог.
           </p>
 
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="mt-9 grid grid-cols-1 md:grid-cols-3 gap-4">
             {TRUST_ITEMS.map((item) => (
-              <div key={item.title} className="bg-[var(--card)] border border-[var(--border)] rounded-md p-5">
-                <item.icon className="w-6 h-6 text-[var(--verify)]" aria-hidden="true" />
-                <h3 className="mt-3 text-sm md:text-base font-bold text-[var(--fg)]">{item.title}</h3>
-                <p className="mt-1.5 text-sm text-[var(--muted-foreground)] leading-relaxed">{item.body}</p>
+              <div key={item.title} className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6">
+                <span className="w-11 h-11 rounded-full bg-[var(--accent-soft)] flex items-center justify-center">
+                  <item.icon className="w-5 h-5 text-[var(--accent-soft-foreground)]" aria-hidden="true" />
+                </span>
+                <h3 className="mt-4 text-base font-display font-bold text-[var(--fg)]">{item.title}</h3>
+                <p className="mt-2 text-sm text-[var(--muted-foreground)] leading-relaxed">{item.body}</p>
               </div>
             ))}
           </div>
@@ -138,63 +140,68 @@ export default function BoardInfoSections({ isLoggedIn, onPostJob }: BoardInfoSe
 
       {/* ── FAQ ── */}
       <section id="faq" aria-label="Түгээмэл асуулт, хариулт" className="bg-[var(--card)] border-t border-[var(--border)] scroll-mt-16">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 py-12 md:py-16">
-          <h2 className="text-2xl md:text-3xl font-display font-black uppercase tracking-tight text-[var(--fg)]">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 py-14 md:py-20">
+          <h2 className="text-[26px] md:text-[34px] font-display font-bold tracking-tight text-[var(--fg)] leading-tight">
             Түгээмэл асуулт
           </h2>
 
-          <div className="mt-6 divide-y divide-[var(--border)] border border-[var(--border)] rounded-md bg-[var(--bg)]">
+          <div className="mt-7 divide-y divide-[var(--border)] border border-[var(--border)] rounded-2xl bg-[var(--bg)] overflow-hidden">
             {FAQ_ITEMS.map((item) => (
-              <details key={item.q} className="group px-5 py-4">
-                <summary className="flex items-center justify-between gap-3 cursor-pointer list-none text-sm md:text-base font-semibold text-[var(--fg)] select-none">
+              <details key={item.q} className="group px-5 md:px-6 py-5">
+                <summary className="flex items-center justify-between gap-4 cursor-pointer list-none text-[15px] md:text-base font-semibold text-[var(--fg)] select-none">
                   {item.q}
-                  <span className="shrink-0 text-[var(--muted-foreground)] transition-transform duration-200 group-open:rotate-90" aria-hidden="true">
-                    <ArrowRight className="w-4 h-4" />
+                  <span className="shrink-0 w-8 h-8 rounded-full bg-[var(--bg2)] flex items-center justify-center text-[var(--muted-foreground)] transition-transform duration-200 group-open:rotate-45" aria-hidden="true">
+                    <Plus className="w-4 h-4" />
                   </span>
                 </summary>
-                <p className="mt-2.5 text-sm text-[var(--muted-foreground)] leading-relaxed max-w-2xl">{item.a}</p>
+                <p className="mt-3 text-[15px] text-[var(--muted-foreground)] leading-relaxed max-w-2xl">{item.a}</p>
               </details>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Closing CTA band — dark nameplate bookend ── */}
-      <section aria-label="Өнөөдөр эхлэх" className="relative bg-[var(--fg)] text-[var(--bg)] overflow-hidden">
-        <div className="hazard-stripe h-2 w-full" />
-        <div className="max-w-4xl mx-auto px-4 md:px-6 py-12 md:py-16 text-center">
-          <h2 className="text-2xl md:text-4xl font-display font-black uppercase tracking-tight leading-tight">
-            Өнөөдөр л <span className="text-[var(--accent)]">эхлээрэй</span>
-          </h2>
-          <p className="mt-3 text-sm md:text-base text-[rgba(244,245,242,0.72)] max-w-xl mx-auto leading-relaxed">
-            Ажил хайж байгаа ч бай, ажилтан хайж байгаа ч бай — бүртгэл 2 минут,
-            бүх үйлчилгээ үнэгүй.
-          </p>
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            {isLoggedIn ? (
-              <button
-                onClick={onPostJob}
-                className="inline-flex items-center gap-2 bg-[var(--accent)] hover:brightness-95 active:scale-[0.98] text-[var(--accent-foreground)] font-bold text-sm px-6 py-3.5 rounded transition-all cursor-pointer shadow-sm"
-              >
-                Зар нэмэх
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            ) : (
+      {/* ── Closing CTA — inset ink card bookend ── */}
+      <section aria-label="Өнөөдөр эхлэх" className="bg-[var(--card)] border-t border-[var(--border)]">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 py-12 md:py-16">
+          <div className="rounded-3xl bg-[var(--fg)] text-[rgba(250,249,246,0.95)] px-6 py-12 md:px-14 md:py-16 text-center">
+            <h2 className="text-[26px] md:text-[38px] font-display font-bold tracking-tight leading-tight">
+              Өнөөдөр л <span className="text-[var(--tint)]">эхлээрэй</span>
+            </h2>
+            <p className="mt-4 text-[15px] md:text-base text-[rgba(250,249,246,0.65)] max-w-xl mx-auto leading-relaxed">
+              Ажил хайж байгаа ч бай, ажилтан хайж байгаа ч бай — бүртгэл 2 минут,
+              бүх үйлчилгээ үнэгүй.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3.5">
+              {isLoggedIn ? (
+                <button
+                  onClick={onPostJob}
+                  className="group inline-flex items-center gap-3 bg-[rgba(250,249,246,1)] text-[var(--fg)] font-display font-bold text-[15px] pl-6 pr-2 py-2 rounded-full transition-all hover:brightness-95 active:scale-[0.98] cursor-pointer"
+                >
+                  Зар нэмэх
+                  <span className="w-9 h-9 rounded-full bg-[var(--fg)] text-[rgba(250,249,246,1)] flex items-center justify-center transition-transform group-hover:rotate-45">
+                    <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
+                  </span>
+                </button>
+              ) : (
+                <a
+                  href="/auth?tab=register"
+                  className="group inline-flex items-center gap-3 bg-[rgba(250,249,246,1)] text-[var(--fg)] font-display font-bold text-[15px] pl-6 pr-2 py-2 rounded-full transition-all hover:brightness-95 active:scale-[0.98]"
+                >
+                  Үнэгүй бүртгүүлэх
+                  <span className="w-9 h-9 rounded-full bg-[var(--fg)] text-[rgba(250,249,246,1)] flex items-center justify-center transition-transform group-hover:rotate-45">
+                    <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
+                  </span>
+                </a>
+              )}
               <a
-                href="/auth?tab=register"
-                className="inline-flex items-center gap-2 bg-[var(--accent)] hover:brightness-95 active:scale-[0.98] text-[var(--accent-foreground)] font-bold text-sm px-6 py-3.5 rounded transition-all shadow-sm"
+                href="tel:+97699106339"
+                className="inline-flex items-center gap-2 text-[15px] font-semibold px-6 py-3.5 rounded-full border border-[rgba(250,249,246,0.25)] text-[rgba(250,249,246,0.92)] hover:bg-[rgba(250,249,246,0.08)] transition-all"
               >
-                Үнэгүй бүртгүүлэх
-                <ArrowRight className="w-4 h-4" />
+                <Phone className="w-4 h-4" aria-hidden="true" />
+                Асуух зүйл байвал: 99106339
               </a>
-            )}
-            <a
-              href="tel:+97699106339"
-              className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-3.5 rounded border border-[rgba(244,245,242,0.25)] text-[var(--bg)] hover:bg-[rgba(244,245,242,0.08)] transition-all"
-            >
-              <Phone className="w-4 h-4" aria-hidden="true" />
-              Асуух зүйл байвал: 99106339
-            </a>
+            </div>
           </div>
         </div>
       </section>
