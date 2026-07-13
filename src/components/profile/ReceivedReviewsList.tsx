@@ -15,7 +15,7 @@ interface ReceivedReviewsListProps {
 export default function ReceivedReviewsList({ reviews, reviewsVisible, isOwnProfile }: ReceivedReviewsListProps) {
   return (
         <div className="space-y-4">
-          <h3 className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-widest border-b border-[var(--border)] pb-2.5 flex items-center space-x-2">
+          <h3 className="text-xs font-bold text-[var(--muted-foreground)] border-b border-[var(--border)] pb-2.5 flex items-center space-x-2">
             <Star className="w-4.5 h-4.5 text-[var(--accent-soft-foreground)] drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
             <span>Надад өгсөн үнэлгээнүүд ({reviewsVisible || isOwnProfile ? reviews.length : 0})</span>
             {isOwnProfile && !reviewsVisible && (
@@ -25,13 +25,13 @@ export default function ReceivedReviewsList({ reviews, reviewsVisible, isOwnProf
 
           {(reviewsVisible || isOwnProfile) ? (
             reviews.length === 0 ? (
-              <div className="panel p-6 rounded-md border border-[var(--border)] text-center text-xs text-[var(--muted-foreground)] font-sans">
+              <div className="panel p-6 rounded-xl border border-[var(--border)] text-center text-xs text-[var(--muted-foreground)] font-sans">
                 Хэрэглэгчид одоогоор үнэлгээ бичигдээгүй байна.
               </div>
             ) : (
               <div className="space-y-3.5 max-h-96 overflow-y-auto pr-1">
                 {reviews.map((rev) => (
-                  <div key={rev.id} className="panel p-4 rounded-md border border-[var(--border)] hover:border-[var(--border)] space-y-3 relative overflow-hidden group">
+                  <div key={rev.id} className="panel p-4 rounded-xl border border-[var(--border)] hover:border-[var(--border)] space-y-3 relative overflow-hidden group">
                     <div className="flex justify-between items-start">
                       <div className="flex flex-col space-y-1.5 text-left">
                         <span 
@@ -70,7 +70,7 @@ export default function ReceivedReviewsList({ reviews, reviewsVisible, isOwnProf
               </div>
             )
           ) : (
-            <div className="panel p-6 rounded-md border border-[var(--border)] text-center text-xs text-[var(--muted-foreground)] italic font-sans">
+            <div className="panel p-6 rounded-xl border border-[var(--border)] text-center text-xs text-[var(--muted-foreground)] italic font-sans">
               Хэрэглэгч үнэлгээ, сэтгэгдлийн хэсгийг нууцалсан байна.
             </div>
           )}

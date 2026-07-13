@@ -564,7 +564,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                       {machineTypes.filter(m => !MACHINE_OPTIONS.includes(m)).map((item, idx) => (
                         <span
                           key={idx}
-                          className="inline-flex items-center space-x-1.5 py-1 px-2 rounded-md bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] text-xs"
+                          className="inline-flex items-center space-x-1.5 py-1 px-2 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] text-xs"
                         >
                           <span>{item}</span>
                           <button
@@ -680,7 +680,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
               id="submit-profile-edit-btn"
               type="submit"
               disabled={!!success}
-              className="flex-1 py-1.5 px-4 bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] text-xs font-medium rounded transition-colors flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-2.5 px-4 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-sm font-medium rounded-full transition-colors flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {success ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
               <span>{success ? 'Шинэчлэгдлээ' : 'Шинэчлэх'}</span>

@@ -24,13 +24,13 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
       <div
         id="view-review-detail-modal-container"
         onClick={(e) => e.stopPropagation()}
-        className="bg-[var(--card)] border border-[var(--border-strong)] max-w-md w-full rounded-md overflow-hidden shadow-md relative"
+        className="bg-[var(--card)] border border-[var(--border-strong)] max-w-md w-full rounded-xl overflow-hidden shadow-md relative"
       >
         {/* Header */}
         <div className="flex justify-between items-center border-b border-[var(--border)] px-6 py-4.5">
           <div className="flex items-center space-x-2">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-[var(--accent)] animate-pulse"></span>
-            <h3 className="text-sm font-display font-bold uppercase tracking-wide text-[var(--fg)]">Шинэ үнэлгээний дэлгэрэнгүй</h3>
+            <span className="flex h-2.5 w-2.5 rounded-full bg-[var(--accent)]"></span>
+            <h3 className="text-sm font-display font-bold text-[var(--fg)]">Шинэ үнэлгээний дэлгэрэнгүй</h3>
           </div>
           <button
             id="close-view-review-modal"
@@ -44,7 +44,7 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
         {/* Content body */}
         <div className="p-6 space-y-5">
           {/* Rating Big Circle */}
-          <div className="flex flex-col items-center justify-center py-4 bg-[var(--bg2)] rounded-md border border-[var(--border)]">
+          <div className="flex flex-col items-center justify-center py-4 bg-[var(--bg2)] rounded-xl border border-[var(--border)]">
             <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-[rgba(31,138,76,0.1)] border border-[var(--verify)] mb-3">
               <Star className="w-8 h-8 text-[var(--verify)] fill-[var(--verify)]" />
             </div>
@@ -57,11 +57,11 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
                 />
               ))}
             </div>
-            <span className="text-xs text-[var(--muted-foreground)] font-mono mt-2 uppercase tracking-widest">Үнэлгээний оноо</span>
+            <span className="text-xs text-[var(--muted-foreground)] font-mono mt-2">Үнэлгээний оноо</span>
           </div>
 
           {/* Reviewer & Job info */}
-          <div className="space-y-3 bg-[var(--bg2)] p-4 rounded-md border border-[var(--border)] text-xs text-left">
+          <div className="space-y-3 bg-[var(--bg2)] p-4 rounded-xl border border-[var(--border)] text-xs text-left">
             <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
               <span className="text-[var(--muted-foreground)]">Үнэлгээ өгсөн хүн:</span>
               <span className="font-semibold text-[var(--accent-soft-foreground)] font-sans">{review.reviewerName}</span>
@@ -78,8 +78,8 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
 
           {/* Comment text block */}
           <div className="space-y-2 text-left">
-            <span className="text-xs text-[var(--muted-foreground)] uppercase font-mono tracking-wider block">Бичсэн сэтгэгдэл:</span>
-            <div className="relative bg-[var(--bg2)] p-4.5 rounded-md border border-[var(--border)] italic text-xs text-[var(--fg)] leading-relaxed font-sans">
+            <span className="text-xs text-[var(--muted-foreground)] font-mono block">Бичсэн сэтгэгдэл:</span>
+            <div className="relative bg-[var(--bg2)] p-4.5 rounded-xl border border-[var(--border)] italic text-xs text-[var(--fg)] leading-relaxed font-sans">
               <span className="absolute -top-1 left-2 text-3xl text-[var(--concrete)] font-serif pointer-events-none">“</span>
               <p className="relative z-10 px-2">&ldquo;{review.comment}&rdquo;</p>
               <span className="absolute -bottom-4 right-3 text-3xl text-[var(--concrete)] font-serif pointer-events-none">”</span>
@@ -105,7 +105,7 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
               id="go-to-profile-from-review-btn"
               type="button"
               onClick={onGoToProfile}
-              className="flex-1 py-2.5 bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] text-xs font-bold rounded transition-all shadow-sm cursor-pointer font-sans"
+              className="flex-1 py-2.5 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-sm font-bold rounded-full transition-all shadow-sm cursor-pointer font-sans"
             >
               Миний Профайл руу очих
             </button>

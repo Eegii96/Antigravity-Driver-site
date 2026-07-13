@@ -228,9 +228,9 @@ export default function SettingsView() {
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
               <span className="text-xs font-semibold text-[var(--muted-foreground)]">Холболтын төлөв</span>
               <div className="flex items-center space-x-1.5 bg-[var(--accent-soft)] px-2 py-0.5 rounded-full border border-[var(--accent)]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-ping"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] opacity-40"></span>
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] absolute"></span>
-                <span className="text-xs text-[var(--accent-soft-foreground)] font-bold tracking-wider uppercase font-mono">ONLINE</span>
+                <span className="text-xs text-[var(--accent-soft-foreground)] font-bold font-mono">ONLINE</span>
               </div>
             </div>
 
@@ -327,7 +327,7 @@ export default function SettingsView() {
                 <button
                   id="submit-password-change-btn"
                   type="submit"
-                  className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] px-4 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer"
+                  className="bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] px-4 py-2.5 rounded-full text-sm font-medium transition-colors cursor-pointer"
                 >
                   Нууц үгийг баталгаажуулж солих
                 </button>
@@ -367,7 +367,7 @@ export default function SettingsView() {
                   type="button"
                   disabled={isSavingNotifyLocations}
                   onClick={handleSaveNotifyLocations}
-                  className="bg-[var(--accent)] hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed text-[var(--accent-foreground)] px-4 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer"
+                  className="bg-[var(--accent)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-[var(--accent-foreground)] px-4 py-2.5 rounded-full text-sm font-medium transition-colors cursor-pointer"
                 >
                   {isSavingNotifyLocations ? 'Хадгалж байна...' : 'Тохиргоог хадгалах'}
                 </button>
@@ -377,7 +377,7 @@ export default function SettingsView() {
 
           {/* Dangerous accounts zone */}
           <div className="bg-rose-950/10 border border-rose-900/40 p-6 rounded-xl space-y-3">
-            <h3 className="text-xs font-bold text-rose-300 uppercase tracking-widest flex items-center space-x-2">
+            <h3 className="text-xs font-bold text-rose-300 flex items-center space-x-2">
               <Trash2 className="w-4 h-4 text-rose-400" />
               <span>Бүртгэлийг устгах</span>
             </h3>
@@ -420,7 +420,7 @@ export default function SettingsView() {
             
             {/* Modal Header */}
             <div className="flex justify-between items-center border-b border-[var(--border)] px-5 py-4 bg-[var(--bg2)]">
-              <h3 className="text-xs font-bold text-[var(--accent-foreground)] flex items-center space-x-2 uppercase tracking-wide">
+              <h3 className="text-xs font-bold text-[var(--accent-foreground)] flex items-center space-x-2">
                 <Trash2 className="w-4 h-4 text-rose-400" />
                 <span>Бүртгэл устгах хүсэлт</span>
               </h3>
@@ -489,7 +489,7 @@ export default function SettingsView() {
 
                 {deleteReason === 'Бусад (Учрыг доор бичих)' && (
                   <div className="space-y-1.5 animate-fade-in">
-                    <label className="block text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wider">Шалтгаанаа тайлбарлана уу:</label>
+                    <label className="block text-xs font-medium text-[var(--muted-foreground)]">Шалтгаанаа тайлбарлана уу:</label>
                     <textarea
                       id="other-delete-reason-input"
                       rows={2.5}

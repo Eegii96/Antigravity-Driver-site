@@ -415,21 +415,21 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
               window.location.href = '/';
             }
           }}
-          className="text-xs bg-[var(--card)] hover:bg-[rgba(255,255,255,0.07)] text-[var(--accent-soft-foreground)] border border-[var(--border)] px-4 py-2 rounded-md transition-all cursor-pointer shadow-md"
+          className="text-xs bg-[var(--card)] hover:bg-[rgba(255,255,255,0.07)] text-[var(--accent-soft-foreground)] border border-[var(--border)] px-4 py-2 rounded-xl transition-all cursor-pointer shadow-md"
         >
           {defaultTab === 'applications' ? 'Жагсаалт руу буцах' : 'Буцах'}
         </button>
       </div>
 
       {success && (
-        <div className="fixed top-6 right-6 max-w-sm bg-[var(--card)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] p-4 rounded-md text-xs flex items-center space-x-2.5 animate-fade-in text-left z-50 shadow-md">
+        <div className="fixed top-6 right-6 max-w-sm bg-[var(--card)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] p-4 rounded-xl text-xs flex items-center space-x-2.5 animate-fade-in text-left z-50 shadow-md">
           <CheckCircle className="w-4.5 h-4.5 text-[var(--accent-soft-foreground)] shrink-0" />
           <span>{success}</span>
         </div>
       )}
 
       {errorMsg && (
-        <div className="fixed top-6 right-6 max-w-sm bg-[var(--card)] border border-[var(--alert)] text-[var(--alert)] p-4 rounded-md text-xs flex items-center space-x-2.5 animate-fade-in text-left z-50 shadow-md">
+        <div className="fixed top-6 right-6 max-w-sm bg-[var(--card)] border border-[var(--alert)] text-[var(--alert)] p-4 rounded-xl text-xs flex items-center space-x-2.5 animate-fade-in text-left z-50 shadow-md">
           <X className="w-4.5 h-4.5 shrink-0" />
           <span>{errorMsg}</span>
         </div>
@@ -439,11 +439,11 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
         <>
           {/* Security incompleteness alert banner */}
           {isOwnProfile && !(profileUser.securityQuestion1 && profileUser.securityAnswer1 && profileUser.securityQuestion2 && profileUser.securityAnswer2) && (
-        <div className="panel p-4 rounded-md border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-xs space-y-2 relative overflow-hidden z-10 animate-fade-in text-left">
+        <div className="panel p-4 rounded-xl border border-[var(--alert)] bg-[rgba(255,92,40,0.1)] text-xs space-y-2 relative overflow-hidden z-10 animate-fade-in text-left">
           <div className="flex items-center justify-between">
             <span className="font-bold text-[var(--alert)] flex items-center space-x-2">
               <ShieldAlert className="w-4.5 h-4.5 text-[var(--alert)] shrink-0 animate-pulse" />
-              <span>🔒 БҮРТГЭЛИЙН АЮУЛГҮЙ БАЙДАЛ ДУТУУ БАЙНА!</span>
+              <span>Бүртгэлийн аюулгүй байдал дутуу байна!</span>
             </span>
             <button
               onClick={() => setShowEdit(true)}
@@ -459,7 +459,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
       )}
 
       {/* Main Intro Card */}
-      <div className="panel p-6 rounded-md grid grid-cols-1 md:grid-cols-4 gap-6 relative overflow-hidden shadow-md z-10">
+      <div className="panel p-6 rounded-xl grid grid-cols-1 md:grid-cols-4 gap-6 relative overflow-hidden shadow-md z-10">
         
         {/* Profile photo and badges */}
         <div className="md:col-span-1 flex flex-col items-center space-y-4">
@@ -472,7 +472,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
               referrerPolicy="no-referrer"
               onError={(e) => { (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=U&background=334155&color=fff'; }}
             />
-            <div className={`absolute bottom-0 right-1 px-3 py-0.5 rounded-full text-xs font-bold font-mono text-[var(--accent-foreground)] tracking-wider ${
+            <div className={`absolute bottom-0 right-1 px-3 py-0.5 rounded-full text-xs font-bold font-mono text-[var(--accent-foreground)] ${
               profileUser.rating >= 4.5 ? 'bg-[var(--verify)]' : profileUser.rating >= 3.5 ? 'bg-[var(--accent)]' : 'bg-[var(--alert)]'
             }`}>
               {profileUser.type === 'operator' ? 'ЖОЛООЧ' : 'ЗАХИАЛАГЧ'}
@@ -490,11 +490,11 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
           </div>
 
           {/* Rating overview */}
-          <div className="bg-[var(--card)] border border-[var(--border)] p-3.5 rounded-md w-full text-center">
+          <div className="bg-[var(--card)] border border-[var(--border)] p-3.5 rounded-xl w-full text-center">
             <p className="text-xs text-[var(--muted-foreground)] font-medium">Дундаж үнэлгээ</p>
             <div className="flex items-center justify-center space-x-1 mt-1">
               <Star className="w-5 h-5 text-[var(--accent-soft-foreground)] fill-[var(--accent)] drop-shadow-[0_0_5px_rgba(245,158,11,0.4)]" />
-              <span className="text-2xl font-black font-mono text-[var(--fg)]">{(profileUser.rating ?? 5).toFixed(1)}</span>
+              <span className="text-2xl font-bold font-mono text-[var(--fg)]">{(profileUser.rating ?? 5).toFixed(1)}</span>
             </div>
             <p className="text-xs text-[var(--muted-foreground)] mt-1.5 font-semibold">{displayReviews.length} удаагийн ажил дуусгасан</p>
           </div>
@@ -504,12 +504,12 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
         <div className="md:col-span-3 space-y-4 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
-              <span className="bg-[rgba(255,255,255,0.04)] px-3.5 py-1.5 rounded-md text-xs text-[var(--muted-foreground)] border border-[var(--border)] flex items-center space-x-1.5 shadow-sm">
+              <span className="bg-[rgba(255,255,255,0.04)] px-3.5 py-1.5 rounded-xl text-xs text-[var(--muted-foreground)] border border-[var(--border)] flex items-center space-x-1.5 shadow-sm">
                 <Calendar className="w-4 h-4 text-[var(--muted-foreground)]" />
                 <span>Гишүүн болсон: {profileUser.createdAt}</span>
               </span>
               {profileUser.type === 'operator' && (
-                <span className="bg-[var(--accent-soft)] px-3.5 py-1.5 rounded-md text-xs text-[var(--accent-soft-foreground)] border border-[var(--accent)] font-mono shadow-sm">
+                <span className="bg-[var(--accent-soft)] px-3.5 py-1.5 rounded-xl text-xs text-[var(--accent-soft-foreground)] border border-[var(--accent)] font-mono shadow-sm">
                   Туршлага: {profileUser.experienceYears || 0} жил техник барьсан
                 </span>
               )}
@@ -572,7 +572,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
             <div className="border-t border-[var(--border)] pt-4">
               <h4 className="text-xs font-bold text-[var(--muted-foreground)] mb-1.5">Танилцуулга ба Нэмэлт мэдээлэл:</h4>
-              <p className="text-xs leading-relaxed text-[var(--muted-foreground)] bg-[rgba(255,255,255,0.04)] p-4 rounded-md border border-[var(--border)] whitespace-pre-line">
+              <p className="text-xs leading-relaxed text-[var(--muted-foreground)] bg-[rgba(255,255,255,0.04)] p-4 rounded-xl border border-[var(--border)] whitespace-pre-line">
                 {profileUser.bio}
               </p>
             </div>
@@ -582,8 +582,8 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                 <h4 className="text-xs font-bold text-[var(--muted-foreground)] mb-2">Мэргэшсэн механизмын төрлүүд:</h4>
                 <div className="flex flex-wrap gap-2">
                   {profileUser.machineTypes.map((m, idx) => (
-                    <span key={idx} className="bg-[rgba(255,255,255,0.04)] px-3.5 py-1.5 rounded-md text-xs text-[var(--verify)] font-mono border border-[var(--border)] shadow-sm">
-                      🚜 {m}
+                    <span key={idx} className="bg-[rgba(255,255,255,0.04)] px-3.5 py-1.5 rounded-xl text-xs text-[var(--verify)] font-mono border border-[var(--border)] shadow-sm">
+                      {m}
                     </span>
                   ))}
                 </div>
@@ -597,7 +597,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
               <button
                 id="open-edit-profile-modal"
                 onClick={() => setShowEdit(true)}
-                className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-xs py-2 px-5 rounded-md transition-all cursor-pointer shadow-lg "
+                className="bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-bold text-sm py-2.5 px-5 rounded-full transition-all cursor-pointer shadow-lg "
               >
                 Хувийн Мэдээлэл Засах
               </button>
@@ -612,7 +612,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
         
         {/* Verification lists of Jobs */}
         <div className="space-y-4">
-          <h3 className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-widest border-b border-[var(--border)] pb-2.5 flex items-center space-x-2">
+          <h3 className="text-xs font-bold text-[var(--muted-foreground)] border-b border-[var(--border)] pb-2.5 flex items-center space-x-2">
             <CheckCircle className="w-4.5 h-4.5 text-[var(--accent-soft-foreground)] drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
             <span>Баталгаажсан Ажлын Түүх ({profileUser.historyVisible !== false || isOwnProfile ? historyItems.length : 0})</span>
             {isOwnProfile && profileUser.historyVisible === false && (
@@ -622,16 +622,16 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
           {(profileUser.historyVisible !== false || isOwnProfile) ? (
             historyItems.length === 0 ? (
-              <div className="panel p-6 rounded-md border border-[var(--border)] text-center text-xs text-[var(--muted-foreground)] font-sans">
+              <div className="panel p-6 rounded-xl border border-[var(--border)] text-center text-xs text-[var(--muted-foreground)] font-sans">
                 Ажлын бүртгэлийн түүх байхгүй байна.
               </div>
             ) : (
               <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
                 {historyItems.map((item) => (
-                  <div key={item.id} className="panel p-4 rounded-md border border-[var(--border)] hover:border-[var(--border)] space-y-2 relative overflow-hidden group">
+                  <div key={item.id} className="panel p-4 rounded-xl border border-[var(--border)] hover:border-[var(--border)] space-y-2 relative overflow-hidden group">
                     <div className="flex justify-between items-start">
                       <h4 className="text-xs font-bold text-[var(--fg)] block max-w-[70%] truncate group-hover:text-[var(--verify)] transition-colors">{item.title}</h4>
-                      <span className={`px-2 py-0.5 rounded text-xs font-bold font-mono tracking-wide uppercase ${
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold font-mono ${
                         item.status === 'completed' ? 'bg-[rgba(34,211,238,0.15)] text-[#22d3ee] border border-[rgba(34,211,238,0.3)]' : 'bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] border border-[var(--accent)]'
                       }`}>
                         {item.status === 'completed' ? 'Гүйцэтгэсэн' : 'Идэвхтэй'}
@@ -652,7 +652,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
               </div>
             )
           ) : (
-            <div className="panel p-6 rounded-md border border-[var(--border)] text-center text-xs text-[var(--muted-foreground)] italic font-sans">
+            <div className="panel p-6 rounded-xl border border-[var(--border)] text-center text-xs text-[var(--muted-foreground)] italic font-sans">
               Хэрэглэгч ажлын түүхийн мэдээллээ нууцалсан байна.
             </div>
           )}
@@ -743,7 +743,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
           onSuccess={async () => {
             setEditingJob(null);
             await loadProfileData();
-            setSuccess('🎉 Ажлын зар амжилттай засагдаж шинэчлэгдлээ!');
+            setSuccess('Ажлын зар амжилттай засагдаж шинэчлэгдлээ!');
             setTimeout(() => setSuccess(''), 3000);
           }}
         />
@@ -759,7 +759,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
           <div 
             id="edit-review-modal-container" 
             onClick={(e) => e.stopPropagation()}
-            className="bg-[var(--card)] border border-[var(--border)] max-w-md w-full rounded-md overflow-hidden shadow-md relative text-left animate-fade-in"
+            className="bg-[var(--card)] border border-[var(--border)] max-w-md w-full rounded-xl overflow-hidden shadow-md relative text-left animate-fade-in"
           >
             {/* Header */}
             <div className="flex justify-between items-center border-b border-[var(--border)] px-6 py-4">
@@ -776,13 +776,13 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
             {/* Form */}
             <form onSubmit={handleEditReviewSubmit} className="p-6 space-y-4">
               <div className="bg-[rgba(255,255,255,0.06)] p-3.5 rounded-lg border border-[var(--border)] space-y-1">
-                <span className="text-xs text-[var(--muted-foreground)] uppercase tracking-widest block font-mono">Ажлын нэр</span>
+                <span className="text-xs text-[var(--muted-foreground)] block font-mono">Ажлын нэр</span>
                 <p className="text-xs font-semibold text-[var(--accent-soft-foreground)]">{editingReview.jobTitle}</p>
               </div>
 
               {/* Rating selection */}
               <div className="flex flex-col items-center py-3 space-y-2 bg-[rgba(255,255,255,0.04)] border border-[var(--border)] rounded-lg">
-                <span className="text-xs text-[var(--muted-foreground)] uppercase tracking-widest font-mono">Үнэлгээ</span>
+                <span className="text-xs text-[var(--muted-foreground)] font-mono">Үнэлгээ</span>
                 <div className="flex items-center space-x-1.5">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -813,7 +813,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
 
               {/* Comment field */}
               <div className="space-y-1.5">
-                <label htmlFor="edit-review-comment" className="block text-xs text-[var(--muted-foreground)] uppercase tracking-widest font-mono">Сэтгэгдэл, тайлбар</label>
+                <label htmlFor="edit-review-comment" className="block text-xs text-[var(--muted-foreground)] font-mono">Сэтгэгдэл, тайлбар</label>
                 <textarea
                   id="edit-review-comment"
                   required
@@ -844,7 +844,7 @@ export default function ProfileView({ user, isOwnProfile, onUpdateCurrentUser, d
                 <button
                   type="submit"
                   disabled={isEditSubmitting}
-                  className="flex-1 bg-[var(--accent)] hover:brightness-95 disabled:bg-[var(--accent)] disabled:opacity-50 text-[var(--muted-foreground)] text-xs font-bold py-2.5 px-4 rounded transition-colors cursor-pointer text-center"
+                  className="flex-1 bg-[var(--accent)] hover:opacity-90 disabled:bg-[var(--accent)] disabled:opacity-50 text-[var(--accent-foreground)] text-sm font-bold py-2.5 px-4 rounded-full transition-colors cursor-pointer text-center"
                 >
                   {isEditSubmitting ? 'Хадгалж байна...' : 'Хадгалах'}
                 </button>

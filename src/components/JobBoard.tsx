@@ -784,7 +784,7 @@ export default function JobBoard({
                     className="absolute right-0 mt-2.5 w-[min(360px,calc(100vw-2rem))] bg-[var(--card)] border border-[var(--border)] rounded-md shadow-md z-50 py-2 animate-fade-in"
                   >
                     <div className="px-4 py-2.5 border-b border-[var(--border)] flex items-center justify-between">
-                      <span className="text-xs font-bold text-[var(--muted-foreground)] tracking-wide uppercase font-sans">Системийн мэдэгдлүүд</span>
+                      <span className="text-xs font-bold text-[var(--muted-foreground)] font-sans">Системийн мэдэгдлүүд</span>
                       {unreadNotifs.length > 0 && (
                         <button
                           type="button"
@@ -871,7 +871,7 @@ export default function JobBoard({
                           className="w-full bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-300 hover:border-rose-400 text-rose-600 hover:text-rose-700 py-1.5 rounded text-xs font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer font-sans"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
-                          <span>БҮХ МЭДЭГДЛИЙГ УСТГАХ</span>
+                          <span>Бүх мэдэгдлийг устгах</span>
                         </button>
                       </div>
                     )}

@@ -264,7 +264,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       <div className="absolute top-6 left-6 right-6 flex justify-between items-center z-20">
         <button
           onClick={() => router.push('/')}
-          className="text-[var(--muted-foreground)] hover:text-[var(--fg)] text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer bg-[var(--card)] border border-[var(--border)] px-3.5 py-2 rounded-md"
+          className="text-[var(--muted-foreground)] hover:text-[var(--fg)] text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer bg-[var(--card)] border border-[var(--border)] px-3.5 py-2 rounded-xl"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Нүүр хуудас</span>
@@ -273,21 +273,21 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
 
       <div className="sm:mx-auto sm:w-full sm:max-w-xl relative z-10 text-center">
         <div className="flex justify-center mb-3">
-          <div className="w-24 h-24 rounded-md bg-[var(--bg2)] border-2 border-[var(--accent)] flex items-center justify-center relative overflow-hidden group hover:border-[var(--accent)] transition-all duration-500 shadow-md">
+          <div className="w-24 h-24 rounded-xl bg-[var(--bg2)] border border-[var(--border)] flex items-center justify-center relative overflow-hidden group hover:border-[var(--border-strong)] transition-all duration-500 shadow-md">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" loading="eager" />
           </div>
         </div>
-        <h2 className="mt-4 text-center text-3xl font-black tracking-tight text-[var(--fg)] font-sans">
+        <h2 className="mt-4 text-center text-3xl font-bold tracking-tight text-[var(--fg)] font-sans">
           Хүнд машин, механизм & Газар шорооны ажлын сайт
         </h2>
-        <p className="mt-2.5 text-center text-sm text-[var(--muted-foreground)] font-sans tracking-wide max-w-md mx-auto leading-relaxed">
+        <p className="mt-2.5 text-center text-sm text-[var(--muted-foreground)] font-sans max-w-md mx-auto leading-relaxed">
           Үнэлгээ өгөх, ажлын түүх үүсгэх системээр хариуцлагатай жолооч, оператор болон найдвартай ажил олгогчдыг үүсгэх платформ
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl relative z-10">
-        <div className="panel py-8 px-4 shadow-md rounded-md sm:px-10 border border-[var(--border)]">
+        <div className="panel py-8 px-4 shadow-md rounded-xl sm:px-10 border border-[var(--border)]">
           {!isForgotMode && (
             <div className="flex border-b border-[var(--border)] mb-6 pb-1">
               <button

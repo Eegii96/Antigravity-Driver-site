@@ -85,7 +85,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
         const updatedJob = { ...job, applicants: [...job.applicants, currentUser.id] };
         setJob(updatedJob);
         trackApplySubmit(job.id);
-        setSuccessMessage('Ажилд орох хүсэлт амжилттай илгээгдлээ! Захиалагч хянах болно. 🎉');
+        setSuccessMessage('Ажилд орох хүсэлт амжилттай илгээгдлээ! Захиалагч хянах болно.');
         setTimeout(() => setSuccessMessage(''), 5000);
       } else {
         setError('Хүсэлт илгээх боломжгүй байна (магадгүй зар хаагдсан эсвэл та өөрийн заранд хүсэлт илгээхийг оролдлоо).');
@@ -133,12 +133,12 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 window.location.href = '/';
               }
             }}
-            className="p-2 bg-[var(--card)] border border-[var(--border)] rounded-md hover:bg-[var(--bg2)] transition-colors cursor-pointer"
+            className="p-2 bg-[var(--card)] border border-[var(--border)] rounded-xl hover:bg-[var(--bg2)] transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 text-[var(--fg)]" />
           </button>
           <div>
-            <h1 className="text-sm font-black tracking-wide text-[var(--fg)] uppercase text-left font-display">Жолооч Монголиа</h1>
+            <h1 className="text-sm font-bold text-[var(--fg)] text-left font-display">Жолооч Монголиа</h1>
             <p className="text-xs text-[var(--muted-foreground)] font-medium">Хүнд машин, механизм & Газар шорооны ажлын сайт</p>
           </div>
         </div>
@@ -156,7 +156,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
               <div className="hidden md:block">
                 <p className="text-xs font-semibold text-[var(--fg)] leading-none">{getFirstName(currentUser)}</p>
                 <span className="text-xs text-[var(--muted-foreground)] font-mono">
-                  {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} • {currentUser.rating}⭐
+                  {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} · {currentUser.rating}★
                 </span>
               </div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -171,7 +171,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
 
             {showProfileMenu && (
               <div className="absolute right-0 top-full pt-1.5 w-48 z-50 animate-fade-in">
-                <div className="bg-[var(--card)] border border-[var(--border)] rounded-md shadow-md py-2">
+                <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-md py-2">
                   <button
                     onClick={() => router.push('/profile')}
                     className="w-full text-left px-4 py-2 text-xs hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 cursor-pointer"
@@ -211,7 +211,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
         ) : (
           <button
             onClick={() => router.push('/auth')}
-            className="text-xs bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold px-4 py-2 rounded transition-all shadow-sm cursor-pointer"
+            className="text-sm bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-bold px-4 py-2.5 rounded-full transition-all shadow-sm cursor-pointer"
           >
             Нэвтрэх / Бүртгүүлэх
           </button>
@@ -221,7 +221,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
       {/* Main Content */}
       <main className="flex-grow max-w-3xl mx-auto w-full px-6 py-10 relative z-10">
         {error && (
-          <div className="bg-rose-50 border border-rose-300 text-rose-600 p-4 rounded-md text-xs flex items-center space-x-2.5 mb-6 text-left">
+          <div className="bg-rose-50 border border-rose-300 text-rose-600 p-4 rounded-xl text-xs flex items-center space-x-2.5 mb-6 text-left">
             <AlertCircle className="w-5 h-5 shrink-0" />
             <span>{error}</span>
           </div>
@@ -230,7 +230,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
 
 
         {job && (
-          <div className="bg-[var(--card)] border border-[var(--border)] p-6 md:p-8 rounded-md space-y-6 shadow-sm">
+          <div className="bg-[var(--card)] border border-[var(--border)] p-6 md:p-8 rounded-xl space-y-6 shadow-sm">
             {/* Header info */}
             <div className="border-b border-[var(--border)] pb-5 space-y-3">
               <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]" onClick={(e) => e.stopPropagation()}>
@@ -288,7 +288,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                   <span>{job.location}</span>
                 </span>
               </div>
-              <h2 className="text-lg md:text-xl font-extrabold text-[var(--fg)] leading-snug text-left font-display">
+              <h2 className="text-xl md:text-2xl font-bold text-[var(--fg)] leading-snug text-left font-display">
                 {job.title}
               </h2>
             </div>
@@ -313,7 +313,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 </div>
                 {job.imageUrls.length > 1 && (
                   <p className="text-xs text-[var(--muted-foreground)] text-center font-sans select-none">
-                    ↔️ Хажуу тийш гүйлгэж үзнэ үү
+                    Хажуу тийш гүйлгэж үзнэ үү
                   </p>
                 )}
               </div>
@@ -330,13 +330,13 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
 
             {/* Quick Details Card Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-left">
-              <div className="bg-[var(--bg2)] p-4 rounded-md border border-[var(--border)]">
+              <div className="bg-[var(--bg2)] p-4 rounded-xl border border-[var(--border)]">
                 <span className="text-xs text-[var(--muted-foreground)] block font-mono">ТӨЛБӨРИЙН ХЭМЖЭЭ</span>
                 <span className="font-bold text-lg text-[var(--verify)] block font-mono mt-1">
                   {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString('mn-MN')} ₮`}
                 </span>
               </div>
-              <div className="bg-[var(--bg2)] p-4 rounded-md border border-[var(--border)]">
+              <div className="bg-[var(--bg2)] p-4 rounded-xl border border-[var(--border)]">
                 <span className="text-xs text-[var(--muted-foreground)] block font-mono">АЖЛЫН ХУГАЦАА</span>
                 <span className="font-bold text-lg text-[var(--fg)] block mt-1">
                   {job.duration}
@@ -346,15 +346,15 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
 
             {/* Description */}
             <div className="space-y-2 text-left">
-              <span className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-wide">Ажлын дэлгэрэнгүй тодорхойлолт</span>
-              <p className="text-xs text-[var(--fg)] leading-relaxed bg-[var(--bg2)] p-4 rounded-md border border-[var(--border)] whitespace-pre-wrap">
+              <span className="text-xs font-bold text-[var(--muted-foreground)]">Ажлын дэлгэрэнгүй тодорхойлолт</span>
+              <p className="text-xs text-[var(--fg)] leading-relaxed bg-[var(--bg2)] p-4 rounded-xl border border-[var(--border)] whitespace-pre-wrap">
                 {job.description}
               </p>
             </div>
 
             {/* Requirements */}
             <div className="space-y-3 text-left">
-              <span className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-wide">Шаардлага</span>
+              <span className="text-xs font-bold text-[var(--muted-foreground)]">Шаардлага</span>
               <ul className="space-y-2 text-xs text-[var(--fg)]">
                 {job.requirements.map((req, idx) => (
                   <li key={idx} className="flex items-start">
@@ -374,7 +374,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                     <p className="font-semibold text-[var(--fg)] text-left">Таны оруулсан зар байна.</p>
                     <button
                       onClick={() => router.push(`/profile?id=${currentUser.id}`)}
-                      className="w-full bg-[var(--bg2)] hover:bg-[var(--border)] text-[var(--fg)] border border-[var(--border)] py-2 px-4 rounded-md text-xs cursor-pointer transition-colors"
+                      className="w-full bg-[var(--bg2)] hover:bg-[var(--border)] text-[var(--fg)] border border-[var(--border)] py-2 px-4 rounded-xl text-xs cursor-pointer transition-colors"
                     >
                       Хүсэлт ирүүлсэн харилцагчдыг хянах
                     </button>
@@ -382,12 +382,12 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 ) : (
                   job.applicants.includes(currentUser.id) ? (
                     <div className="space-y-3">
-                      <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] p-4 rounded-md text-center text-xs text-[var(--verify)] font-semibold flex items-center justify-center space-x-2">
+                      <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] p-4 rounded-xl text-center text-xs text-[var(--verify)] font-semibold flex items-center justify-center space-x-2">
                         <CheckCircle className="w-5 h-5 text-[var(--verify)]" />
                         <span>Та энэ заранд хүсэлтээ амжилттай илгээсэн байна. Захиалагчийн хариуг хүлээж байна.</span>
                       </div>
                       {successMessage && (
-                        <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] text-[var(--verify)] p-3.5 rounded-md text-xs flex items-start space-x-2 animate-fade-in text-left">
+                        <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] text-[var(--verify)] p-3.5 rounded-xl text-xs flex items-start space-x-2 animate-fade-in text-left">
                           <CheckCircle className="w-4.5 h-4.5 text-[var(--verify)] shrink-0 mt-0.5" />
                           <span className="font-sans leading-normal text-sm">{successMessage}</span>
                         </div>
@@ -397,7 +397,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                     <button
                       onClick={handleApply}
                       disabled={isApplying || job.status !== 'open'}
-                      className="w-full bg-[var(--accent)] hover:brightness-95 disabled:opacity-50 text-[var(--accent-foreground)] py-3 px-6 rounded-md font-bold text-xs transition-all cursor-pointer flex items-center justify-center space-x-2 shadow-sm"
+                      className="w-full bg-[var(--accent)] hover:opacity-90 disabled:opacity-50 text-[var(--accent-foreground)] py-3 px-6 rounded-full font-bold text-sm transition-all cursor-pointer flex items-center justify-center space-x-2 shadow-sm"
                     >
                       {isApplying ? (
                         <>
@@ -415,7 +415,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 )
               ) : (
                 /* Guest User Call To Action */
-                <div className="bg-[var(--bg2)] p-5 rounded-md border border-[var(--border)] text-center space-y-4">
+                <div className="bg-[var(--bg2)] p-5 rounded-xl border border-[var(--border)] text-center space-y-4">
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-[var(--fg)]">Та энэ заранд хүсэлт илгээх үү?</p>
                     <p className="text-sm text-[var(--muted-foreground)]">
@@ -424,7 +424,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                   </div>
                   <button
                     onClick={() => router.push('/auth')}
-                    className="inline-flex items-center space-x-2 bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-xs px-6 py-2.5 rounded transition-all shadow-sm cursor-pointer"
+                    className="inline-flex items-center space-x-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-bold text-sm px-6 py-2.5 rounded-full transition-all shadow-sm cursor-pointer"
                   >
                     <span>Нэвтэрч ороод хүсэлт илгээх</span>
                   </button>
@@ -444,13 +444,13 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
           <div
             id="blur-warning-modal-container"
             onClick={(e) => e.stopPropagation()}
-            className="bg-[var(--card)] border border-[var(--border-strong)] max-w-sm w-full rounded-md overflow-hidden shadow-md relative p-6 space-y-4"
+            className="bg-[var(--card)] border border-[var(--border-strong)] max-w-sm w-full rounded-xl overflow-hidden shadow-md relative p-6 space-y-4"
           >
             {/* Header */}
             <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
               <div className="flex items-center space-x-2">
-                <span className="flex h-2.5 w-2.5 rounded-full bg-[var(--accent)] animate-pulse"></span>
-                <h3 className="text-sm font-display font-bold uppercase text-[var(--fg)] tracking-wide">Дэлгэрэнгүй харах</h3>
+                <span className="flex h-2.5 w-2.5 rounded-full bg-[var(--accent)]"></span>
+                <h3 className="text-sm font-display font-bold text-[var(--fg)]">Дэлгэрэнгүй харах</h3>
               </div>
               <button
                 onClick={() => setShowBlurWarningModal(false)}
@@ -478,7 +478,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                   setShowBlurWarningModal(false);
                   router.push('/auth?tab=login');
                 }}
-                className="w-full py-2.5 bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] text-xs font-bold rounded transition-all shadow-sm cursor-pointer font-sans text-center"
+                className="w-full py-2.5 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-sm font-bold rounded-full transition-all shadow-sm cursor-pointer font-sans text-center"
               >
                 Нэвтрэх хэсэг рүү очих
               </button>

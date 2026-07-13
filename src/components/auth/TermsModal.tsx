@@ -15,7 +15,7 @@ export default function TermsModal({ onClose }: TermsModalProps) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-[var(--card)] border border-[var(--border)] rounded-md max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
+            className="bg-[var(--card)] border border-[var(--border)] rounded-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
           >
             {/* Header */}
             <div className="sticky top-0 bg-[var(--card)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
@@ -33,7 +33,7 @@ export default function TermsModal({ onClose }: TermsModalProps) {
 
             {/* Content */}
             <div className="p-6 space-y-5 text-xs text-[var(--muted-foreground)] leading-relaxed font-sans">
-              <div className="bg-[var(--accent-soft)] border border-[var(--accent)] p-4 rounded-md space-y-1.5">
+              <div className="bg-[var(--accent-soft)] p-4 rounded-xl space-y-1.5">
                 <p className="font-bold text-[var(--accent-soft-foreground)] text-sm">Хэрэглэгчийн аюулгүй байдлын баталгаа</p>
                 <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
                   Энэхүү үйлчилгээний нөхцөл нь Монгол Улсын Иргэний хууль, Хэрэглэгчийн эрхийг хамгаалах тухай хууль болон бусад холбогдох хууль тогтоомжийн дагуу боловсруулагдсан болно.
@@ -68,7 +68,7 @@ export default function TermsModal({ onClose }: TermsModalProps) {
             <div className="border-t border-[var(--border)] px-6 py-4 flex justify-end bg-[var(--card)]">
               <button
                 onClick={() => onClose()}
-                className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-semibold px-5 py-2 rounded-md transition-all cursor-pointer text-xs font-sans"
+                className="bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-semibold px-5 py-2 rounded-full transition-all cursor-pointer text-sm font-sans"
               >
                 Ойлголоо, зөвшөөрөв
               </button>

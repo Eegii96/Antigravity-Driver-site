@@ -25,7 +25,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <div className="flex items-center space-x-2 text-[var(--fg)] font-semibold mb-4 text-base">
-            <div className="w-8 h-8 rounded-md bg-[var(--bg)] border border-[var(--border-strong)] flex items-center justify-center relative overflow-hidden shrink-0 shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-[var(--bg)] border border-[var(--border-strong)] flex items-center justify-center relative overflow-hidden shrink-0 shadow-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img className="w-full h-full object-cover" src="/logo.jpg" alt="Logo" loading="lazy" width="32" height="32" />
             </div>
@@ -112,7 +112,7 @@ export default function Footer() {
         >
           <div 
             onClick={(e) => e.stopPropagation()} 
-            className="bg-[var(--card)] border border-[var(--border)] rounded-md max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
+            className="bg-[var(--card)] border border-[var(--border)] rounded-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
           >
             {/* Header */}
             <div className="sticky top-0 bg-[var(--card)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
@@ -130,7 +130,7 @@ export default function Footer() {
             
             {/* Content */}
             <div className="p-6 space-y-5 text-xs text-[var(--fg)] leading-relaxed font-sans">
-              <div className="bg-[var(--accent-soft)] border border-[var(--accent)] p-4 rounded-md space-y-1.5">
+              <div className="bg-[var(--accent-soft)] border border-[var(--accent)] p-4 rounded-xl space-y-1.5">
                 <p className="font-bold text-[var(--accent-soft-foreground)] text-sm">Хэрэглэгчийн аюулгүй байдлын баталгаа</p>
                 <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
                   Энэхүү үйлчилгээний нөхцөл нь Монгол Улсын Иргэний хууль, Хэрэглэгчийн эрхийг хамгаалах тухай хууль болон бусад холбогдох хууль тогтоомжийн дагуу боловсруулагдсан болно.
@@ -165,7 +165,7 @@ export default function Footer() {
             <div className="border-t border-[var(--border)] px-6 py-4 flex justify-end bg-[var(--bg2)]">
               <button 
                 onClick={() => setShowTerms(false)}
-                className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold px-5 py-2 rounded transition-all cursor-pointer text-xs font-sans"
+                className="bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-bold px-5 py-2.5 rounded-full transition-all cursor-pointer text-sm font-sans"
               >
                 Ойлголоо, зөвшөөрөв
               </button>
@@ -184,7 +184,7 @@ export default function Footer() {
         >
           <div 
             onClick={(e) => e.stopPropagation()} 
-            className="bg-[var(--card)] border border-[var(--border)] rounded-md max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
+            className="bg-[var(--card)] border border-[var(--border)] rounded-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
           >
             {/* Header */}
             <div className="sticky top-0 bg-[var(--card)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
@@ -202,7 +202,7 @@ export default function Footer() {
             
             {/* Content */}
             <div className="p-6 space-y-5 text-xs text-[var(--fg)] leading-relaxed font-sans">
-              <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] p-4 rounded-md space-y-1.5">
+              <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] p-4 rounded-xl space-y-1.5">
                 <p className="font-bold text-[var(--verify)] text-sm">Хувь хүний мэдээллийн аюулгүй байдал</p>
                 <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
                   Энэхүү нууцлалын бодлого нь Монгол Улсын Хувь хүний мэдээлэл хамгаалах тухай хуульд бүрэн нийцсэн бөгөөд таны хувийн мэдээллийг цуглуулах, боловсруулах, хамгаалахад баримтлах үндсэн зарчмыг тодорхойлно.
@@ -237,7 +237,7 @@ export default function Footer() {
             <div className="border-t border-[var(--border)] px-6 py-4 flex justify-end bg-[var(--bg2)]">
               <button 
                 onClick={() => setShowPrivacy(false)}
-                className="bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold px-5 py-2 rounded transition-all cursor-pointer text-xs font-sans"
+                className="bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-bold px-5 py-2.5 rounded-full transition-all cursor-pointer text-sm font-sans"
               >
                 Ойлголоо, хүлээн зөвшөөрөв
               </button>

@@ -22,13 +22,13 @@ export default function GuestBlurWarningModal({ onClose, onLogin }: GuestBlurWar
       <div
         id="blur-warning-modal-container"
         onClick={(e) => e.stopPropagation()}
-        className="bg-[var(--card)] border border-[var(--border-strong)] max-w-sm w-full rounded-md overflow-hidden shadow-md relative p-6 space-y-4"
+        className="bg-[var(--card)] border border-[var(--border-strong)] max-w-sm w-full rounded-xl overflow-hidden shadow-md relative p-6 space-y-4"
       >
         {/* Header */}
         <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
           <div className="flex items-center space-x-2">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-[var(--accent)] animate-pulse"></span>
-            <h3 className="text-sm font-display font-bold uppercase tracking-wide text-[var(--fg)]">Дэлгэрэнгүй харах</h3>
+            <span className="flex h-2.5 w-2.5 rounded-full bg-[var(--accent)]"></span>
+            <h3 className="text-sm font-display font-bold text-[var(--fg)]">Дэлгэрэнгүй харах</h3>
           </div>
           <button
             onClick={onClose}
@@ -53,7 +53,7 @@ export default function GuestBlurWarningModal({ onClose, onLogin }: GuestBlurWar
           <button
             type="button"
             onClick={onLogin}
-            className="w-full py-2.5 bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] text-xs font-bold rounded transition-all shadow-sm cursor-pointer font-sans text-center"
+            className="w-full py-2.5 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-sm font-bold rounded-full transition-all shadow-sm cursor-pointer font-sans text-center"
           >
             Нэвтрэх хэсэг рүү очих
           </button>

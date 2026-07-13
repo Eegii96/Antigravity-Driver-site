@@ -15,7 +15,7 @@ export default function PrivacyModal({ onClose }: PrivacyModalProps) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-[var(--card)] border border-[var(--border)] rounded-md max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
+            className="bg-[var(--card)] border border-[var(--border)] rounded-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
           >
             {/* Header */}
             <div className="sticky top-0 bg-[var(--card)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
@@ -33,7 +33,7 @@ export default function PrivacyModal({ onClose }: PrivacyModalProps) {
 
             {/* Content */}
             <div className="p-6 space-y-5 text-xs text-[var(--muted-foreground)] leading-relaxed font-sans">
-              <div className="bg-[rgba(31,138,76,0.1)] border border-[var(--verify)] p-4 rounded-md space-y-1.5">
+              <div className="bg-[rgba(31,138,76,0.1)] border border-[var(--verify)] p-4 rounded-xl space-y-1.5">
                 <p className="font-bold text-[var(--verify)] text-sm">Хувь хүний мэдээллийн аюулгүй байдал</p>
                 <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
                   Энэхүү нууцлалын бодлого нь Монгол Улсын Хувь хүний мэдээлэл хамгаалах тухай хуульд бүрэн нийцсэн бөгөөд таны хувийн мэдээллийг цуглуулах, боловсруулах, хамгаалахад баримтлах үндсэн зарчмыг тодорхойлно.
@@ -68,7 +68,7 @@ export default function PrivacyModal({ onClose }: PrivacyModalProps) {
             <div className="border-t border-[var(--border)] px-6 py-4 flex justify-end bg-[var(--card)]">
               <button
                 onClick={() => onClose()}
-                className="bg-[var(--verify)] hover:brightness-95 text-[var(--accent-foreground)] font-semibold px-5 py-2 rounded-md transition-all cursor-pointer text-xs font-sans"
+                className="bg-[var(--verify)] hover:brightness-95 text-[var(--accent-foreground)] font-semibold px-5 py-2 rounded-xl transition-all cursor-pointer text-xs font-sans"
               >
                 Ойлголоо, хүлээн зөвшөөрөв
               </button>

@@ -43,14 +43,14 @@ export default function AimagLandingClient({ location }: AimagLandingClientProps
           <span className="text-xs">Уншиж байна...</span>
         </div>
       ) : jobs.length === 0 ? (
-        <div className="bg-[var(--card)] border border-[var(--border)] p-10 text-center rounded-md space-y-3">
+        <div className="bg-[var(--card)] border border-[var(--border)] p-10 text-center rounded-xl space-y-3">
           <p className="text-sm font-semibold text-[var(--fg)]">Одоогоор энэ байршилд идэвхтэй зар алга байна 🚜</p>
           <p className="text-xs text-[var(--muted-foreground)] max-w-md mx-auto leading-relaxed">
             Шинэ зар нийтлэгдэх бүрт энд харагдана. Одоохондоо бусад бүх байршлын зарыг үзэх боломжтой.
           </p>
           <Link
             href="/"
-            className="inline-block bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] font-bold text-xs px-5 py-2.5 rounded transition-all"
+            className="inline-block bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-bold text-sm px-5 py-2.5 rounded-full transition-all"
           >
             Бүх зарыг үзэх
           </Link>
@@ -60,7 +60,7 @@ export default function AimagLandingClient({ location }: AimagLandingClientProps
           <Link
             key={job.id}
             href={`/jobs/${job.id}`}
-            className="block bg-[var(--card)] border border-[var(--border)] hover:border-[var(--accent)] rounded-md p-4 transition-colors"
+            className="block bg-[var(--card)] border border-[var(--border)] hover:border-[var(--accent)] rounded-xl p-4 transition-colors"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">

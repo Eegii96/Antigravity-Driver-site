@@ -93,7 +93,7 @@ export default function ReviewModal({
         {/* Content body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="bg-[var(--bg2)] p-3.5 rounded-lg border border-[var(--border)] space-y-1">
-            <span className="text-xs text-[var(--muted-foreground)] uppercase tracking-widest block font-mono">Ажлын нэр</span>
+            <span className="text-xs text-[var(--muted-foreground)] block font-mono">Ажлын нэр</span>
             <p className="text-xs font-semibold text-[var(--accent-soft-foreground)]">{jobTitle}</p>
             <div className="pt-2 flex items-center justify-between text-xs text-[var(--muted-foreground)]">
               <span>Үнэлгээ авах хүн:</span>
@@ -132,7 +132,7 @@ export default function ReviewModal({
               ))}
             </div>
             <div className="text-xs font-medium text-[var(--verify)] font-mono mt-1">
-              {rating === 1 && '⚠️ Маш хариуцлагагүй! (Ажил хаясан, согтуу эсвэл мурисан)'}
+              {rating === 1 && 'Маш хариуцлагагүй! (Ажил хаясан, согтуу эсвэл мурисан)'}
               {rating === 2 && '👎 Шаардлага хангахгүй (Ажлын хурд муу, утас унтраадаг)'}
               {rating === 3 && '✊ Дундаж (Ажлаа дуусгасан ч алдаа дутагдалтай)'}
               {rating === 4 && '👍 Сайн ажилласан (Шаардлагад нийцсэн, зөв хандлагатай)'}
@@ -173,7 +173,7 @@ export default function ReviewModal({
               id="submit-review-form-btn"
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 py-1.5 bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] text-xs font-medium rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-2.5 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-sm font-medium rounded-full transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Бүртгэж байна...' : 'Үнэлгээг Системд Бүртгэх'}
             </button>

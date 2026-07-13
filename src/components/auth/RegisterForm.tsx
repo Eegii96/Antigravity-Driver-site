@@ -311,15 +311,15 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
           id="submit-register-btn"
           type="submit"
           disabled={isSubmitting || !isFormValid}
-          className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded text-[var(--accent-foreground)] font-medium text-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${!isSubmitting && isFormValid
-              ? 'bg-[var(--accent)] hover:brightness-95 shadow-lg'
+          className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded-full text-[var(--accent-foreground)] font-medium text-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${!isSubmitting && isFormValid
+              ? 'bg-[var(--accent)] hover:opacity-90 shadow-lg'
               : 'bg-[var(--bg2)] text-[var(--muted-foreground)] cursor-not-allowed opacity-50'
             }`}
         >
           {isSubmitting ? 'Бүртгэж байна...' : 'Бүртгүүлэх'}
         </button>
         {successMsg && (
-          <div className="mt-3.5 bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] px-4 py-2.5 rounded-lg text-xs flex items-center justify-center space-x-2 animate-fade-in font-sans">
+          <div className="mt-3.5 bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] px-4 py-2.5 rounded-lg text-xs flex items-center justify-center space-x-2 animate-fade-in font-sans">
             <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping shrink-0"></span>
             <span className="text-left">{successMsg}</span>
           </div>

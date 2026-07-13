@@ -19,13 +19,13 @@ interface GivenReviewsListProps {
 export default function GivenReviewsList({ givenReviews, allJobs, onEditReview, onDeleteReview }: GivenReviewsListProps) {
   return (
         <div className="mt-8 space-y-4 relative z-10 text-left">
-          <h3 className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-widest border-b border-[var(--border)] pb-2.5 flex items-center space-x-2">
+          <h3 className="text-xs font-bold text-[var(--muted-foreground)] border-b border-[var(--border)] pb-2.5 flex items-center space-x-2">
             <Star className="w-4.5 h-4.5 text-[var(--accent-soft-foreground)] drop-shadow-[0_0_5px_rgba(16,185,129,0.2)]" />
             <span>Миний өгсөн үнэлгээнүүд ({givenReviews.length})</span>
           </h3>
 
           {givenReviews.length === 0 ? (
-            <div className="panel p-6 rounded-md border border-[var(--border)] text-center text-xs text-[var(--muted-foreground)] font-sans">
+            <div className="panel p-6 rounded-xl border border-[var(--border)] text-center text-xs text-[var(--muted-foreground)] font-sans">
               Та одоогоор өөр хэрэглэгчид үнэлгээ өгөөгүй байна.
             </div>
           ) : (
@@ -47,7 +47,7 @@ export default function GivenReviewsList({ givenReviews, allJobs, onEditReview, 
                 }
 
                 return (
-                  <div key={rev.id} className="panel p-4 rounded-md border border-[var(--border)] hover:border-[var(--border)] space-y-3 relative overflow-hidden group">
+                  <div key={rev.id} className="panel p-4 rounded-xl border border-[var(--border)] hover:border-[var(--border)] space-y-3 relative overflow-hidden group">
                     <div className="flex justify-between items-start">
                       <div className="flex flex-col space-y-1.5 text-left">
                         {targetId ? (

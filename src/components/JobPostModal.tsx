@@ -486,7 +486,7 @@ export default function JobPostModal({
 
           <div className="bg-[var(--card)] p-3.5 rounded-lg border border-[var(--border)] flex items-center space-x-2 text-sm text-[var(--muted-foreground)]">
             <span className="text-[var(--accent-soft-foreground)]">🛡️</span>
-            <span>Санамж: Ажил олгогчоор бүртгүүлсэн таны нэр, өнөөгийн үнэлгээ ({employerRating}⭐) энэхүү заранд хамт байршиж, жолооч нарт харагдана.</span>
+            <span>Санамж: Ажил олгогчоор бүртгүүлсэн таны нэр, өнөөгийн үнэлгээ ({employerRating}★) энэхүү заранд хамт байршиж, жолооч нарт харагдана.</span>
           </div>
 
           {/* Action buttons */}
@@ -503,7 +503,7 @@ export default function JobPostModal({
               id="submit-job-post-btn"
               type="submit"
               disabled={isSubmitting || isImageUploading}
-              className="flex-1 py-1.5 bg-[var(--accent)] hover:brightness-95 text-[var(--accent-foreground)] text-xs font-medium rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-2.5 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-sm font-medium rounded-full transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Хадгалж байна...' : (isEditing ? 'Хадгалах' : 'Зар нэмэх')}
             </button>

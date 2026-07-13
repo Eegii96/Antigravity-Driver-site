@@ -22,8 +22,8 @@ const TOGGLES: { field: VisibilityField; label: string }[] = [
  */
 export default function PrivacyTogglesBar({ profileUser, onToggle }: PrivacyTogglesBarProps) {
   return (
-    <div className="bg-[var(--card)] p-4 rounded-md border border-[var(--border)] flex flex-wrap gap-4 items-center justify-between text-xs w-full">
-      <div className="text-[var(--muted-foreground)] font-bold uppercase tracking-wider text-xs">
+    <div className="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] flex flex-wrap gap-4 items-center justify-between text-xs w-full">
+      <div className="text-[var(--muted-foreground)] font-bold text-xs">
         Нууцлалын Тохиргоо (Хүмүүст харагдуулах):
       </div>
       <div className="flex flex-wrap gap-4">
