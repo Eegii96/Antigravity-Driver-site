@@ -1,15 +1,20 @@
 'use client';
 
 import { FileText, X } from 'lucide-react';
+import TermsContent from '../legal/TermsContent';
 
 interface TermsModalProps {
   onClose: () => void;
 }
 
-/** Terms of Service modal (static content). Render conditionally by the parent. */
+/**
+ * Terms of Service modal — renders the shared canonical copy from
+ * `components/legal/TermsContent.tsx` (same source as the /terms page).
+ * Render conditionally by the parent.
+ */
 export default function TermsModal({ onClose }: TermsModalProps) {
   return (
-        <div 
+        <div
           onClick={() => onClose()}
           className="fixed inset-0 bg-[var(--fg)]/40 flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in text-left"
         >
@@ -33,36 +38,8 @@ export default function TermsModal({ onClose }: TermsModalProps) {
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-5 text-sm text-[var(--muted-foreground)] leading-relaxed font-sans">
-              <div className="bg-[var(--accent-soft)] p-4 rounded-xl space-y-1.5">
-                <p className="font-bold text-[var(--accent-soft-foreground)] text-sm">Хэрэглэгчийн аюулгүй байдлын баталгаа</p>
-                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
-                  Энэхүү үйлчилгээний нөхцөл нь Монгол Улсын Иргэний хууль, Хэрэглэгчийн эрхийг хамгаалах тухай хууль болон бусад холбогдох хууль тогтоомжийн дагуу боловсруулагдсан болно.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="font-bold text-[var(--fg)] text-sm">1. Ерөнхий нөхцөл</h4>
-                <p>1.1. Энэхүү платформ нь хүнд машин механизм, газар шорооны ажлын чиглэлээр ажиллаж буй жолооч, оператор болон ажил олгогч нарыг холбох, ажлын түүх, үнэлгээгээр баталгаажсан найдвартай хамтын ажиллагааг үүсгэх зорилготой.</p>
-                <p>1.2. Хэрэглэгч системд бүртгүүлснээр энэхүү үйлчилгээний нөхцөлийг бүрэн хүлээн зөвшөөрсөнд тооцогдоно.</p>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="font-bold text-[var(--fg)] text-sm">2. Хэрэглэгчийн хариуцлага ба Үнэлгээний систем</h4>
-                <p>2.1. Хэрэглэгч өөрийн бүртгэлийн мэдээлэл (нэр, утас, хаяг г.м)-ийн үнэн зөв байдлыг бүрэн хариуцна.</p>
-                <p>2.2. Жолооч болон ажил олгогч нар ажлын гүйцэтгэлийн дараа нөгөө талдаа бодитой, үнэн зөв үнэлгээ өгөх үүрэгтэй.</p>
-                <p className="text-red-700 font-semibold">2.3. Ажлын хариуцлага алдаж шалтгаангүй ажил хаясан, техникт санаатай хохирол учруулсан, ажлын байранд архидан согтуурсан, цалин хөлс олгоогүй гэх мэт ноцтой зөрчил гаргасан тохиолдолд хэрэглэгчийн мэдээллийг хар дансанд бүртгэж, цаашид системийг ашиглах болон дахин үйлчилгээ авах боломжгүй болох эрсдэлтэйг анхаарна уу.</p>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="font-bold text-[var(--fg)] text-sm">3. Платформын хариуцлагын хязгаарлалт</h4>
-                <p>3.1. Платформ нь мэдээлэл дамжуулах, зуучлах, баталгаажуулах үүргийг гүйцэтгэх бөгөөд талуудын хоорондох хөдөлмөрийн болон санхүүгийн шууд маргааныг хариуцахгүй. Гэвч маргаан гарсан тохиобдолд ажлын түүх болон үнэлгээний мэдээллээр дэмжлэг үзүүлнэ.</p>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="font-bold text-[var(--fg)] text-sm">4. Үйлчилгээний нөхцөлийн өөрчлөлт</h4>
-                <p>4.1. Үйлчилгээний нөхцөл шинэчлэгдэх бүрт хэрэглэгчдэд нээлттэй мэдээлэгдэх бөгөөд үйлчилгээг үргэлжлүүлэн ашиглах нь шинэ нөхцөлийг зөвшөөрсөнд тооцогдоно.</p>
-              </div>
+            <div className="p-6">
+              <TermsContent />
             </div>
 
             {/* Footer */}

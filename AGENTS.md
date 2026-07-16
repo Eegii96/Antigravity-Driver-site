@@ -125,6 +125,7 @@ Design-system-agnostic rules that remain in force regardless of the visual desig
   - `JobPostModal.tsx`: Dialog for employers to create new job listings.
   - `ProfileEditModal.tsx`: Dialog for updating user contact information, categories, and background.
   - `ReviewModal.tsx`: Dialog for submitting post-job reviews and ratings.
+- **Legal copy single source**: the Terms-of-Service and Privacy-Policy texts live ONLY in `src/components/legal/TermsContent.tsx` / `PrivacyContent.tsx`, rendered by both the `/terms`, `/privacy` pages and the auth modals (`TermsModal`/`PrivacyModal`). Never paste a second inline copy of this text (the footer used to carry a full duplicate that drifted; removed 2026-07-14 — footer now links to the pages).
 - **Context & Helpers**:
   - `AuthContext.tsx`: The single auth state provider. Never create other auth contexts.
   - `db.ts`: Data access layer containing all Firestore reads, writes, and localStorage persistence.

@@ -253,7 +253,7 @@ export async function registerUser(
         const welcomeNotif: AppNotification = {
           id: welcomeId,
           userId: uid,
-          title: 'Платформд тавтай морилно уу! 🎉',
+          title: 'Платформд тавтай морилно уу!',
           message: 'Хүнд машин механизм, газар шорооны ажлын нэгдсэн системд нэгдсэнд баярлалаа. Танд амжилт хүсье!',
           type: 'success',
           isRead: false,
@@ -263,7 +263,7 @@ export async function registerUser(
         const securityNotif: AppNotification = {
           id: securityId,
           userId: uid,
-          title: '🔒 Аюулгүй байдлаа хангаж, профайлаа 100% болгоно уу',
+          title: 'Аюулгүй байдлаа хангаж, профайлаа 100% болгоно уу',
           message: 'Миний профайл -> Засах цэс рүү орж аюулгүй байдлын 2 асуултыг заавал тохируулаарай. Ингэснээр та нууц кодоо мартсан үедээ найдвартай сэргээх боломжтой болохоос гадна профайлын мэдээлэл тань 100% баталгаажна.',
           type: 'warning',
           isRead: false,

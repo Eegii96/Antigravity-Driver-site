@@ -1,15 +1,20 @@
 'use client';
 
 import { Lock, X } from 'lucide-react';
+import PrivacyContent from '../legal/PrivacyContent';
 
 interface PrivacyModalProps {
   onClose: () => void;
 }
 
-/** Privacy Policy modal (static content). Render conditionally by the parent. */
+/**
+ * Privacy Policy modal — renders the shared canonical copy from
+ * `components/legal/PrivacyContent.tsx` (same source as the /privacy page).
+ * Render conditionally by the parent.
+ */
 export default function PrivacyModal({ onClose }: PrivacyModalProps) {
   return (
-        <div 
+        <div
           onClick={() => onClose()}
           className="fixed inset-0 bg-[var(--fg)]/40 flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in text-left"
         >
@@ -33,36 +38,8 @@ export default function PrivacyModal({ onClose }: PrivacyModalProps) {
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-5 text-sm text-[var(--muted-foreground)] leading-relaxed font-sans">
-              <div className="bg-[rgba(31,138,76,0.1)] border border-[var(--verify)] p-4 rounded-xl space-y-1.5">
-                <p className="font-bold text-[var(--verify)] text-sm">Хувь хүний мэдээллийн аюулгүй байдал</p>
-                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
-                  Энэхүү нууцлалын бодлого нь Монгол Улсын Хувь хүний мэдээлэл хамгаалах тухай хуульд бүрэн нийцсэн бөгөөд таны хувийн мэдээллийг цуглуулах, боловсруулах, хамгаалахад баримтлах үндсэн зарчмыг тодорхойлно.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="font-bold text-[var(--fg)] text-sm">1. Хувийн мэдээлэл цуглуулах</h4>
-                <p>1.1. Бид хэрэглэгчийн үйлчилгээ авах зорилгоор оруулсан дараах мэдээллүүдийг цуглуулна: Овог нэр / Компанийн нэр, утасны дугаар, хаяг байршил, мэргэшсэн техникийн төрөл, ажлын түүх болон танилцуулга намтар (bio).</p>
-                <p>1.2. Нэвтрэх нууц кодыг систем шифрлэн (encrypted) хадгалах бөгөөд ямар ч администратор, гуравдагч этгээд харах боломжгүйгээр хамгаалагдсан болно.</p>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="font-bold text-[var(--fg)] text-sm">2. Мэдээллийн ашиглалт ба Зорилго</h4>
-                <p>2.1. Таны оруулсан мэдээллийг зөвхөн ажил олгогч болон операторыг холбох, үнэлгээ өгөх, системийн найдвартай ажиллагааг хангахад ашиглана.</p>
-                <p className="text-[var(--accent-soft-foreground)]">2.2. Систем нь хэрэглэгчийн утасны дугаар болон бусад хувийн мэдээллийг зар сурталчилгаанд худалдах, бусдад зөвшөөрөлгүйгээр шилжүүлэхийг хатуу хориглоно.</p>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="font-bold text-[var(--fg)] text-sm">3. Хэрэглэгчийн эрх болон Профайл нууцлал</h4>
-                <p>3.1. Хэрэглэгч өөрийн профайлыг бусдад харагдуулахгүй байх (isPublic тохиргоо) эрхтэй.</p>
-                <p>3.2. Хэрэглэгч өөрийн мэдээллийг хэдийд ч засах, системээс өөрийн бүртгэлийг бүрэн устгах (Аюулгүй байдлын цэсээр) эрхтэй.</p>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="font-bold text-[var(--fg)] text-sm">4. Мэдээллийн аюулгүй байдал</h4>
-                <p>4.1. Систем нь таны мэдээллийг хамгаалах сүүлийн үеийн SSL шифрлэлт болон аюулгүй байдлын стандартыг ашиглаж байна.</p>
-              </div>
+            <div className="p-6">
+              <PrivacyContent />
             </div>
 
             {/* Footer */}

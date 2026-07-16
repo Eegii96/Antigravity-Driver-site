@@ -94,11 +94,15 @@ export async function getNotifications(userId: string): Promise<AppNotification[
     const batch = writeBatch(db);
     let needsCommit = false;
 
-    const targetWelcomeTitle = 'Платформд тавтай морилно уу! 🎉';
+    // NOTE: the find-patterns above intentionally still match the legacy
+    // emoji titles ('... 🎉', '🔒 ...') so existing Firestore docs get
+    // auto-migrated to these emoji-free targets on next fetch (AGENTS.md §4:
+    // no emoji in UI).
+    const targetWelcomeTitle = 'Платформд тавтай морилно уу!';
     const targetWelcomeMsg = 'Хүнд машин механизм, газар шорооны ажлын нэгдсэн системд нэгдсэнд баярлалаа. Танд амжилт хүсье!';
     const targetWelcomeType = 'success';
 
-    const targetSecurityTitle = '🔒 Аюулгүй байдлаа хангаж, профайлаа 100% болгоно уу';
+    const targetSecurityTitle = 'Аюулгүй байдлаа хангаж, профайлаа 100% болгоно уу';
     const targetSecurityMsg = 'Миний профайл -> Засах цэс рүү орж аюулгүй байдлын 2 асуултыг заавал тохируулаарай. Ингэснээр та нууц кодоо мартсан үедээ найдвартай сэргээх боломжтой болохоос гадна профайлын мэдээлэл тань 100% баталгаажна.';
     const targetSecurityType = 'warning';
 

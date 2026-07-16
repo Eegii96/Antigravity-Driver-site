@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Star } from 'lucide-react';
+import { X, Star, ShieldCheck } from 'lucide-react';
 import type { Review } from '../../types';
 
 interface ReviewDetailModalProps {
@@ -24,18 +24,16 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
       <div
         id="view-review-detail-modal-container"
         onClick={(e) => e.stopPropagation()}
-        className="bg-[var(--card)] border border-[var(--border-strong)] max-w-md w-full rounded-xl overflow-hidden shadow-md relative"
+        className="bg-[var(--card)] border border-[var(--border-strong)] max-w-md w-full rounded-2xl overflow-hidden shadow-md relative"
       >
         {/* Header */}
-        <div className="flex justify-between items-center border-b border-[var(--border)] px-6 py-4.5">
-          <div className="flex items-center space-x-2">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-[var(--accent)]"></span>
-            <h3 className="text-sm font-display font-bold text-[var(--fg)]">Шинэ үнэлгээний дэлгэрэнгүй</h3>
-          </div>
+        <div className="flex justify-between items-center border-b border-[var(--border)] px-6 py-4">
+          <h3 className="text-[17px] font-display font-bold text-[var(--fg)]">Шинэ үнэлгээний дэлгэрэнгүй</h3>
           <button
             id="close-view-review-modal"
             onClick={onClose}
-            className="text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer p-1 rounded hover:bg-[var(--bg2)]"
+            aria-label="Хаах"
+            className="min-w-11 min-h-11 flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer rounded-full hover:bg-[var(--bg2)] -mr-2"
           >
             <X className="w-5 h-5" />
           </button>
@@ -44,27 +42,27 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
         {/* Content body */}
         <div className="p-6 space-y-5">
           {/* Rating Big Circle */}
-          <div className="flex flex-col items-center justify-center py-4 bg-[var(--bg2)] rounded-xl border border-[var(--border)]">
-            <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-[rgba(31,138,76,0.1)] border border-[var(--verify)] mb-3">
+          <div className="flex flex-col items-center justify-center py-4 bg-[var(--bg2)] rounded-xl">
+            <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-[rgba(35,121,82,0.08)] mb-3">
               <Star className="w-8 h-8 text-[var(--verify)] fill-[var(--verify)]" />
             </div>
-            <span className="text-2xl font-bold font-mono text-[var(--fg)] tracking-tight">{review.rating}.0 / 5.0</span>
+            <span className="text-2xl font-display font-bold text-[var(--fg)] tracking-tight tabular-nums">{review.rating}.0 / 5.0</span>
             <div className="flex items-center space-x-1 mt-1.5">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  className={`w-4 h-4 ${star <= review.rating ? 'fill-[var(--verify)] text-[var(--verify)]' : 'text-[var(--border)]'}`}
+                  className={`w-4 h-4 ${star <= review.rating ? 'fill-[var(--verify)] text-[var(--verify)]' : 'text-[var(--concrete)]'}`}
                 />
               ))}
             </div>
-            <span className="text-xs text-[var(--muted-foreground)] font-mono mt-2">Үнэлгээний оноо</span>
+            <span className="text-[13px] text-[var(--muted-foreground)] font-sans mt-2">Үнэлгээний оноо</span>
           </div>
 
           {/* Reviewer & Job info */}
-          <div className="space-y-3 bg-[var(--bg2)] p-4 rounded-xl border border-[var(--border)] text-xs text-left">
+          <div className="space-y-3 bg-[var(--bg2)] p-4 rounded-xl text-sm text-left">
             <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
               <span className="text-[var(--muted-foreground)]">Үнэлгээ өгсөн хүн:</span>
-              <span className="font-semibold text-[var(--accent-soft-foreground)] font-sans">{review.reviewerName}</span>
+              <span className="font-semibold text-[var(--fg)] font-sans">{review.reviewerName}</span>
             </div>
             <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
               <span className="text-[var(--muted-foreground)]">Төсөл / Ажлын нэр:</span>
@@ -72,23 +70,22 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
             </div>
             <div className="flex justify-between items-center">
               <span className="text-[var(--muted-foreground)]">Огноо:</span>
-              <span className="font-mono text-[var(--muted-foreground)]">{review.createdAt}</span>
+              <span className="font-sans tabular-nums text-[var(--muted-foreground)]">{review.createdAt}</span>
             </div>
           </div>
 
           {/* Comment text block */}
           <div className="space-y-2 text-left">
-            <span className="text-xs text-[var(--muted-foreground)] font-mono block">Бичсэн сэтгэгдэл:</span>
-            <div className="relative bg-[var(--bg2)] p-4.5 rounded-xl border border-[var(--border)] italic text-xs text-[var(--fg)] leading-relaxed font-sans">
-              <span className="absolute -top-1 left-2 text-3xl text-[var(--concrete)] font-serif pointer-events-none">“</span>
-              <p className="relative z-10 px-2">&ldquo;{review.comment}&rdquo;</p>
-              <span className="absolute -bottom-4 right-3 text-3xl text-[var(--concrete)] font-serif pointer-events-none">”</span>
+            <span className="text-[13px] text-[var(--muted-foreground)] font-sans font-medium block">Бичсэн сэтгэгдэл:</span>
+            <div className="bg-[var(--bg2)] p-4 rounded-xl text-[15px] text-[var(--fg)] leading-relaxed font-sans">
+              <p>&ldquo;{review.comment}&rdquo;</p>
             </div>
           </div>
 
           {/* Footer info/warning */}
-          <p className="text-sm text-[var(--muted-foreground)] leading-normal text-center bg-[var(--bg2)] p-2 rounded border border-[var(--border)]">
-            🛡️ Энэхүү үнэлгээ нь таны профайлын дундаж үнэлгээ болон ажилчны түүхэнд шууд нөлөөлж, бусад хэрэглэгчдэд харагдах болно.
+          <p className="text-sm text-[var(--muted-foreground)] leading-normal text-left bg-[var(--bg2)] p-3.5 rounded-xl flex items-start gap-2.5">
+            <ShieldCheck className="w-4.5 h-4.5 text-[var(--accent-soft-foreground)] shrink-0 mt-0.5" aria-hidden="true" />
+            <span>Энэхүү үнэлгээ нь таны профайлын дундаж үнэлгээ болон ажилчны түүхэнд шууд нөлөөлж, бусад хэрэглэгчдэд харагдах болно.</span>
           </p>
 
           {/* Action Buttons */}
@@ -97,7 +94,7 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
               id="close-review-detail-btn"
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--fg)] text-xs font-medium rounded hover:bg-[var(--bg2)] transition-colors cursor-pointer font-sans"
+              className="flex-1 min-h-12 border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--fg)] text-sm font-semibold rounded-full hover:bg-[var(--bg2)] transition-colors cursor-pointer font-sans"
             >
               Хаах
             </button>
@@ -105,9 +102,9 @@ export default function ReviewDetailModal({ review, onClose, onGoToProfile }: Re
               id="go-to-profile-from-review-btn"
               type="button"
               onClick={onGoToProfile}
-              className="flex-1 py-2.5 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-sm font-bold rounded-full transition-all shadow-sm cursor-pointer font-sans"
+              className="flex-1 min-h-12 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-[15px] font-semibold rounded-full transition-all shadow-sm cursor-pointer font-sans"
             >
-              Миний Профайл руу очих
+              Миний профайл руу очих
             </button>
           </div>
         </div>

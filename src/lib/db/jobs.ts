@@ -263,7 +263,7 @@ export async function hireOperator(jobId: string, operatorId: string): Promise<b
     // Create notification for operator
     await addNotification(
       operatorId,
-      'Ажилд сонгогдлоо 🎉',
+      'Ажилд сонгогдлоо',
       `Баяр хүргэе! Захиалагч ${job.employerName} таныг "${job.title}" ажилдаа сонгон томиллоо.`,
       'success',
       jobId,

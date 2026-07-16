@@ -37,7 +37,8 @@ import {
   AlertTriangle,
   Bell,
   X,
-  Trash2
+  Trash2,
+  Menu
 } from 'lucide-react';
 const JobPostModal = dynamic(() => import('./JobPostModal'), { ssr: false });
 const ReviewModal = dynamic(() => import('./ReviewModal'), { ssr: false });
@@ -101,6 +102,11 @@ export default function JobBoard({
   // Dropdown hover state emulator
   const [showProfileMenu, setShowProfileMenu] = useState<boolean>(false);
   const [showBlurWarningModal, setShowBlurWarningModal] = useState<boolean>(false);
+
+  // Guest mobile menu — section anchors (+ login on the narrowest screens)
+  // live behind a hamburger below lg (review 2026-07-14).
+  const [showMobileNav, setShowMobileNav] = useState<boolean>(false);
+  const mobileNavRef = useRef<HTMLDivElement>(null);
 
   // Notifications States
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -370,6 +376,17 @@ export default function JobBoard({
     function handleClickOutside(event: MouseEvent) {
       if (notificationsMenuRef.current && !notificationsMenuRef.current.contains(event.target as Node)) {
         setShowNotificationsMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Click outside to close the guest mobile menu
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (mobileNavRef.current && !mobileNavRef.current.contains(event.target as Node)) {
+        setShowMobileNav(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -1067,10 +1084,11 @@ export default function JobBoard({
             <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
               {/* Login stays reachable from the header on phones too — it used
                   to be hidden below `sm`, leaving mobile guests only the hero
-                  link (review 2026-07-14). */}
+                  link (review 2026-07-14). On the narrowest screens (<420px)
+                  it moves into the hamburger menu so the brand doesn't truncate. */}
               <a
                 href="/auth?tab=login"
-                className="text-[13px] sm:text-sm text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold px-2 sm:px-4 py-2.5 transition-all cursor-pointer hover:bg-[var(--bg2)] rounded-full whitespace-nowrap"
+                className="hidden min-[420px]:block text-[13px] sm:text-sm text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold px-2 sm:px-4 py-2.5 transition-all cursor-pointer hover:bg-[var(--bg2)] rounded-full whitespace-nowrap"
               >
                 Нэвтрэх
               </a>
@@ -1080,6 +1098,38 @@ export default function JobBoard({
               >
                 Бүртгүүлэх
               </a>
+
+              {/* Guest mobile menu — the section anchors are lg-only in the
+                  main nav; below lg they live here (review 2026-07-14). */}
+              <div ref={mobileNavRef} className="relative lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowMobileNav(prev => !prev)}
+                  aria-label="Цэс"
+                  aria-expanded={showMobileNav}
+                  className="min-w-11 min-h-11 flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--fg)] hover:bg-[var(--bg2)] rounded-full transition-colors cursor-pointer"
+                >
+                  {showMobileNav ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </button>
+
+                {showMobileNav && (
+                  <div className="absolute right-0 top-full mt-2 w-60 bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-md py-2 z-50 animate-fade-in overflow-hidden">
+                    <a href="#job-board" onClick={() => setShowMobileNav(false)} className="block px-4 py-3 text-sm font-semibold text-[var(--fg)] hover:bg-[var(--bg2)] transition-colors">
+                      Ажлын зар
+                    </a>
+                    <a href="#how-it-works" onClick={() => setShowMobileNav(false)} className="block px-4 py-3 text-sm font-semibold text-[var(--fg)] hover:bg-[var(--bg2)] transition-colors">
+                      Хэрхэн ажилладаг
+                    </a>
+                    <a href="#faq" onClick={() => setShowMobileNav(false)} className="block px-4 py-3 text-sm font-semibold text-[var(--fg)] hover:bg-[var(--bg2)] transition-colors">
+                      Түгээмэл асуулт
+                    </a>
+                    <div className="border-t border-[var(--border)] my-1 min-[420px]:hidden"></div>
+                    <a href="/auth?tab=login" className="block px-4 py-3 text-sm font-semibold text-[var(--muted-foreground)] hover:bg-[var(--bg2)] hover:text-[var(--fg)] transition-colors min-[420px]:hidden">
+                      Нэвтрэх
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
