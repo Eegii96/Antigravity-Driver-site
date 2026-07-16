@@ -3,7 +3,9 @@ import { Suspense } from 'react';
 import AuthClient from './AuthClient';
 
 export const metadata: Metadata = {
-  title: 'Нэвтрэх, Бүртгүүлэх | Жолооч Монголиа',
+  // layout.tsx-ийн title template аль хэдийн "| Жолооч Монголиа"-г залгадаг —
+  // энд давхар бичвэл "… | Жолооч Монголиа | Жолооч Монголиа" болно.
+  title: 'Нэвтрэх, Бүртгүүлэх',
   description: 'Хүнд машин, механизм & Газар шорооны ажлын нэгдсэн системд нэвтрэх эсвэл шинээр бүртгэл үүсгэх.',
 };
 

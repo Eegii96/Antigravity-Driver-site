@@ -71,7 +71,7 @@ export default function RecoveryForm({ form, onVerifyAccount, onResetPassword }:
                           value={forgotInput}
                           onChange={(e) => setForgotInput(e.target.value)}
                           placeholder=""
-                          className="block w-full pl-9 pr-3 py-2 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
+                          className="block w-full pl-9 pr-3 py-3 input text-base text-[var(--fg)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -81,7 +81,7 @@ export default function RecoveryForm({ form, onVerifyAccount, onResetPassword }:
                   <div className="space-y-3.5 animate-fade-in">
                     {/* Security Question 1 */}
                     <div className="bg-[var(--card)] p-3 rounded-lg border border-[var(--border)] font-sans space-y-2 text-left">
-                      <span className="text-xs font-semibold text-[var(--accent-soft-foreground)] block">🔒 Аюулгүй байдлын асуулт 1:</span>
+                      <span className="text-xs font-semibold text-[var(--accent-soft-foreground)] block">Аюулгүй байдлын асуулт 1:</span>
                       <p className="text-xs text-[var(--fg)] leading-relaxed font-sans">{securityQ1}</p>
                       <input
                         id="security-a1-input"
@@ -90,13 +90,13 @@ export default function RecoveryForm({ form, onVerifyAccount, onResetPassword }:
                         value={securityA1Input}
                         onChange={(e) => setSecurityA1Input(e.target.value)}
                         placeholder="Асуулт 1-ийн хариулт"
-                        className="block w-full px-3 py-1.5 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
+                        className="block w-full px-3 py-3 input text-base text-[var(--fg)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
                       />
                     </div>
 
                     {/* Security Question 2 */}
                     <div className="bg-[var(--card)] p-3 rounded-lg border border-[var(--border)] font-sans space-y-2 text-left">
-                      <span className="text-xs font-semibold text-[var(--accent-soft-foreground)] block">🔒 Аюулгүй байдлын асуулт 2:</span>
+                      <span className="text-xs font-semibold text-[var(--accent-soft-foreground)] block">Аюулгүй байдлын асуулт 2:</span>
                       <p className="text-xs text-[var(--fg)] leading-relaxed font-sans">{securityQ2}</p>
                       <input
                         id="security-a2-input"
@@ -105,7 +105,7 @@ export default function RecoveryForm({ form, onVerifyAccount, onResetPassword }:
                         value={securityA2Input}
                         onChange={(e) => setSecurityA2Input(e.target.value)}
                         placeholder="Асуулт 2-ийн хариулт"
-                        className="block w-full px-3 py-1.5 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
+                        className="block w-full px-3 py-3 input text-base text-[var(--fg)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
                       />
                     </div>
 
@@ -123,14 +123,16 @@ export default function RecoveryForm({ form, onVerifyAccount, onResetPassword }:
                             value={forgotNewPassword}
                             onChange={(e) => setForgotNewPassword(e.target.value)}
                             placeholder=""
-                            className="block w-full pl-3 pr-10 py-2 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
+                            className="block w-full pl-3 pr-12 py-3 input text-base text-[var(--fg)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
                           />
-                          <span
+                          <button
+                            type="button"
                             onClick={() => setShowForgotNewPassword(!showForgotNewPassword)}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-[var(--muted-foreground)] hover:text-[var(--fg)] cursor-pointer"
+                            aria-label={showForgotNewPassword ? 'Нууц үгийг нуух' : 'Нууц үгийг харах'}
+                            className="absolute inset-y-0 right-0 w-11 flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--fg)] cursor-pointer"
                           >
                             {showForgotNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          </span>
+                          </button>
                         </div>
                         {forgotNewPassword !== '' && forgotNewPassword.length < 8 && (
                           <p className="text-sm text-red-700 mt-1 font-sans flex items-center space-x-1">
@@ -158,14 +160,16 @@ export default function RecoveryForm({ form, onVerifyAccount, onResetPassword }:
                             value={forgotConfirmNewPassword}
                             onChange={(e) => setForgotConfirmNewPassword(e.target.value)}
                             placeholder=""
-                            className="block w-full pl-3 pr-10 py-2 input text-xs text-[var(--accent-foreground)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
+                            className="block w-full pl-3 pr-12 py-3 input text-base text-[var(--fg)] focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
                           />
-                          <span
+                          <button
+                            type="button"
                             onClick={() => setShowForgotConfirmNewPassword(!showForgotConfirmNewPassword)}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-[var(--muted-foreground)] hover:text-[var(--accent-foreground)] cursor-pointer"
+                            aria-label={showForgotConfirmNewPassword ? 'Нууц үгийг нуух' : 'Нууц үгийг харах'}
+                            className="absolute inset-y-0 right-0 w-11 flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--fg)] cursor-pointer"
                           >
                             {showForgotConfirmNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          </span>
+                          </button>
                         </div>
                         {forgotConfirmNewPassword !== '' && forgotNewPassword !== forgotConfirmNewPassword && (
                           <p className="text-sm text-red-700 mt-1 font-sans flex items-center space-x-1">

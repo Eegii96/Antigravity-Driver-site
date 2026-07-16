@@ -11,11 +11,11 @@ export default function TermsModal({ onClose }: TermsModalProps) {
   return (
         <div 
           onClick={() => onClose()}
-          className="fixed inset-0 bg-[var(--bg2)] flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in text-left"
+          className="fixed inset-0 bg-[var(--fg)]/40 flex items-center justify-center p-4 z-50 overflow-y-auto animate-fade-in text-left"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-[var(--card)] border border-[var(--border)] rounded-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-md relative"
+            className="bg-[var(--card)] border border-[var(--border-strong)] rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto overscroll-contain shadow-md relative"
           >
             {/* Header */}
             <div className="sticky top-0 bg-[var(--card)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
@@ -25,14 +25,15 @@ export default function TermsModal({ onClose }: TermsModalProps) {
               </div>
               <button
                 onClick={() => onClose()}
-                className="text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer p-1 rounded-lg hover:bg-[var(--bg2)]"
+                aria-label="Хаах"
+                className="min-w-11 min-h-11 flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer rounded-full hover:bg-[var(--bg2)]"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-5 text-xs text-[var(--muted-foreground)] leading-relaxed font-sans">
+            <div className="p-6 space-y-5 text-sm text-[var(--muted-foreground)] leading-relaxed font-sans">
               <div className="bg-[var(--accent-soft)] p-4 rounded-xl space-y-1.5">
                 <p className="font-bold text-[var(--accent-soft-foreground)] text-sm">Хэрэглэгчийн аюулгүй байдлын баталгаа</p>
                 <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
@@ -68,7 +69,7 @@ export default function TermsModal({ onClose }: TermsModalProps) {
             <div className="border-t border-[var(--border)] px-6 py-4 flex justify-end bg-[var(--card)]">
               <button
                 onClick={() => onClose()}
-                className="bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-semibold px-5 py-2 rounded-full transition-all cursor-pointer text-sm font-sans"
+                className="bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-semibold px-6 min-h-11 rounded-full transition-all cursor-pointer text-sm font-sans"
               >
                 Ойлголоо, зөвшөөрөв
               </button>

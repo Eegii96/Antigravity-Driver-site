@@ -35,10 +35,11 @@ export default function LoginForm({ form, onLogin }: LoginFormProps) {
             id="login-email"
             type="text"
             required
+            autoComplete="username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder=""
-            className="block w-full pl-10 pr-3 py-2.5 input text-sm text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none"
+            className="block w-full pl-10 pr-3 py-3 input text-base text-[var(--fg)] placeholder-[var(--muted-foreground)] focus:outline-none"
           />
         </div>
       </div>
@@ -55,18 +56,21 @@ export default function LoginForm({ form, onLogin }: LoginFormProps) {
             id="login-password"
             type={showLoginPassword ? 'text' : 'password'}
             required
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder=""
-            className="block w-full pl-10 pr-10 py-2.5 input text-sm text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none"
+            className="block w-full pl-10 pr-12 py-3 input text-base text-[var(--fg)] placeholder-[var(--muted-foreground)] focus:outline-none"
           />
-          <span
+          <button
             id="toggle-login-pass-visibility"
+            type="button"
             onClick={() => setShowLoginPassword(!showLoginPassword)}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-[var(--muted-foreground)] hover:text-[var(--accent-foreground)] cursor-pointer"
+            aria-label={showLoginPassword ? 'Нууц үгийг нуух' : 'Нууц үгийг харах'}
+            className="absolute inset-y-0 right-0 w-11 flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--fg)] cursor-pointer"
           >
             {showLoginPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
-          </span>
+          </button>
         </div>
       </div>
 
@@ -78,7 +82,7 @@ export default function LoginForm({ form, onLogin }: LoginFormProps) {
             setError('');
             setSuccessMsg('');
           }}
-          className="text-xs text-[var(--muted-foreground)] hover:text-[var(--accent-soft-foreground)] transition-colors underline cursor-pointer font-sans"
+          className="text-[13px] py-2.5 text-[var(--muted-foreground)] hover:text-[var(--accent-soft-foreground)] transition-colors underline cursor-pointer font-sans"
         >
           Нууц үг сэргээх холбоос
         </button>
@@ -89,18 +93,18 @@ export default function LoginForm({ form, onLogin }: LoginFormProps) {
           id="submit-login-btn"
           type="submit"
           disabled={isSubmitting}
-          className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-full bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-semibold text-sm transition-all shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex justify-center items-center min-h-12 px-4 border border-transparent rounded-full bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-semibold text-[15px] transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? 'Нэвтэрч байна...' : 'Нэвтрэх'}
         </button>
         {successMsg && (
-          <div className="mt-3.5 bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] px-4 py-2.5 rounded-lg text-xs flex items-center justify-center space-x-2 animate-fade-in font-sans">
-            <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping shrink-0"></span>
+          <div className="mt-3.5 bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] px-4 py-3 rounded-xl text-sm flex items-center justify-center space-x-2 animate-fade-in font-sans">
+            <span className="w-2 h-2 rounded-full bg-[var(--accent)] shrink-0"></span>
             <span className="text-left">{successMsg}</span>
           </div>
         )}
         {error && (
-          <div className="mt-3.5 bg-red-500/10 border border-red-500/40 text-red-700 px-4 py-2.5 rounded-lg text-xs flex items-center justify-center text-center animate-fade-in font-sans">
+          <div className="mt-3.5 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-sm flex items-center justify-center text-center animate-fade-in font-sans">
             <span>{error}</span>
           </div>
         )}
@@ -108,7 +112,7 @@ export default function LoginForm({ form, onLogin }: LoginFormProps) {
           Та нэвтэрснээр манай{' '}
           <button type="button" onClick={() => setShowTerms(true)} className="text-[var(--accent-soft-foreground)] hover:text-[var(--accent-soft-foreground)] underline transition-colors cursor-pointer bg-transparent border-none p-0 font-medium">Үйлчилгээний нөхцөл</button>
           {' '}болон{' '}
-          <button type="button" onClick={() => setShowPrivacy(true)} className="text-[var(--verify)] hover:text-[var(--verify)] underline transition-colors cursor-pointer bg-transparent border-none p-0 font-medium">Нууцлалын бодлого</button>
+          <button type="button" onClick={() => setShowPrivacy(true)} className="text-[var(--accent-soft-foreground)] hover:text-[var(--accent-soft-foreground)] underline transition-colors cursor-pointer bg-transparent border-none p-0 font-medium">Нууцлалын бодлого</button>
           -ыг зөвшөөрсөнд тооцогдоно.
         </p>
       </div>

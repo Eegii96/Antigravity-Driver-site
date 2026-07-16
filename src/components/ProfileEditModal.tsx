@@ -240,12 +240,12 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
     <div 
       id="profile-edit-modal-backdrop" 
       onClick={onClose}
-      className="fixed inset-0 bg-[var(--bg2)] flex items-center justify-center p-4 z-50 overflow-y-auto"
+      className="fixed inset-0 bg-[var(--fg)]/40 flex p-4 z-50 overflow-y-auto animate-fade-in"
     >
-      <div 
-        id="profile-edit-content-container" 
+      <div
+        id="profile-edit-content-container"
         onClick={(e) => e.stopPropagation()}
-        className="bg-[var(--bg2)] border border-[var(--border)] rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-[var(--card)] border border-[var(--border-strong)] rounded-2xl max-w-lg w-full m-auto shadow-md"
       >
         
         {/* Header */}
@@ -268,13 +268,13 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
         {/* Form */}
         <form onSubmit={handleSave} className="p-6 space-y-5">
           {error && (
-            <div className="bg-red-500/10 border border-red-500 text-red-700 px-4 py-2 rounded text-xs animate-fade-in">
+            <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-sm animate-fade-in">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="bg-[var(--accent-soft)] border border-[var(--accent)] text-[var(--accent-soft-foreground)] px-4 py-2 rounded text-xs flex items-center space-x-2 animate-fade-in">
+            <div className="bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] px-4 py-3 rounded-xl text-sm flex items-center space-x-2 animate-fade-in">
               <Check className="w-4 h-4 shrink-0" />
               <span>{success}</span>
             </div>
@@ -283,7 +283,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
           {/* Edit form fields */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">
+              <label className="block text-[13px] font-medium text-[var(--muted-foreground)] mb-1.5">
                 Овог
               </label>
               <input
@@ -292,11 +292,11 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                 required
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
+                className="block w-full px-4 py-3 border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--fg)] text-base focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] focus:outline-none font-sans"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">
+              <label className="block text-[13px] font-medium text-[var(--muted-foreground)] mb-1.5">
                 Нэр
               </label>
               <input
@@ -305,7 +305,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                 required
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
+                className="block w-full px-4 py-3 border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--fg)] text-base focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] focus:outline-none font-sans"
               />
             </div>
           </div>
@@ -313,7 +313,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
           {user.type === 'employer' && (
             <div className="grid grid-cols-1">
               <div>
-                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">
+                <label className="block text-[13px] font-medium text-[var(--muted-foreground)] mb-1.5">
                   Компанийн нэр (Заавал биш)
                 </label>
                 <input
@@ -322,7 +322,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   placeholder=""
-                  className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
+                  className="block w-full px-4 py-3 border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--fg)] text-base focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] focus:outline-none font-sans"
                 />
               </div>
             </div>
@@ -330,37 +330,37 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Утасны дугаар</label>
+              <label className="block text-[13px] font-medium text-[var(--muted-foreground)] mb-1.5">Утасны дугаар</label>
               <input
                 id="edit-phone"
                 type="tel"
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
+                className="block w-full px-4 py-3 border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--fg)] text-base focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] focus:outline-none font-sans"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Имэйл хаяг</label>
+              <label className="block text-[13px] font-medium text-[var(--muted-foreground)] mb-1.5">Имэйл хаяг</label>
               <input
                 id="edit-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
+                className="block w-full px-4 py-3 border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--fg)] text-base focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] focus:outline-none font-sans"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Утасны дугаар 2 (Заавал биш)</label>
+              <label className="block text-[13px] font-medium text-[var(--muted-foreground)] mb-1.5">Утасны дугаар 2 (Заавал биш)</label>
               <input
                 id="edit-phone2"
                 type="tel"
                 value={phone2}
                 onChange={(e) => setPhone2(e.target.value.replace(/[^0-9]/g, ''))}
-                className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
+                className="block w-full px-4 py-3 border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--fg)] text-base focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] focus:outline-none font-sans"
               />
             </div>
             <div></div>
@@ -368,20 +368,20 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
 
           <div className="grid grid-cols-1">
             <div>
-              <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Гэрийн хаяг (Заавал биш)</label>
+              <label className="block text-[13px] font-medium text-[var(--muted-foreground)] mb-1.5">Гэрийн хаяг (Заавал биш)</label>
               <input
                 id="edit-address"
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
+                className="block w-full px-4 py-3 border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--fg)] text-base focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] focus:outline-none font-sans"
               />
             </div>
           </div>
 
           {/* Custom profile picture uploader */}
           <div>
-            <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5 flex justify-between">
+            <label className="block text-[13px] font-medium text-[var(--muted-foreground)] mb-1.5 flex justify-between">
               <span>Профайл зураг солих</span>
               <span className="text-xs text-[var(--muted-foreground)] font-sans">(компьютер эсвэл утаснаас зураг сонгож оруулна уу)</span>
             </label>
@@ -428,7 +428,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                 <div>
                   <span className="text-xs font-bold text-[var(--fg)] block">Идэвхтэй зураг</span>
                   <span className="text-xs text-[var(--accent-soft-foreground)] font-medium font-sans mt-0.5 block flex items-center space-x-1">
-                    <span>✓ Одоогоор сонгогдсон байна</span>
+                    <span>Одоогоор сонгогдсон байна</span>
                   </span>
                 </div>
               </div>
@@ -437,13 +437,13 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
 
           {/* Bio edit */}
           <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="block text-xs font-medium text-[var(--muted-foreground)]">Таны тухай, нэмэлт мэдээлэл</label>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="block text-[13px] font-medium text-[var(--muted-foreground)]">Таны тухай, нэмэлт мэдээлэл</label>
               <button
                 type="button"
                 onClick={handleOptimizeBio}
                 disabled={isOptimizing}
-                className="text-xs text-[var(--accent-soft-foreground)] hover:text-[var(--accent-soft-foreground)] flex items-center space-x-1 border border-[var(--accent)] bg-[var(--accent-soft)] px-2.5 py-1 rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-sans"
+                className="text-xs font-semibold text-[var(--accent-soft-foreground)] flex items-center space-x-1 bg-[var(--accent-soft)] hover:brightness-95 px-3 py-2 rounded-full cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-sans"
               >
                 <Sparkles className={`w-3 h-3 ${isOptimizing ? 'animate-spin' : ''}`} />
                 <span>{isOptimizing ? 'AI сайжруулж байна...' : (hasOptimized ? 'Өөр загвар гаргах' : 'AI-аар сайжруулах')}</span>
@@ -462,7 +462,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                 setOriginalBio(val);
                 setHasOptimized(false);
               }}
-              className="block w-full px-3 py-2.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans min-h-[160px] leading-relaxed"
+              className="block w-full px-4 py-3 border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--fg)] text-base focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] focus:outline-none font-sans min-h-[160px] leading-relaxed"
             />
           </div>
 
@@ -470,7 +470,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
           {user.type === 'operator' && (
             <div className="border-t border-[var(--border)] pt-4 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Ажилласан туршлага (Жилээр)</label>
+                <label className="block text-[13px] font-medium text-[var(--muted-foreground)] mb-1.5">Ажилласан туршлага (Жилээр)</label>
                 <input
                   id="edit-experience"
                   type="number"
@@ -487,23 +487,23 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                     }
                   }}
                   onFocus={(e) => e.target.select()}
-                  className="block w-[80px] px-2 py-1 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1"
+                  className="block w-[96px] px-3 py-3 border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--fg)] text-base focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] focus:outline-none tabular-nums"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1.5">Мэргэшсэн Хүнд Машин Механизмууд</label>
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <label className="block text-[13px] font-medium text-[var(--muted-foreground)] mb-1.5">Мэргэшсэн Хүнд Машин Механизмууд</label>
+                <div className="grid grid-cols-2 gap-2 text-[13px]">
                   {MACHINE_OPTIONS.map((item, idx) => (
                     <button
                       id={`edit-machine-option-${idx}`}
                       type="button"
                       key={idx}
                       onClick={() => toggleMachine(item)}
-                      className={`flex items-center space-x-1.5 py-1 px-2.5 rounded transition-colors text-left border cursor-pointer ${
+                      className={`flex items-center space-x-1.5 min-h-10 py-1.5 px-3 rounded-xl transition-colors text-left border cursor-pointer ${
                         machineTypes.includes(item)
-                          ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)]'
-                          : 'border-[var(--border)] bg-[var(--bg2)] text-[var(--muted-foreground)] hover:border-[var(--border)]'
+                          ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] font-medium'
+                          : 'border-[var(--border)] bg-[var(--bg)] text-[var(--muted-foreground)] hover:border-[var(--border-strong)]'
                       }`}
                     >
                       <span>{item}</span>
@@ -513,7 +513,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
 
                 {/* Hand-written custom machine entry box */}
                 <div className="mt-3.5 pt-3 border-t border-[var(--border)]">
-                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">
+                  <label className="block text-[13px] font-medium text-[var(--muted-foreground)] mb-1.5">
                     Бусад машин механизм нэмэх (Гараар бичих)
                   </label>
                   <div className="flex space-x-2">
@@ -535,7 +535,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                           }
                         }
                       }}
-                      className="flex-1 px-2.5 py-1.5 border border-[var(--border)] bg-[var(--bg2)] rounded text-xs text-[var(--fg)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] placeholder-[var(--muted-foreground)] font-sans"
+                      className="flex-1 px-4 py-3 border border-[var(--border)] bg-[var(--bg)] rounded-xl text-base text-[var(--fg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] placeholder-[var(--muted-foreground)] font-sans"
                     />
                     <button
                       id="add-custom-machine-edit-btn"
@@ -549,7 +549,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                           setCustomMachine('');
                         }
                       }}
-                      className="px-3 bg-[var(--bg2)] border border-[var(--border)] hover:bg-[var(--bg2)] text-[var(--accent-soft-foreground)] rounded text-xs font-semibold transition-colors cursor-pointer"
+                      className="px-4 bg-[var(--accent-soft)] hover:brightness-95 text-[var(--accent-soft-foreground)] rounded-full text-[13px] font-semibold transition-colors cursor-pointer"
                     >
                       Нэмэх
                     </button>
@@ -586,42 +586,39 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
 
           {/* Security Questions Section with Premium Banner */}
           <div className="border-t border-[var(--border)] pt-4 space-y-4 font-sans text-left">
-            <div className="bg-[var(--card)] p-4 rounded-xl border border-[var(--border)] space-y-3 relative overflow-hidden">
-              {/* Glow element */}
-              <div className={`absolute top-0 right-0 w-24 h-24 rounded-full bg-[var(--accent-soft)] blur-xl transition-opacity duration-500 ${isSecured ? 'opacity-100' : 'opacity-0'}`}></div>
-              
+            <div className="bg-[var(--bg2)] p-4 rounded-xl space-y-3 relative overflow-hidden">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-bold text-[var(--fg)] flex items-center space-x-1.5">
-                  <Lock className={`w-3.5 h-3.5 ${isSecured ? 'text-[var(--color-neon-teal)]' : 'text-[var(--accent-soft-foreground)]'}`} />
+                <span className="text-sm font-bold text-[var(--fg)] flex items-center space-x-1.5">
+                  <Lock className={`w-3.5 h-3.5 ${isSecured ? 'text-[var(--verify)]' : 'text-[var(--accent-soft-foreground)]'}`} />
                   <span>Бүртгэлийн аюулгүй байдал</span>
                 </span>
-                <span className={`text-xs px-2 py-0.5 rounded font-bold transition-all ${
-                  isSecured 
-                    ? 'bg-[rgba(31,138,76,0.1)] text-[var(--verify)] border border-[rgba(31,138,76,0.3)]' 
-                    : 'bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] border border-[var(--accent)]'
+                <span className={`text-xs px-2.5 py-1 rounded-full font-bold transition-all ${
+                  isSecured
+                    ? 'bg-[rgba(35,121,82,0.08)] text-[var(--verify)]'
+                    : 'bg-[rgba(188,79,36,0.08)] text-[var(--alert)]'
                 }`}>
-                  {isSecured ? '100% Хамгаалагдсан' : '75% Хамгаалалт (Дутуу)'}
+                  {isSecured ? '100% хамгаалагдсан' : '75% хамгаалалт (дутуу)'}
                 </span>
               </div>
 
               {/* Progress Bar */}
-              <div className="h-1.5 w-full bg-[var(--bg2)] rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all duration-500 ${isSecured ? 'bg-[var(--color-neon-teal)] w-full' : 'bg-[var(--accent)] w-[75%]'}`}></div>
+              <div className="h-1.5 w-full bg-[var(--border)] rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all duration-500 ${isSecured ? 'bg-[var(--verify)] w-full' : 'bg-[var(--alert)] w-[75%]'}`}></div>
               </div>
 
               <p className="text-sm text-[var(--muted-foreground)] leading-relaxed font-sans">
-                💡 <strong className="font-semibold text-[var(--muted-foreground)]">Нууц асуултын ач холбогдол:</strong> Нууц үгээ утасны дугаараар мартсан үед сэргээхэд энэхүү асуултуудыг асуух болно. Зөвхөн та хариулж чадах тул бусад хүмүүс таны хаягийг хулгайлахаас 100% сэргийлнэ. Заавал тохируулах шаардлагагүй боловч таны хаяг аюулгүй үлдэхэд маш чухал юм.
+                <strong className="font-semibold text-[var(--fg)]">Нууц асуултын ач холбогдол:</strong> Нууц үгээ утасны дугаараар мартсан үед сэргээхэд энэхүү асуултуудыг асуух болно. Зөвхөн та хариулж чадах тул бусад хүмүүс таны хаягийг хулгайлахаас 100% сэргийлнэ. Заавал тохируулах шаардлагагүй боловч таны хаяг аюулгүй үлдэхэд маш чухал юм.
               </p>
             </div>
 
             <div className="space-y-3.5">
               {/* Question 1 */}
               <div>
-                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Аюулгүй байдлын асуулт 1</label>
+                <label className="block text-[13px] font-medium text-[var(--muted-foreground)] mb-1.5">Аюулгүй байдлын асуулт 1</label>
                 <select
                   value={securityQuestion1}
                   onChange={(e) => setSecurityQuestion1(e.target.value)}
-                  className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
+                  className="block w-full px-4 py-3 border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--fg)] text-base focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] focus:outline-none"
                 >
                   <option value="" className="bg-[var(--bg2)] text-[var(--fg)]">-- Асуулт сонгох --</option>
                   {SECURITY_QUESTIONS.map((q, idx) => (
@@ -634,18 +631,18 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                     value={securityAnswer1}
                     onChange={(e) => setSecurityAnswer1(e.target.value)}
                     placeholder={hadAnswer1 && securityQuestion1 === (user.securityQuestion1 || '') ? 'Хариулт хадгалагдсан (солих бол шинээр бичнэ үү)' : 'Асуулт 1-ийн хариулт'}
-                    className="block w-full mt-1.5 px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
+                    className="block w-full mt-1.5 px-4 py-3 border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--fg)] text-base focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] focus:outline-none font-sans"
                   />
                 )}
               </div>
 
               {/* Question 2 */}
               <div>
-                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Аюулгүй байдлын асуулт 2</label>
+                <label className="block text-[13px] font-medium text-[var(--muted-foreground)] mb-1.5">Аюулгүй байдлын асуулт 2</label>
                 <select
                   value={securityQuestion2}
                   onChange={(e) => setSecurityQuestion2(e.target.value)}
-                  className="block w-full px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none"
+                  className="block w-full px-4 py-3 border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--fg)] text-base focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] focus:outline-none"
                 >
                   <option value="" className="bg-[var(--bg2)] text-[var(--fg)]">-- Асуулт сонгох --</option>
                   {SECURITY_QUESTIONS.map((q, idx) => (
@@ -658,7 +655,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
                     value={securityAnswer2}
                     onChange={(e) => setSecurityAnswer2(e.target.value)}
                     placeholder={hadAnswer2 && securityQuestion2 === (user.securityQuestion2 || '') ? 'Хариулт хадгалагдсан (солих бол шинээр бичнэ үү)' : 'Асуулт 2-ийн хариулт'}
-                    className="block w-full mt-1.5 px-3 py-1.5 border border-[var(--border)] rounded bg-[var(--bg2)] text-[var(--fg)] text-xs focus:ring-1 focus:ring-[var(--accent)] focus:outline-none font-sans"
+                    className="block w-full mt-1.5 px-4 py-3 border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--fg)] text-base focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] focus:outline-none font-sans"
                   />
                 )}
               </div>
@@ -672,7 +669,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
               type="button"
               disabled={!!success}
               onClick={onClose}
-              className="flex-1 py-1.5 px-4 border border-[var(--border)] text-[var(--muted-foreground)] text-xs font-medium rounded hover:bg-[var(--bg2)] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 min-h-12 px-4 border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--fg)] text-sm font-semibold rounded-full hover:bg-[var(--bg2)] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isOnboarding ? 'Алгасах' : 'Буцах'}
             </button>
@@ -680,7 +677,7 @@ export default function ProfileEditModal({ user, onClose, onSave, isOnboarding }
               id="submit-profile-edit-btn"
               type="submit"
               disabled={!!success}
-              className="flex-1 py-2.5 px-4 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-sm font-medium rounded-full transition-colors flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 min-h-12 px-4 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-[15px] font-semibold rounded-full transition-colors flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {success ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
               <span>{success ? 'Шинэчлэгдлээ' : 'Шинэчлэх'}</span>

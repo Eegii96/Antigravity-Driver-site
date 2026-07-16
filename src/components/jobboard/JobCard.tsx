@@ -1,6 +1,7 @@
 'use client';
 
-import { ChevronLeft, User as UserIcon, Phone, MapPin, CheckCircle, Share2 } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { ChevronLeft, ChevronRight, User as UserIcon, Phone, MapPin, CheckCircle, Share2 } from 'lucide-react';
 import type { Job, User } from '../../types';
 import { getMockEmployerName, getMockEmployerPhone } from '../../lib/mock-employer';
 import { formatRelativeDate, getFirstName } from '../../lib/job-format';
@@ -9,6 +10,8 @@ import { trackContactClick, trackShareJob } from '../../lib/analytics';
 interface JobCardProps {
   job: Job;
   isExpanded: boolean;
+  /** Deep-link arrival flash — adds the highlight ring to the expanded card. */
+  isHighlighted?: boolean;
   currentUser: User | null;
   users: User[];
   successMessage: string;
@@ -19,8 +22,8 @@ interface JobCardProps {
   onEdit: (job: Job) => void;
   onReview: (job: Job) => void;
   onHire: (jobId: string, operatorId: string) => void;
-  onApply: (jobId: string) => void;
-  onCompleteAndReview: (job: Job) => void;
+  onApply: (jobId: string) => void | Promise<void>;
+  onCompleteAndReview: (job: Job) => void | Promise<void>;
   onDelete: (job: Job) => void;
   onCancelHiring: (job: Job) => void;
   onToggleShareMenu: (jobId: string | null) => void;
@@ -38,6 +41,7 @@ interface JobCardProps {
 export default function JobCard({
   job,
   isExpanded,
+  isHighlighted = false,
   currentUser,
   users,
   successMessage,
@@ -56,6 +60,29 @@ export default function JobCard({
   onCopied,
   onNavigate,
 }: JobCardProps) {
+  // Async-action guard — apply/complete stay disabled while the write is in
+  // flight so a slow network can't produce double submits (review 2026-07-14).
+  const [busyAction, setBusyAction] = useState<'apply' | 'complete' | null>(null);
+
+  // Image carousel: desktop has no natural horizontal-drag gesture, so md+
+  // gets explicit prev/next arrows (review 2026-07-14).
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const scrollCarousel = (dir: -1 | 1) => {
+    const el = carouselRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth, behavior: 'smooth' });
+  };
+
+  const runBusy = async (action: 'apply' | 'complete', fn: () => void | Promise<void>) => {
+    if (busyAction) return;
+    setBusyAction(action);
+    try {
+      await fn();
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
   const getEmployerDisplayName = (job: Job) => {
     const emp = users.find(u => u.id === job.employerId);
     if (emp) {
@@ -82,7 +109,9 @@ export default function JobCard({
                     <div
                       id={`job-card-expanded-${job.id}`}
                       key={`expanded-${job.id}`}
-                      className="bg-[var(--card)] border border-[var(--border-strong)] p-5 md:p-6 rounded-2xl text-left space-y-4 shadow-md transition-all duration-200 w-full self-start"
+                      className={`bg-[var(--card)] border border-[var(--border-strong)] p-5 md:p-6 rounded-2xl text-left space-y-4 shadow-md transition-all duration-200 w-full self-start scroll-mt-24 ${
+                        isHighlighted ? 'highlighted-job-card' : ''
+                      }`}
                     >
                       {/* ── HEADER: back button + date ── */}
                       <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
@@ -160,24 +189,46 @@ export default function JobCard({
                       {/* ── IMAGES ── */}
                       {job.imageUrls && job.imageUrls.length > 0 ? (
                         <div className="w-full space-y-1">
-                          <div className="flex overflow-x-auto gap-2 snap-x snap-mandatory scrollbar-none py-1">
-                            {job.imageUrls.map((url, idx) => (
-                              <div key={idx} className="shrink-0 w-full snap-center h-48 md:h-64 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg2)] flex items-center justify-center relative">
-                                <img
-                                  src={url}
-                                  alt={`Slide ${idx + 1}`}
-                                  loading="lazy"
-                                  decoding="async"
-                                  className="w-full h-full object-contain"
-                                />
-                                <div className="absolute bottom-2.5 right-2.5 bg-[var(--fg)]/75 text-[var(--card)] text-xs font-semibold px-2.5 py-1 rounded-full font-sans">
-                                  {idx + 1} / {job.imageUrls?.length}
+                          <div className="relative">
+                            <div ref={carouselRef} className="flex overflow-x-auto gap-2 snap-x snap-mandatory scrollbar-none py-1">
+                              {job.imageUrls.map((url, idx) => (
+                                <div key={idx} className="shrink-0 w-full snap-center h-48 md:h-64 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg2)] flex items-center justify-center relative">
+                                  <img
+                                    src={url}
+                                    alt={`Slide ${idx + 1}`}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="w-full h-full object-contain"
+                                  />
+                                  <div className="absolute bottom-2.5 right-2.5 bg-[var(--fg)]/75 text-[var(--card)] text-xs font-semibold px-2.5 py-1 rounded-full font-sans">
+                                    {idx + 1} / {job.imageUrls?.length}
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
+                            {job.imageUrls.length > 1 && (
+                              <>
+                                <button
+                                  type="button"
+                                  aria-label="Өмнөх зураг"
+                                  onClick={(e) => { e.stopPropagation(); scrollCarousel(-1); }}
+                                  className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-[var(--card)]/90 border border-[var(--border)] text-[var(--fg)] shadow-sm hover:bg-[var(--card)] transition-colors cursor-pointer z-10"
+                                >
+                                  <ChevronLeft className="w-5 h-5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  aria-label="Дараагийн зураг"
+                                  onClick={(e) => { e.stopPropagation(); scrollCarousel(1); }}
+                                  className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-[var(--card)]/90 border border-[var(--border)] text-[var(--fg)] shadow-sm hover:bg-[var(--card)] transition-colors cursor-pointer z-10"
+                                >
+                                  <ChevronRight className="w-5 h-5" />
+                                </button>
+                              </>
+                            )}
                           </div>
                           {job.imageUrls.length > 1 && (
-                            <p className="text-xs text-[var(--concrete)] text-center font-sans select-none">
+                            <p className="text-xs text-[var(--concrete)] text-center font-sans select-none md:hidden">
                               Хажуу тийш гүйлгэж үзнэ үү
                             </p>
                           )}
@@ -325,8 +376,12 @@ export default function JobCard({
                                       )}
                                     </div>
                                   ) : (
-                                    <button onClick={() => onApply(job.id)} className="w-full bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-[15px] font-semibold py-3.5 px-4 rounded-full transition-all cursor-pointer text-center">
-                                      Хүсэлт илгээх
+                                    <button
+                                      onClick={() => runBusy('apply', () => onApply(job.id))}
+                                      disabled={busyAction === 'apply'}
+                                      className="w-full bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-[15px] font-semibold py-3.5 px-4 rounded-full transition-all cursor-pointer text-center disabled:opacity-60 disabled:cursor-not-allowed"
+                                    >
+                                      {busyAction === 'apply' ? 'Илгээж байна...' : 'Хүсэлт илгээх'}
                                     </button>
                                   )
                                 )}
@@ -351,8 +406,13 @@ export default function JobCard({
                                   </div>
                                 )}
                                 {currentUser.id === job.employerId && (
-                                  <button id="employer-complete-job-btn" onClick={() => onCompleteAndReview(job)} className="w-full bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] py-3 px-4 rounded-full text-sm font-semibold transition-all cursor-pointer text-center">
-                                    Ажил дууссаныг баталгаажуулж үнэлэх
+                                  <button
+                                    id="employer-complete-job-btn"
+                                    onClick={() => runBusy('complete', () => onCompleteAndReview(job))}
+                                    disabled={busyAction === 'complete'}
+                                    className="w-full bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] py-3 px-4 rounded-full text-sm font-semibold transition-all cursor-pointer text-center disabled:opacity-60 disabled:cursor-not-allowed"
+                                  >
+                                    {busyAction === 'complete' ? 'Баталгаажуулж байна...' : 'Ажил дууссаныг баталгаажуулж үнэлэх'}
                                   </button>
                                 )}
                                 {currentUser.id !== job.employerId && (

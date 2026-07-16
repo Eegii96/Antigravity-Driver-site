@@ -42,6 +42,7 @@ import {
 const JobPostModal = dynamic(() => import('./JobPostModal'), { ssr: false });
 const ReviewModal = dynamic(() => import('./ReviewModal'), { ssr: false });
 const ProfileEditModal = dynamic(() => import('./ProfileEditModal'), { ssr: false });
+import ConfirmModal from './ConfirmModal';
 import JobCard from './jobboard/JobCard';
 import NotificationToasts from './jobboard/NotificationToasts';
 import ReviewDetailModal from './jobboard/ReviewDetailModal';
@@ -109,6 +110,18 @@ export default function JobBoard({
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [lastClickPos, setLastClickPos] = useState<{ x: number; y: number } | null>(null);
   const [viewingReview, setViewingReview] = useState<Review | null>(null);
+
+  // Deep-link arrival: which job card gets the temporary highlight ring.
+  const [deepLinkHighlightId, setDeepLinkHighlightId] = useState<string | null>(null);
+
+  // Design-system confirmation dialog state — replaces window.confirm (AGENTS.md §4).
+  const [confirmState, setConfirmState] = useState<{
+    title: string;
+    message: string;
+    confirmLabel: string;
+    danger?: boolean;
+    action: () => Promise<void> | void;
+  } | null>(null);
 
   useEffect(() => {
     if (showBlurWarningModal || viewingReview || showNotificationsMenu) {
@@ -267,10 +280,43 @@ export default function JobBoard({
   // (audit P1).
   useEffect(() => {
     if (!initialJobId) return;
+
+    // Scroll the freshly-expanded card into view and flash the highlight ring —
+    // without this, a shared link landed on the hero and the promised job sat
+    // ~2000px below the fold, never seen (review 2026-07-14). The expanded
+    // card renders a few frames after the state update (and later still when
+    // the job arrives via getSingleJob), so poll briefly until it exists.
+    const revealJob = (jobId: string) => {
+      setDeepLinkHighlightId(jobId);
+      let attempts = 0;
+      const tryScroll = () => {
+        const el = document.getElementById(`job-card-expanded-${jobId}`);
+        if (el) {
+          const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          el.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' });
+          // Some in-app browsers (e.g. the Facebook webview most shared links
+          // open in) silently ignore smooth programmatic scrolling — if the
+          // card still isn't near the top shortly after, jump instantly.
+          setTimeout(() => {
+            const rect = el.getBoundingClientRect();
+            if (Math.abs(rect.top) > 200) {
+              el.scrollIntoView({ behavior: 'auto', block: 'start' });
+            }
+          }, 700);
+        } else if (attempts < 16) {
+          attempts += 1;
+          setTimeout(tryScroll, 250);
+        }
+      };
+      setTimeout(tryScroll, 150);
+      setTimeout(() => setDeepLinkHighlightId(null), 4500);
+    };
+
     const existing = jobs.find(j => j.id === initialJobId);
     if (existing) {
       setStatusFilter(existing.status === 'completed' ? 'completed' : 'open');
       setSelectedJob(existing);
+      revealJob(existing.id);
       return;
     }
     let cancelled = false;
@@ -279,6 +325,7 @@ export default function JobBoard({
       setJobs(prev => (prev.some(j => j.id === job.id) ? prev : [job, ...prev]));
       setStatusFilter(job.status === 'completed' ? 'completed' : 'open');
       setSelectedJob(job);
+      revealJob(job.id);
     });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -419,6 +466,15 @@ export default function JobBoard({
 
   const handleNotificationClick = async (notif: AppNotification) => {
     if (!currentUser) return;
+
+    // Local transient toasts (error/success feedback) are not navigable
+    // notifications — clicking one used to route to /profile, which made no
+    // sense for an error message. Just dismiss it.
+    if (notif.id.startsWith('err_') || notif.id.startsWith('success_')) {
+      setToasts(prev => prev.filter(t => t.id !== notif.id));
+      return;
+    }
+
     const title = notif.title.toLowerCase();
     const msg = notif.message.toLowerCase();
     
@@ -589,7 +645,7 @@ export default function JobBoard({
     try {
       const success = await applyForJob(jobId, currentUser.id);
       if (success) {
-        const msg = '🔒 Таны ажилд орох хүсэлт, ажлын түүх ба үнэлгээний хамт захиалагчид амжилттай илгээгдлээ.';
+        const msg = 'Таны ажилд орох хүсэлт, ажлын түүх ба үнэлгээний хамт захиалагчид амжилттай илгээгдлээ.';
         setSuccessMessage(msg);
         addSuccessToast('Хүсэлт илгээгдлээ', msg);
         setTimeout(() => setSuccessMessage(''), 4500);
@@ -602,11 +658,11 @@ export default function JobBoard({
     }
   };
 
-  const handleHire = async (jobId: string, operatorId: string) => {
+  const executeHire = async (jobId: string, operatorId: string) => {
     try {
       const success = await hireOperator(jobId, operatorId);
       if (success) {
-        const msg = '🤝 Жолоочийг ажилд амжилттай томиллоо.';
+        const msg = 'Жолоочийг ажилд амжилттай томиллоо.';
         setSuccessMessage(msg);
         addSuccessToast('Ажилд сонгогдлоо', msg);
         setTimeout(() => setSuccessMessage(''), 4500);
@@ -616,6 +672,21 @@ export default function JobBoard({
       console.error(err);
       addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
     }
+  };
+
+  // Hiring is the single biggest state change in the system (open → completed,
+  // other applicants dropped) — it gets a confirmation step like delete does.
+  const handleHire = (jobId: string, operatorId: string) => {
+    const op = users.find(u => u.id === operatorId);
+    setConfirmState({
+      title: 'Жолоочийг ажилд сонгох уу?',
+      message: `${op ? `«${op.fullName}»-ийг` : 'Энэ жолоочийг'} сонгосноор зар нээлттэй жагсаалтаас хасагдаж, бусад хүсэлтүүд хүчингүй болно.`,
+      confirmLabel: 'Тийм, сонгох',
+      action: async () => {
+        await executeHire(jobId, operatorId);
+        setConfirmState(null);
+      },
+    });
   };
 
   const handleCompleteAndReviewTrigger = async (job: Job) => {
@@ -636,22 +707,45 @@ export default function JobBoard({
     }
   };
 
-  const handleDeleteJob = async (job: Job) => {
-    if (!window.confirm('Та энэ зарыг устгахдаа итгэлтэй байна уу? Устгасны дараа сэргээх боломжгүй.')) return;
-    try {
-      await deleteJob(job.id);
-      setSelectedJob(null);
-      addSuccessToast('Устгагдлаа', 'Зарыг амжилттай устгалаа.');
-    } catch (err) {
-      console.error(err);
-      addErrorToast('Зарыг устгахад алдаа гарлаа.');
-    }
+  const handleDeleteJob = (job: Job) => {
+    setConfirmState({
+      title: 'Зарыг устгах уу?',
+      message: `«${job.title}» зарыг устгасны дараа сэргээх боломжгүй.`,
+      confirmLabel: 'Устгах',
+      danger: true,
+      action: async () => {
+        try {
+          await deleteJob(job.id);
+          setSelectedJob(null);
+          addSuccessToast('Устгагдлаа', 'Зарыг амжилттай устгалаа.');
+        } catch (err) {
+          console.error(err);
+          addErrorToast('Зарыг устгахад алдаа гарлаа.');
+        } finally {
+          setConfirmState(null);
+        }
+      },
+    });
   };
 
-  const handleCancelHiring = async (job: Job) => {
-    if (!window.confirm('Та сонгосон жолоочийг цуцалж, зарыг буцааж нээлттэй болгохдоо итгэлтэй байна уу?')) return;
-    // Jobs list and the selected card re-sync automatically via the jobs subscription.
-    await cancelHiring(job.id);
+  const handleCancelHiring = (job: Job) => {
+    setConfirmState({
+      title: 'Сонгосон жолоочийг цуцлах уу?',
+      message: 'Сонголт цуцлагдаж, зар буцаад нээлттэй төлөвт шилжинэ.',
+      confirmLabel: 'Тийм, цуцлах',
+      danger: true,
+      action: async () => {
+        try {
+          // Jobs list and the selected card re-sync automatically via the jobs subscription.
+          await cancelHiring(job.id);
+        } catch (err) {
+          console.error(err);
+          addErrorToast('Үйлдэл гүйцэтгэхэд алдаа гарлаа. Дахин оролдоно уу.');
+        } finally {
+          setConfirmState(null);
+        }
+      },
+    });
   };
 
   // Get all unique job types present in the active jobs
@@ -724,14 +818,14 @@ export default function JobBoard({
       </div>
 
       {/* Nav bar — slim nameplate header; the long descriptor copy lives in the hero now */}
-      <header className="bg-[var(--bg)] border-b border-[var(--border)] sticky top-0 z-40 px-4 md:px-6 py-3.5 flex items-center justify-between gap-3">
-        <a href="/" className="flex items-center space-x-3 shrink-0">
+      <header className="bg-[var(--bg)] border-b border-[var(--border)] sticky top-0 z-40 px-3 sm:px-4 md:px-6 py-3.5 flex items-center justify-between gap-2 sm:gap-3">
+        <a href="/" className="flex items-center space-x-2 sm:space-x-3 min-w-0">
           <div className="w-10 h-10 rounded-full bg-[var(--bg2)] border border-[var(--border)] flex items-center justify-center relative overflow-hidden shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="w-full h-full object-cover" src="/logo.jpg" alt="Жолооч Монголиа лого" loading="eager" width="40" height="40" />
           </div>
-          <div>
-            <span className="font-display font-bold tracking-tight text-[var(--fg)] block text-base md:text-lg leading-none">
+          <div className="min-w-0">
+            <span className="font-display font-bold tracking-tight text-[var(--fg)] block text-sm sm:text-base md:text-lg leading-none truncate">
               Жолооч Монголиа
             </span>
             <span className="hidden sm:block text-xs text-[var(--muted-foreground)] font-sans mt-1.5 leading-none">
@@ -771,8 +865,8 @@ export default function JobBoard({
                 >
                   <Bell className="w-4 h-4" />
                   {unreadNotifs.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[var(--alert)] text-white font-mono text-xs font-bold h-4 w-4 rounded-full flex items-center justify-center border border-[var(--card)] animate-bounce">
-                      {unreadNotifs.length}
+                    <span className="absolute -top-1 -right-1 bg-[var(--alert)] text-white text-[10px] leading-none font-bold h-4 min-w-4 px-1 rounded-full flex items-center justify-center border border-[var(--card)] tabular-nums">
+                      {unreadNotifs.length > 9 ? '9+' : unreadNotifs.length}
                     </span>
                   )}
                 </button>
@@ -781,7 +875,7 @@ export default function JobBoard({
                   <div
                     id="notifications-dropdown-menu"
                     ref={notificationsMenuRef}
-                    className="absolute right-0 mt-2.5 w-[min(360px,calc(100vw-2rem))] bg-[var(--card)] border border-[var(--border)] rounded-md shadow-md z-50 py-2 animate-fade-in"
+                    className="absolute right-0 mt-2.5 w-[min(360px,calc(100vw-2rem))] bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-md z-50 py-2 animate-fade-in overflow-hidden"
                   >
                     <div className="px-4 py-2.5 border-b border-[var(--border)] flex items-center justify-between">
                       <span className="text-xs font-bold text-[var(--muted-foreground)] font-sans">Системийн мэдэгдлүүд</span>
@@ -789,7 +883,7 @@ export default function JobBoard({
                         <button
                           type="button"
                           onClick={handleMarkAllAsRead}
-                          className="text-xs bg-[var(--accent-soft)] hover:brightness-95 text-[var(--accent-soft-foreground)] border border-[var(--accent)] px-2.5 py-1 rounded font-bold transition-all cursor-pointer"
+                          className="text-xs bg-[var(--accent-soft)] hover:brightness-95 text-[var(--accent-soft-foreground)] px-3 py-2 rounded-full font-bold transition-all cursor-pointer"
                         >
                           Бүгдийг уншсанаар тэмдэглэх
                         </button>
@@ -814,10 +908,7 @@ export default function JobBoard({
                             }`}
                           >
                             {!notif.isRead && (
-                              <span className="absolute left-2 top-[18px] flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent)] opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--accent)]"></span>
-                              </span>
+                              <span className="absolute left-2 top-[18px] inline-flex rounded-full h-2 w-2 bg-[var(--accent)]"></span>
                             )}
                             <div className="flex-1 min-w-0">
                               <div className="flex justify-between items-start gap-1">
@@ -828,7 +919,7 @@ export default function JobBoard({
                                 }`}>
                                   {notif.title}
                                 </p>
-                                <span className={`text-xs font-mono shrink-0 transition-colors duration-200 ${
+                                <span className={`text-xs font-sans tabular-nums shrink-0 transition-colors duration-200 ${
                                   notif.isRead
                                     ? 'text-[var(--muted-foreground)]'
                                     : 'text-[var(--accent-soft-foreground)] font-bold'
@@ -851,7 +942,7 @@ export default function JobBoard({
                                     e.stopPropagation();
                                     handleDeleteNotification(notif.id);
                                   }}
-                                  className="min-h-11 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 hover:text-rose-700 border border-rose-300 px-2 rounded text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
+                                  className="min-h-11 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 hover:text-rose-700 border border-rose-200 px-3 rounded-full text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                   <span>Устгах</span>
@@ -868,7 +959,7 @@ export default function JobBoard({
                         <button
                           type="button"
                           onClick={handleDeleteAllNotifications}
-                          className="w-full bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-300 hover:border-rose-400 text-rose-600 hover:text-rose-700 py-1.5 rounded text-xs font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer font-sans"
+                          className="w-full bg-rose-50 hover:bg-rose-100 active:scale-98 border border-rose-200 hover:border-rose-300 text-rose-600 hover:text-rose-700 py-2.5 rounded-full text-xs font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer font-sans"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>Бүх мэдэгдлийг устгах</span>
@@ -893,7 +984,7 @@ export default function JobBoard({
                 >
                   <div className="hidden md:block">
                     <p className="text-xs font-semibold text-[var(--fg)] leading-none">{getFirstName(currentUser)}</p>
-                    <span className="text-xs text-[var(--muted-foreground)] font-mono">
+                    <span className="text-xs text-[var(--muted-foreground)] font-sans">
                       {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} · {currentUser.rating}★
                     </span>
                   </div>
@@ -917,15 +1008,15 @@ export default function JobBoard({
                     onMouseEnter={() => setShowProfileMenu(true)}
                     onMouseLeave={() => setShowProfileMenu(false)}
                   >
-                    <div className="bg-[var(--card)] border border-[var(--border)] rounded-md shadow-md py-2">
-                      <div className="px-3.5 py-2 border-b border-[var(--border)] text-xs text-[var(--muted-foreground)] font-semibold font-mono">
+                    <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-md py-2 overflow-hidden">
+                      <div className="px-3.5 py-2 border-b border-[var(--border)] text-xs text-[var(--muted-foreground)] font-semibold font-sans">
                         Сонголтууд
                       </div>
 
                       <button
                         id="menu-goto-profile"
                         onClick={() => { router.push('/profile'); setShowProfileMenu(false); }}
-                        className="w-full text-left px-4 py-2 text-xs hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 transition-colors cursor-pointer"
+                        className="w-full text-left px-4 py-2.5 text-[13px] hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 transition-colors cursor-pointer"
                       >
                         <UserIcon className="w-4 h-4 text-[var(--muted-foreground)]" />
                         <span>Миний профайл</span>
@@ -934,7 +1025,7 @@ export default function JobBoard({
                       <button
                         id="menu-goto-applications"
                         onClick={() => { router.push('/applications'); setShowProfileMenu(false); }}
-                        className="w-full text-left px-4 py-2 text-xs hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 transition-colors cursor-pointer"
+                        className="w-full text-left px-4 py-2.5 text-[13px] hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 transition-colors cursor-pointer"
                       >
                         <Briefcase className="w-4 h-4 text-[var(--muted-foreground)]" />
                         <span>Миний зарууд, хүсэлтүүд</span>
@@ -943,7 +1034,7 @@ export default function JobBoard({
                       <button
                         id="menu-goto-settings"
                         onClick={() => { router.push('/settings'); setShowProfileMenu(false); }}
-                        className="w-full text-left px-4 py-2 text-xs hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 transition-colors cursor-pointer"
+                        className="w-full text-left px-4 py-2.5 text-[13px] hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 transition-colors cursor-pointer"
                       >
                         <SettingsIcon className="w-4 h-4 text-[var(--muted-foreground)]" />
                         <span>Тохиргооны хэсэг</span>
@@ -962,7 +1053,7 @@ export default function JobBoard({
                           router.push('/auth');
                           setShowProfileMenu(false);
                         }}
-                        className="w-full text-left px-4 py-2 text-xs hover:bg-rose-50 text-rose-600 hover:text-rose-700 flex items-center space-x-2.5 transition-colors cursor-pointer"
+                        className="w-full text-left px-4 py-2.5 text-[13px] hover:bg-rose-50 text-rose-600 hover:text-rose-700 flex items-center space-x-2.5 transition-colors cursor-pointer"
                       >
                         <LogOut className="w-4 h-4" />
                         <span>Системээс гарах</span>
@@ -974,15 +1065,18 @@ export default function JobBoard({
             </>
           ) : (
             <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
+              {/* Login stays reachable from the header on phones too — it used
+                  to be hidden below `sm`, leaving mobile guests only the hero
+                  link (review 2026-07-14). */}
               <a
                 href="/auth?tab=login"
-                className="hidden sm:block text-sm text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold px-4 py-2.5 transition-all cursor-pointer hover:bg-[var(--bg2)] rounded-full"
+                className="text-[13px] sm:text-sm text-[var(--muted-foreground)] hover:text-[var(--fg)] font-semibold px-2 sm:px-4 py-2.5 transition-all cursor-pointer hover:bg-[var(--bg2)] rounded-full whitespace-nowrap"
               >
                 Нэвтрэх
               </a>
               <a
                 href="/auth?tab=register"
-                className="bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-semibold text-sm px-4 sm:px-5 py-2.5 rounded-full transition-all cursor-pointer whitespace-nowrap"
+                className="bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-semibold text-[13px] sm:text-sm px-3 sm:px-5 py-2.5 rounded-full transition-all cursor-pointer whitespace-nowrap"
               >
                 Бүртгүүлэх
               </a>
@@ -1055,26 +1149,10 @@ export default function JobBoard({
             )}
           </div>
 
-          {/* Dropdown Filters row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Type Category */}
-            <div className="flex flex-col space-y-1.5">
-              <label htmlFor="filter-type" className="text-[13px] text-[var(--muted-foreground)] font-medium text-left">Зарын төрөл</label>
-              <div className="relative">
-                <select
-                  id="filter-type"
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
-                  className="w-full bg-[var(--bg)] border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--fg)] text-[15px] px-3.5 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] focus:border-[var(--fg)] transition-all cursor-pointer appearance-none"
-                >
-                  {getUniqueJobTypes().map((t, idx) => (
-                    <option key={idx} value={t.value}>{t.label}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)] pointer-events-none" />
-              </div>
-            </div>
-
+          {/* Location filter — the job-type filter lives only in the quick
+              chips above; a second identical dropdown was duplicated control
+              noise (review 2026-07-14). */}
+          <div className="grid grid-cols-1 gap-4">
             {/* Aimag location */}
             <div className="flex flex-col space-y-1.5">
               <label htmlFor="filter-location" className="text-[13px] text-[var(--muted-foreground)] font-medium text-left">Аймаг / Байршил</label>
@@ -1186,48 +1264,78 @@ export default function JobBoard({
               </div>
             )
           ) : (
-            /* Masonry: on md+ the cards flow into two independently-stacked
-               columns, so a short text-only card packs tightly under the
-               previous one instead of stretching its grid row to match a tall
-               image card (which left large background gaps). Below md the
-               column wrappers become `display: contents` and the per-card
-               `order` (original index) restores chronological order in the
-               single-column flow — each card stays a single DOM node, which
-               the click-outside collapse logic (getElementById) relies on. */
-            <div className="flex flex-col gap-4 md:flex-row md:items-start">
-              {[0, 1].map((column) => (
-                <div key={column} className="contents md:flex md:min-w-0 md:flex-1 md:flex-col md:gap-4">
-                  {displayJobs
-                    .map((job, index) => ({ job, index }))
-                    .filter(({ index }) => index % 2 === column)
-                    .map(({ job, index }) => (
-                      <div key={job.id} style={{ order: index }} className="min-w-0">
-                        <JobCard
-                          job={job}
-                          isExpanded={selectedJob?.id === job.id}
-                          currentUser={currentUser}
-                          users={users}
-                          successMessage={successMessage}
-                          shareMenuJob={shareMenuJob}
-                          onSelect={(j) => { trackViewJob(j.id, j.status); setSelectedJob(j); }}
-                          onCollapse={() => setSelectedJob(null)}
-                          onShowBlurWarning={() => setShowBlurWarningModal(true)}
-                          onEdit={setEditingJob}
-                          onReview={setActiveReviewJob}
-                          onHire={handleHire}
-                          onApply={handleApply}
-                          onCompleteAndReview={handleCompleteAndReviewTrigger}
-                          onDelete={handleDeleteJob}
-                          onCancelHiring={handleCancelHiring}
-                          onToggleShareMenu={setShareMenuJob}
-                          onCopied={() => addSuccessToast('Хуулагдлаа', 'Холбоос clipboard-д хуулагдлаа.')}
-                          onNavigate={(path) => router.push(path)}
-                        />
+            /* Masonry: on md+ the collapsed cards flow into two independently-
+               stacked columns, so a short text-only card packs tightly under
+               the previous one instead of stretching its grid row to match a
+               tall image card. Below md the column wrappers become
+               `display: contents` and the per-card `order` (original index)
+               restores chronological order in the single-column flow.
+
+               The EXPANDED card is rendered as its own full-width row between
+               two masonry segments (the jobs before it / after it) — a detail
+               view squeezed into a 50% column was a cramped reading experience
+               on desktop (review 2026-07-14). Every card still exists exactly
+               once in the DOM, which the click-outside collapse logic
+               (getElementById) relies on. */
+            (() => {
+              const jobCardFor = (job: Job, isExpanded: boolean) => (
+                <JobCard
+                  job={job}
+                  isExpanded={isExpanded}
+                  isHighlighted={deepLinkHighlightId === job.id}
+                  currentUser={currentUser}
+                  users={users}
+                  successMessage={successMessage}
+                  shareMenuJob={shareMenuJob}
+                  onSelect={(j) => { trackViewJob(j.id, j.status); setSelectedJob(j); }}
+                  onCollapse={() => setSelectedJob(null)}
+                  onShowBlurWarning={() => setShowBlurWarningModal(true)}
+                  onEdit={setEditingJob}
+                  onReview={setActiveReviewJob}
+                  onHire={handleHire}
+                  onApply={handleApply}
+                  onCompleteAndReview={handleCompleteAndReviewTrigger}
+                  onDelete={handleDeleteJob}
+                  onCancelHiring={handleCancelHiring}
+                  onToggleShareMenu={setShareMenuJob}
+                  onCopied={() => addSuccessToast('Хуулагдлаа', 'Холбоос clipboard-д хуулагдлаа.')}
+                  onNavigate={(path) => router.push(path)}
+                />
+              );
+
+              const renderMasonry = (segment: Job[]) =>
+                segment.length === 0 ? null : (
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start">
+                    {[0, 1].map((column) => (
+                      <div key={column} className="contents md:flex md:min-w-0 md:flex-1 md:flex-col md:gap-4">
+                        {segment
+                          .map((job, index) => ({ job, index }))
+                          .filter(({ index }) => index % 2 === column)
+                          .map(({ job, index }) => (
+                            <div key={job.id} style={{ order: index }} className="min-w-0">
+                              {jobCardFor(job, false)}
+                            </div>
+                          ))}
                       </div>
                     ))}
+                  </div>
+                );
+
+              const expandedIndex = selectedJob
+                ? displayJobs.findIndex(j => j.id === selectedJob.id)
+                : -1;
+
+              if (expandedIndex === -1) {
+                return renderMasonry(displayJobs);
+              }
+              return (
+                <div className="space-y-4">
+                  {renderMasonry(displayJobs.slice(0, expandedIndex))}
+                  {jobCardFor(displayJobs[expandedIndex], true)}
+                  {renderMasonry(displayJobs.slice(expandedIndex + 1))}
                 </div>
-              ))}
-            </div>
+              );
+            })()
           )}
         </div>
 
@@ -1317,7 +1425,7 @@ export default function JobBoard({
           onSuccess={async () => {
             setActiveReviewJob(null);
             await refreshJobs();
-            const msg = '🌟 Сэтгэгдэл, үнэлгээ амжилттай бүртгэгдэж тухайн хэрэглэгчийн албан ёсны ажлын түүхэнд шинэчлэгдэж заслаа. Хамтын оролцоонд баярлалаа.';
+            const msg = 'Сэтгэгдэл, үнэлгээ амжилттай бүртгэгдэж тухайн хэрэглэгчийн албан ёсны ажлын түүхэнд шинэчлэгдлээ. Хамтын оролцоонд баярлалаа.';
             setSuccessMessage(msg);
             addSuccessToast('Амжилттай', msg);
             setTimeout(() => setSuccessMessage(''), 4500);
@@ -1355,6 +1463,18 @@ export default function JobBoard({
             setShowBlurWarningModal(false);
             router.push('/auth?tab=login');
           }}
+        />
+      )}
+
+      {/* Design-system confirmation dialog (delete / cancel-hiring / hire) */}
+      {confirmState && (
+        <ConfirmModal
+          title={confirmState.title}
+          message={confirmState.message}
+          confirmLabel={confirmState.confirmLabel}
+          danger={confirmState.danger}
+          onConfirm={confirmState.action}
+          onClose={() => setConfirmState(null)}
         />
       )}
 

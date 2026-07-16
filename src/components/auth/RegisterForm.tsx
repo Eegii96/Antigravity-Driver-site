@@ -105,7 +105,7 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             placeholder=""
-            className="block w-full px-3 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
+            className="block w-full px-3 py-3 input text-base text-[var(--fg)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
           />
         </div>
         <div>
@@ -117,7 +117,7 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             placeholder=""
-            className="block w-full px-3 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
+            className="block w-full px-3 py-3 input text-base text-[var(--fg)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
           />
         </div>
       </div>
@@ -134,7 +134,7 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
               placeholder=""
-              className="block w-full px-3 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
+              className="block w-full px-3 py-3 input text-base text-[var(--fg)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
             />
           </div>
         ) : null}
@@ -145,10 +145,12 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
           <input
             id="reg-email"
             type="text"
+            inputMode="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder=""
-            className="block w-full px-3 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
+            className="block w-full px-3 py-3 input text-base text-[var(--fg)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
           />
         </div>
       </div>
@@ -165,10 +167,11 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
               id="reg-phone"
               type="tel"
               required
+              autoComplete="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder=""
-              className="block w-full pl-9 pr-3 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+              className="block w-full pl-9 pr-3 py-3 input text-base text-[var(--fg)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
             />
           </div>
         </div>
@@ -183,18 +186,21 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
               id="reg-password"
               type={showRegPassword ? 'text' : 'password'}
               required
+              autoComplete="new-password"
               value={regPassword}
               onChange={(e) => setRegPassword(e.target.value)}
               placeholder=""
-              className="block w-full pl-3 pr-10 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
+              className="block w-full pl-3 pr-12 py-3 input text-base text-[var(--fg)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
             />
-            <span
+            <button
               id="toggle-reg-pass-visibility"
+              type="button"
               onClick={() => setShowRegPassword(!showRegPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-[var(--muted-foreground)] hover:text-[var(--accent-foreground)] cursor-pointer"
+              aria-label={showRegPassword ? 'Нууц үгийг нуух' : 'Нууц үгийг харах'}
+              className="absolute inset-y-0 right-0 w-11 flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--fg)] cursor-pointer"
             >
               {showRegPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
-            </span>
+            </button>
           </div>
           {regPassword !== '' && regPassword.length < 8 && (
             <p className="text-sm text-red-700 mt-1 font-sans flex items-center space-x-1">
@@ -213,18 +219,21 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
               id="reg-confirm-password"
               type={showRegConfirmPassword ? 'text' : 'password'}
               required
+              autoComplete="new-password"
               value={regConfirmPassword}
               onChange={(e) => setRegConfirmPassword(e.target.value)}
               placeholder=""
-              className="block w-full pl-3 pr-10 py-1.5 input text-xs text-[var(--accent-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
+              className="block w-full pl-3 pr-12 py-3 input text-base text-[var(--fg)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] font-sans"
             />
-            <span
+            <button
               id="toggle-reg-confirm-pass-visibility"
+              type="button"
               onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-[var(--muted-foreground)] hover:text-[var(--fg)] cursor-pointer"
+              aria-label={showRegConfirmPassword ? 'Нууц үгийг нуух' : 'Нууц үгийг харах'}
+              className="absolute inset-y-0 right-0 w-11 flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--fg)] cursor-pointer"
             >
               {showRegConfirmPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
-            </span>
+            </button>
           </div>
           {regConfirmPassword !== '' && regPassword !== regConfirmPassword && (
             <p className="text-sm text-red-700 mt-1 font-sans flex items-center space-x-1">
@@ -297,7 +306,7 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
           Би энэхүү платформын{' '}
           <button type="button" onClick={() => setShowTerms(true)} className="text-[var(--accent-soft-foreground)] hover:text-[var(--accent-soft-foreground)] underline font-semibold transition-colors cursor-pointer bg-transparent border-none p-0">Үйлчилгээний нөхцөл</button>
           {' '}болон{' '}
-          <button type="button" onClick={() => setShowPrivacy(true)} className="text-[var(--verify)] hover:text-[var(--verify)] underline font-semibold transition-colors cursor-pointer bg-transparent border-none p-0">Нууцлалын бодлого</button>
+          <button type="button" onClick={() => setShowPrivacy(true)} className="text-[var(--accent-soft-foreground)] hover:text-[var(--accent-soft-foreground)] underline font-semibold transition-colors cursor-pointer bg-transparent border-none p-0">Нууцлалын бодлого</button>
           -той бүрэн танилцаж, хүлээн зөвшөөрч байна.
         </label>
       </div>
@@ -311,7 +320,7 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
           id="submit-register-btn"
           type="submit"
           disabled={isSubmitting || !isFormValid}
-          className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded-full text-[var(--accent-foreground)] font-medium text-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${!isSubmitting && isFormValid
+          className={`w-full flex justify-center items-center min-h-12 px-4 border border-transparent rounded-full text-[var(--accent-foreground)] font-semibold text-[15px] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${!isSubmitting && isFormValid
               ? 'bg-[var(--accent)] hover:opacity-90 shadow-lg'
               : 'bg-[var(--bg2)] text-[var(--muted-foreground)] cursor-not-allowed opacity-50'
             }`}
@@ -319,8 +328,8 @@ export default function RegisterForm({ form, onRegister }: RegisterFormProps) {
           {isSubmitting ? 'Бүртгэж байна...' : 'Бүртгүүлэх'}
         </button>
         {successMsg && (
-          <div className="mt-3.5 bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] px-4 py-2.5 rounded-lg text-xs flex items-center justify-center space-x-2 animate-fade-in font-sans">
-            <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping shrink-0"></span>
+          <div className="mt-3.5 bg-[var(--accent-soft)] text-[var(--accent-soft-foreground)] px-4 py-3 rounded-xl text-sm flex items-center justify-center space-x-2 animate-fade-in font-sans">
+            <span className="w-2 h-2 rounded-full bg-[var(--accent)] shrink-0"></span>
             <span className="text-left">{successMsg}</span>
           </div>
         )}

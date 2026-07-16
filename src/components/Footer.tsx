@@ -86,18 +86,20 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto border-t border-[var(--border)] mt-6 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-[var(--muted-foreground)] font-sans">
         <p>© {new Date().getFullYear()} Хүнд машин, механизм & Газар шорооны ажлын сайт. Бүх эрх хуулиар хамгаалагдсан.</p>
         <div className="flex space-x-6 mt-4 md:mt-0">
-          <span 
+          <button
+            type="button"
             onClick={() => setShowTerms(true)}
-            className="hover:text-[var(--fg)] cursor-pointer transition-colors"
+            className="hover:text-[var(--fg)] cursor-pointer transition-colors underline-offset-2 hover:underline py-2"
           >
             Үйлчилгээний нөхцөл
-          </span>
-          <span 
+          </button>
+          <button
+            type="button"
             onClick={() => setShowPrivacy(true)}
-            className="hover:text-[var(--fg)] cursor-pointer transition-colors"
+            className="hover:text-[var(--fg)] cursor-pointer transition-colors underline-offset-2 hover:underline py-2"
           >
             Нууцлалын бодлого
-          </span>
+          </button>
           <span className="text-[var(--muted-foreground)]">Хувилбар 1.2.0</span>
         </div>
       </div>

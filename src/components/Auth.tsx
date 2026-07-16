@@ -142,7 +142,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       });
 
       trackSignUpCompleted(userType);
-      setSuccessMsg('Бүртгэл амжилттай үүслээ! Тавтай морилно уу. 🚀');
+      setSuccessMsg('Бүртгэл амжилттай үүслээ! Тавтай морилно уу.');
       // Consumed once by JobBoard.tsx to show the skippable profile-completion
       // modal right after landing on the homepage (audit C3) — set here rather
       // than delaying onSuccess, since AuthClient's own redirect-on-currentUser
@@ -233,7 +233,7 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
         newPassword: newPass,
       });
 
-      setSuccessMsg('Нууц код амжилттай сэргээгдлээ! Та шинэ нууц кодоор нэвтэрнэ үү. 🔑');
+      setSuccessMsg('Нууц код амжилттай сэргээгдлээ! Та шинэ нууц кодоор нэвтэрнэ үү.');
 
       setForgotInput('');
       setSecurityQ1('');
@@ -264,9 +264,9 @@ export default function Auth({ onSuccess, defaultIsLogin }: AuthProps) {
       <div className="absolute top-6 left-6 right-6 flex justify-between items-center z-20">
         <button
           onClick={() => router.push('/')}
-          className="text-[var(--muted-foreground)] hover:text-[var(--fg)] text-xs font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer bg-[var(--card)] border border-[var(--border)] px-3.5 py-2 rounded-xl"
+          className="text-[var(--muted-foreground)] hover:text-[var(--fg)] text-[13px] font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer bg-[var(--card)] hover:bg-[var(--bg2)] border border-[var(--border)] hover:border-[var(--border-strong)] px-4 min-h-11 rounded-full"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-4 h-4" />
           <span>Нүүр хуудас</span>
         </button>
       </div>

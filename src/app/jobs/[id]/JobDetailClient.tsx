@@ -1,17 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  ArrowLeft, MapPin, DollarSign, Briefcase, Clock, 
-  CheckCircle, Star, Users, User as UserIcon, Loader2, AlertCircle, ChevronDown, LogOut, Settings as SettingsIcon, X,
-  Phone
+import {
+  ArrowLeft, MapPin, Briefcase,
+  CheckCircle, User as UserIcon, Loader2, AlertCircle, ChevronDown, ChevronLeft, ChevronRight, LogOut, Settings as SettingsIcon,
+  Phone, Share2
 } from 'lucide-react';
-import { getSingleJob, getSingleUser, saveSingleUser, applyForJob } from '../../../lib/db';
+import { getSingleJob, getSingleUser, applyForJob } from '../../../lib/db';
 import { getMockEmployerName, getMockEmployerPhone } from '../../../lib/mock-employer';
+import { formatRelativeDate } from '../../../lib/job-format';
 import { Job, User } from '../../../types';
 import { useAuth } from '../../../context/AuthContext';
-import { trackViewJob, trackContactClick, trackApplySubmit } from '../../../lib/analytics';
+import GuestBlurWarningModal from '../../../components/jobboard/GuestBlurWarningModal';
+import { trackViewJob, trackContactClick, trackApplySubmit, trackShareJob } from '../../../lib/analytics';
 
 interface JobDetailClientProps {
   jobId: string;
@@ -28,6 +30,16 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
   const [isApplying, setIsApplying] = useState<boolean>(false);
   const [showProfileMenu, setShowProfileMenu] = useState<boolean>(false);
   const [showBlurWarningModal, setShowBlurWarningModal] = useState<boolean>(false);
+  const [linkCopied, setLinkCopied] = useState<boolean>(false);
+
+  // Image carousel: desktop has no natural horizontal-drag gesture, so md+
+  // gets explicit prev/next arrows (review 2026-07-14).
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const scrollCarousel = (dir: -1 | 1) => {
+    const el = carouselRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     if (showBlurWarningModal) {
@@ -98,6 +110,33 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
     }
   };
 
+  // This page IS the share-link target — it needs its own share affordance
+  // (mobile: OS share sheet, desktop: copy link).
+  const handleShare = async () => {
+    if (!job) return;
+    const jobUrl = `${window.location.origin}/jobs/${job.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: job.title, url: jobUrl });
+        trackShareJob(job.id, 'native');
+      } catch (_) {
+        // User cancelled the share sheet — do nothing.
+      }
+    } else {
+      await navigator.clipboard.writeText(jobUrl);
+      trackShareJob(job.id, 'copy');
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2500);
+    }
+  };
+
+  // JobPostModal historically saved this literal placeholder for blank
+  // descriptions — hide it instead of announcing it (AGENTS.md §4).
+  const hasRealDescription = (text: string | undefined): boolean => {
+    const t = (text || '').trim();
+    return t !== '' && t !== 'Нэмэлт мэдээлэл оруулаагүй.';
+  };
+
   const getFirstName = (userObj: User | string | null): string => {
     if (!userObj) return 'Хэрэглэгч';
     if (typeof userObj === 'string') {
@@ -133,9 +172,10 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 window.location.href = '/';
               }
             }}
-            className="p-2 bg-[var(--card)] border border-[var(--border)] rounded-xl hover:bg-[var(--bg2)] transition-colors cursor-pointer"
+            aria-label="Буцах"
+            className="min-w-11 min-h-11 flex items-center justify-center bg-[var(--card)] border border-[var(--border)] rounded-full hover:bg-[var(--bg2)] transition-colors cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4 text-[var(--fg)]" />
+            <ArrowLeft className="w-4.5 h-4.5 text-[var(--fg)]" />
           </button>
           <div>
             <h1 className="text-sm font-bold text-[var(--fg)] text-left font-display">Жолооч Монголиа</h1>
@@ -155,7 +195,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
             >
               <div className="hidden md:block">
                 <p className="text-xs font-semibold text-[var(--fg)] leading-none">{getFirstName(currentUser)}</p>
-                <span className="text-xs text-[var(--muted-foreground)] font-mono">
+                <span className="text-xs text-[var(--muted-foreground)] font-sans">
                   {currentUser.type === 'operator' ? 'Жолооч' : 'Ажил олгогч'} · {currentUser.rating}★
                 </span>
               </div>
@@ -174,21 +214,21 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-md py-2">
                   <button
                     onClick={() => router.push('/profile')}
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 cursor-pointer"
+                    className="w-full text-left px-4 py-2.5 text-[13px] hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 cursor-pointer"
                   >
                     <UserIcon className="w-4 h-4 text-[var(--muted-foreground)]" />
                     <span>Миний профайл</span>
                   </button>
                   <button
                     onClick={() => router.push('/applications')}
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 cursor-pointer"
+                    className="w-full text-left px-4 py-2.5 text-[13px] hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 cursor-pointer"
                   >
                     <Briefcase className="w-4 h-4 text-[var(--muted-foreground)]" />
                     <span>Миний зарууд, хүсэлтүүд</span>
                   </button>
                   <button
                     onClick={() => router.push('/settings')}
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 cursor-pointer"
+                    className="w-full text-left px-4 py-2.5 text-[13px] hover:bg-[var(--bg2)] text-[var(--fg)] flex items-center space-x-2.5 cursor-pointer"
                   >
                     <SettingsIcon className="w-4 h-4 text-[var(--muted-foreground)]" />
                     <span>Тохиргоо</span>
@@ -199,7 +239,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                       await logout();
                       router.push('/auth');
                     }}
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-rose-50 text-rose-600 hover:text-rose-700 flex items-center space-x-2.5 cursor-pointer"
+                    className="w-full text-left px-4 py-2.5 text-[13px] hover:bg-rose-50 text-rose-600 hover:text-rose-700 flex items-center space-x-2.5 cursor-pointer"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Системээс гарах</span>
@@ -221,7 +261,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
       {/* Main Content */}
       <main className="flex-grow max-w-3xl mx-auto w-full px-6 py-10 relative z-10">
         {error && (
-          <div className="bg-rose-50 border border-rose-300 text-rose-600 p-4 rounded-xl text-xs flex items-center space-x-2.5 mb-6 text-left">
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-xl text-sm flex items-center space-x-2.5 mb-6 text-left">
             <AlertCircle className="w-5 h-5 shrink-0" />
             <span>{error}</span>
           </div>
@@ -230,7 +270,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
 
 
         {job && (
-          <div className="bg-[var(--card)] border border-[var(--border)] p-6 md:p-8 rounded-xl space-y-6 shadow-sm">
+          <div className="bg-[var(--card)] border border-[var(--border)] p-6 md:p-8 rounded-2xl space-y-6 shadow-sm">
             {/* Header info */}
             <div className="border-b border-[var(--border)] pb-5 space-y-3">
               <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]" onClick={(e) => e.stopPropagation()}>
@@ -245,7 +285,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                   className="flex items-center space-x-2 text-left focus:outline-none hover:opacity-80 transition-opacity bg-transparent border-0 p-0 cursor-pointer"
                 >
                   <UserIcon className="w-4 h-4 text-[var(--muted-foreground)] shrink-0" />
-                  <span className={`text-xs font-bold font-sans text-[var(--accent-soft-foreground)] ${
+                  <span className={`text-sm font-semibold font-sans text-[var(--fg)] ${
                     !currentUser ? 'filter blur-[5px] select-none cursor-pointer' : 'hover:underline'
                   }`}>
                     {!currentUser ? getMockEmployerName(job.id) : (employer?.companyName || employer?.fullName || job.employerName)}
@@ -261,29 +301,29 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 >
                   <Phone className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
                   {!currentUser ? (
-                    <span className="font-mono text-xs font-bold text-[var(--fg)] filter blur-[5px] select-none">
+                    <span className="font-mono text-sm font-semibold text-[var(--fg)] filter blur-[5px] select-none">
                       {getMockEmployerPhone(job.id)}
                     </span>
                   ) : employer?.phone ? (
                     <a
                       href={`tel:${employer.phone}`}
                       onClick={() => trackContactClick(job.id, 'tel')}
-                      className="font-mono text-xs font-bold text-[var(--fg)] underline decoration-[var(--accent)] underline-offset-2"
+                      className="font-mono text-sm font-semibold text-[var(--fg)] underline decoration-[var(--border-strong)] underline-offset-4 py-2 -my-2"
                     >
                       {employer.phone}
                     </a>
                   ) : (
-                    <span className="font-mono text-xs font-bold text-[var(--fg)]">Утасгүй</span>
+                    <span className="font-mono text-sm font-semibold text-[var(--fg)]">Утасгүй</span>
                   )}
                 </div>
               </div>
 
 
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono text-xs text-[var(--muted-foreground)]">
-                  {job.createdAt ? new Date(job.createdAt).toLocaleDateString('mn-MN').replace(/\//g, '.') : ''}
+                <span className="text-[13px] text-[var(--concrete)]">
+                  {job.createdAt ? formatRelativeDate(job.createdAt) : ''}
                 </span>
-                <span className="text-xs text-[var(--muted-foreground)] flex items-center space-x-1">
+                <span className="text-[13px] text-[var(--muted-foreground)] flex items-center space-x-1">
                   <MapPin className="w-3.5 h-3.5" />
                   <span>{job.location}</span>
                 </span>
@@ -296,23 +336,45 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
             {/* Job Image Banner */}
             {job.imageUrls && job.imageUrls.length > 0 ? (
               <div className="w-full space-y-1">
-                <div className="flex overflow-x-auto gap-2.5 snap-x snap-mandatory scrollbar-none py-1">
-                  {job.imageUrls.map((url, idx) => (
-                    <div key={idx} className="shrink-0 w-full snap-center h-64 md:h-96 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg2)] flex items-center justify-center relative">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt={`Slide ${idx + 1}`}
-                        className="w-full h-full object-contain"
-                      />
-                      <div className="absolute bottom-2.5 right-2.5 bg-[var(--fg)]/75 text-[var(--card)] text-xs font-bold px-2 py-0.5 rounded-full font-sans">
-                        {idx + 1} / {job.imageUrls?.length}
+                <div className="relative">
+                  <div ref={carouselRef} className="flex overflow-x-auto gap-2.5 snap-x snap-mandatory scrollbar-none py-1">
+                    {job.imageUrls.map((url, idx) => (
+                      <div key={idx} className="shrink-0 w-full snap-center h-64 md:h-96 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg2)] flex items-center justify-center relative">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={url}
+                          alt={`Slide ${idx + 1}`}
+                          className="w-full h-full object-contain"
+                        />
+                        <div className="absolute bottom-2.5 right-2.5 bg-[var(--fg)]/75 text-[var(--card)] text-xs font-bold px-2 py-0.5 rounded-full font-sans">
+                          {idx + 1} / {job.imageUrls?.length}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  {job.imageUrls.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        aria-label="Өмнөх зураг"
+                        onClick={() => scrollCarousel(-1)}
+                        className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-[var(--card)]/90 border border-[var(--border)] text-[var(--fg)] shadow-sm hover:bg-[var(--card)] transition-colors cursor-pointer z-10"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Дараагийн зураг"
+                        onClick={() => scrollCarousel(1)}
+                        className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 items-center justify-center rounded-full bg-[var(--card)]/90 border border-[var(--border)] text-[var(--fg)] shadow-sm hover:bg-[var(--card)] transition-colors cursor-pointer z-10"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </>
+                  )}
                 </div>
                 {job.imageUrls.length > 1 && (
-                  <p className="text-xs text-[var(--muted-foreground)] text-center font-sans select-none">
+                  <p className="text-xs text-[var(--muted-foreground)] text-center font-sans select-none md:hidden">
                     Хажуу тийш гүйлгэж үзнэ үү
                   </p>
                 )}
@@ -328,34 +390,42 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
               </div>
             ))}
 
-            {/* Quick Details Card Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-left">
-              <div className="bg-[var(--bg2)] p-4 rounded-xl border border-[var(--border)]">
-                <span className="text-xs text-[var(--muted-foreground)] block font-mono">ТӨЛБӨРИЙН ХЭМЖЭЭ</span>
-                <span className="font-bold text-lg text-[var(--verify)] block font-mono mt-1">
-                  {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString('mn-MN')} ₮`}
+            {/* Quick Details Card Grid — mirrors the board's expanded card
+                (Цалин | Байршил); the old "АЖЛЫН ХУГАЦАА" card showed the same
+                hardcoded "Тохиролцоно" on every job (review 2026-07-14). */}
+            <div className="grid grid-cols-2 gap-3 text-left">
+              <div className="bg-[var(--bg2)] p-4 rounded-xl">
+                <span className="text-xs text-[var(--muted-foreground)] font-medium block mb-1.5">Цалин / Төлбөр</span>
+                <span className="font-display font-bold text-[var(--verify)] text-base tabular-nums">
+                  {job.salary === 0 ? 'Тохиролцоно' : `${job.salary.toLocaleString()} ₮`}
                 </span>
+                {job.salaryUnit && (
+                  <span className="text-xs text-[var(--muted-foreground)] block mt-0.5">{job.salaryUnit}</span>
+                )}
               </div>
-              <div className="bg-[var(--bg2)] p-4 rounded-xl border border-[var(--border)]">
-                <span className="text-xs text-[var(--muted-foreground)] block font-mono">АЖЛЫН ХУГАЦАА</span>
-                <span className="font-bold text-lg text-[var(--fg)] block mt-1">
-                  {job.duration}
+              <div className="bg-[var(--bg2)] p-4 rounded-xl">
+                <span className="text-xs text-[var(--muted-foreground)] font-medium block mb-1.5">Байршил</span>
+                <span className="font-semibold text-[var(--fg)] text-sm flex items-start gap-1.5">
+                  <MapPin className="w-4 h-4 text-[var(--muted-foreground)] shrink-0 mt-0.5" />
+                  {job.location}
                 </span>
               </div>
             </div>
 
-            {/* Description */}
-            <div className="space-y-2 text-left">
-              <span className="text-xs font-bold text-[var(--muted-foreground)]">Ажлын дэлгэрэнгүй тодорхойлолт</span>
-              <p className="text-xs text-[var(--fg)] leading-relaxed bg-[var(--bg2)] p-4 rounded-xl border border-[var(--border)] whitespace-pre-wrap">
-                {job.description}
-              </p>
-            </div>
+            {/* Description — hidden entirely when the poster left it blank */}
+            {hasRealDescription(job.description) && (
+              <div className="space-y-2 text-left">
+                <span className="text-[13px] font-semibold text-[var(--muted-foreground)]">Ажлын дэлгэрэнгүй тодорхойлолт</span>
+                <p className="text-[15px] text-[var(--fg)] leading-relaxed bg-[var(--bg2)] p-4 rounded-xl whitespace-pre-wrap">
+                  {job.description}
+                </p>
+              </div>
+            )}
 
             {/* Requirements */}
             <div className="space-y-3 text-left">
-              <span className="text-xs font-bold text-[var(--muted-foreground)]">Шаардлага</span>
-              <ul className="space-y-2 text-xs text-[var(--fg)]">
+              <span className="text-[13px] font-semibold text-[var(--muted-foreground)]">Шаардлага</span>
+              <ul className="space-y-2 text-sm text-[var(--fg)]">
                 {job.requirements.map((req, idx) => (
                   <li key={idx} className="flex items-start">
                     <span className="text-[var(--accent-soft-foreground)] mr-2.5 font-bold">•</span>
@@ -371,10 +441,10 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 /* Authenticated User Actions */
                 currentUser.id === job.employerId ? (
                   <div className="space-y-3">
-                    <p className="font-semibold text-[var(--fg)] text-left">Таны оруулсан зар байна.</p>
+                    <p className="font-semibold text-[var(--fg)] text-left text-[15px]">Таны оруулсан зар байна.</p>
                     <button
                       onClick={() => router.push(`/profile?id=${currentUser.id}`)}
-                      className="w-full bg-[var(--bg2)] hover:bg-[var(--border)] text-[var(--fg)] border border-[var(--border)] py-2 px-4 rounded-xl text-xs cursor-pointer transition-colors"
+                      className="w-full min-h-12 bg-[var(--card)] hover:bg-[var(--bg2)] text-[var(--fg)] border border-[var(--border)] hover:border-[var(--border-strong)] px-4 rounded-full text-sm font-semibold cursor-pointer transition-colors"
                     >
                       Хүсэлт ирүүлсэн харилцагчдыг хянах
                     </button>
@@ -382,7 +452,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 ) : (
                   job.applicants.includes(currentUser.id) ? (
                     <div className="space-y-3">
-                      <div className="bg-[rgba(31,138,76,0.08)] border border-[rgba(31,138,76,0.3)] p-4 rounded-xl text-center text-xs text-[var(--verify)] font-semibold flex items-center justify-center space-x-2">
+                      <div className="bg-[rgba(31,138,76,0.08)] p-4 rounded-xl text-center text-sm text-[var(--verify)] font-semibold flex items-center justify-center space-x-2">
                         <CheckCircle className="w-5 h-5 text-[var(--verify)]" />
                         <span>Та энэ заранд хүсэлтээ амжилттай илгээсэн байна. Захиалагчийн хариуг хүлээж байна.</span>
                       </div>
@@ -407,7 +477,7 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                       ) : (
                         <>
                           <Briefcase className="w-4 h-4" />
-                          <span>ХҮСЭЛТ ИЛГЭЭХ (Хувийн мэдээлэл хавсаргах)</span>
+                          <span>Хүсэлт илгээх</span>
                         </>
                       )}
                     </button>
@@ -415,83 +485,50 @@ export default function JobDetailClient({ jobId }: JobDetailClientProps) {
                 )
               ) : (
                 /* Guest User Call To Action */
-                <div className="bg-[var(--bg2)] p-5 rounded-xl border border-[var(--border)] text-center space-y-4">
-                  <div className="space-y-1">
-                    <p className="text-xs font-bold text-[var(--fg)]">Та энэ заранд хүсэлт илгээх үү?</p>
-                    <p className="text-sm text-[var(--muted-foreground)]">
+                <div className="bg-[var(--bg2)] p-5 rounded-xl text-center space-y-4">
+                  <div className="space-y-1.5">
+                    <p className="text-[17px] font-display font-bold text-[var(--fg)]">Та энэ заранд хүсэлт илгээх үү?</p>
+                    <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
                       Хувийн үнэлгээ, ажлын түүхээ хавсаргаж хүсэлт илгээхийн тулд системд нэвтэрсэн байх шаардлагатай.
                     </p>
                   </div>
                   <button
                     onClick={() => router.push('/auth')}
-                    className="inline-flex items-center space-x-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-bold text-sm px-6 py-2.5 rounded-full transition-all shadow-sm cursor-pointer"
+                    className="inline-flex items-center min-h-12 space-x-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] font-semibold text-[15px] px-6 rounded-full transition-all shadow-sm cursor-pointer"
                   >
                     <span>Нэвтэрч ороод хүсэлт илгээх</span>
                   </button>
                 </div>
               )}
             </div>
+
+            {/* Share — this page is the canonical share target */}
+            <div className="border-t border-[var(--border)] pt-3 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleShare}
+                className="flex items-center gap-2 text-[13px] font-medium text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer py-2 -my-2 pr-2"
+              >
+                <Share2 className="w-4 h-4" />
+                <span>Хуваалцах</span>
+              </button>
+              {linkCopied && (
+                <span className="text-[13px] text-[var(--verify)] font-medium animate-fade-in">Холбоос хуулагдлаа</span>
+              )}
+            </div>
           </div>
         )}
       </main>
-      {/* Guest Blur Warning Modal */}
+      {/* Guest Blur Warning Modal — the single shared implementation
+          (an inline copy used to live here and drift; review 2026-07-14) */}
       {showBlurWarningModal && (
-        <div 
-          id="blur-warning-modal-backdrop" 
-          onClick={() => setShowBlurWarningModal(false)}
-          className="fixed inset-0 bg-[var(--fg)]/40 flex items-center justify-center p-4 z-50 animate-fade-in"
-        >
-          <div
-            id="blur-warning-modal-container"
-            onClick={(e) => e.stopPropagation()}
-            className="bg-[var(--card)] border border-[var(--border-strong)] max-w-sm w-full rounded-xl overflow-hidden shadow-md relative p-6 space-y-4"
-          >
-            {/* Header */}
-            <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
-              <div className="flex items-center space-x-2">
-                <span className="flex h-2.5 w-2.5 rounded-full bg-[var(--accent)]"></span>
-                <h3 className="text-sm font-display font-bold text-[var(--fg)]">Дэлгэрэнгүй харах</h3>
-              </div>
-              <button
-                onClick={() => setShowBlurWarningModal(false)}
-                className="text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer p-1 rounded hover:bg-[var(--bg2)]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Description */}
-            <div className="space-y-3 text-left font-sans">
-              <p className="text-xs text-[var(--fg)] leading-relaxed">
-                Ажлын зар байршуулсан хэрэглэгч болон утасны дугаар зэрэг дэлгэрэнгүй мэдээлэл нь зөвхөн системд нэвтэрсэн хэрэглэгчдэд харагдах боломжтой.
-              </p>
-              <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
-                Та системд нэвтэрч орсны дараа зар бүтнээр харагдах болно.
-              </p>
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-col space-y-2 pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowBlurWarningModal(false);
-                  router.push('/auth?tab=login');
-                }}
-                className="w-full py-2.5 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-sm font-bold rounded-full transition-all shadow-sm cursor-pointer font-sans text-center"
-              >
-                Нэвтрэх хэсэг рүү очих
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowBlurWarningModal(false)}
-                className="w-full py-2.5 border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--fg)] text-xs font-medium rounded hover:bg-[var(--bg2)] transition-colors cursor-pointer font-sans"
-              >
-                Хаах
-              </button>
-            </div>
-          </div>
-        </div>
+        <GuestBlurWarningModal
+          onClose={() => setShowBlurWarningModal(false)}
+          onLogin={() => {
+            setShowBlurWarningModal(false);
+            router.push('/auth?tab=login');
+          }}
+        />
       )}
 
     </div>

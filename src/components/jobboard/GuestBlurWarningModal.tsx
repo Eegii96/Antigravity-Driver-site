@@ -22,17 +22,15 @@ export default function GuestBlurWarningModal({ onClose, onLogin }: GuestBlurWar
       <div
         id="blur-warning-modal-container"
         onClick={(e) => e.stopPropagation()}
-        className="bg-[var(--card)] border border-[var(--border-strong)] max-w-sm w-full rounded-xl overflow-hidden shadow-md relative p-6 space-y-4"
+        className="bg-[var(--card)] border border-[var(--border-strong)] max-w-sm w-full rounded-2xl overflow-hidden shadow-md relative p-6 space-y-4"
       >
         {/* Header */}
         <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
-          <div className="flex items-center space-x-2">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-[var(--accent)]"></span>
-            <h3 className="text-sm font-display font-bold text-[var(--fg)]">Дэлгэрэнгүй харах</h3>
-          </div>
+          <h3 className="text-[17px] font-display font-bold text-[var(--fg)]">Дэлгэрэнгүй харах</h3>
           <button
             onClick={onClose}
-            className="text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer p-1 rounded hover:bg-[var(--bg2)]"
+            aria-label="Хаах"
+            className="min-w-11 min-h-11 flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--fg)] transition-colors cursor-pointer rounded-full hover:bg-[var(--bg2)] -mr-2"
           >
             <X className="w-5 h-5" />
           </button>
@@ -40,27 +38,27 @@ export default function GuestBlurWarningModal({ onClose, onLogin }: GuestBlurWar
 
         {/* Description */}
         <div className="space-y-3 text-left">
-          <p className="text-xs text-[var(--fg)] leading-relaxed font-sans">
+          <p className="text-[15px] text-[var(--fg)] leading-relaxed font-sans">
             Ажлын зар байршуулсан хэрэглэгч болон утасны дугаар зэрэг дэлгэрэнгүй мэдээлэл нь зөвхөн системд нэвтэрсэн хэрэглэгчдэд харагдах боломжтой.
           </p>
-          <p className="text-xs text-[var(--muted-foreground)] leading-relaxed font-sans">
+          <p className="text-sm text-[var(--muted-foreground)] leading-relaxed font-sans">
             Та системд нэвтэрч орсны дараа зар бүтнээр харагдах болно.
           </p>
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col space-y-2 pt-2">
+        <div className="flex flex-col space-y-2.5 pt-2">
           <button
             type="button"
             onClick={onLogin}
-            className="w-full py-2.5 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-sm font-bold rounded-full transition-all shadow-sm cursor-pointer font-sans text-center"
+            className="w-full min-h-12 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-foreground)] text-[15px] font-semibold rounded-full transition-all shadow-sm cursor-pointer font-sans text-center"
           >
             Нэвтрэх хэсэг рүү очих
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-2.5 border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--fg)] text-xs font-medium rounded hover:bg-[var(--bg2)] transition-colors cursor-pointer font-sans"
+            className="w-full min-h-12 border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--fg)] text-sm font-semibold rounded-full hover:bg-[var(--bg2)] transition-colors cursor-pointer font-sans"
           >
             Хаах
           </button>
